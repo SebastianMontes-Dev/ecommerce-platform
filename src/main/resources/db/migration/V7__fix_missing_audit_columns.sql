@@ -1,0 +1,5 @@
+ALTER TABLE product_variants ADD COLUMN IF NOT EXISTS created_by UUID;
+ALTER TABLE product_variants ADD COLUMN IF NOT EXISTS updated_by UUID;
+
+ALTER TABLE reviews ADD COLUMN IF NOT EXISTS created_by UUID;
+ALTER TABLE reviews ADD COLUMN IF NOT EXISTS updated_by UUID;
