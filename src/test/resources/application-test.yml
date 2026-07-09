@@ -1,0 +1,25 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/ecommerce_test
+    username: ecommerce
+    password: ecommerce123
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+  flyway:
+    enabled: true
+  rabbitmq:
+    listener:
+      auto-startup: false
+  main:
+    allow-bean-definition-overriding: true
+
+app:
+  jwt:
+    secret: test-secret-key-for-testing-must-be-at-least-256-bits-long-for-hmac-sha512
+    access-token-expiration: 900000
+    refresh-token-expiration: 604800000
+  stripe:
+    api-key: sk_test_placeholder
+    webhook-secret: whsec_placeholder
