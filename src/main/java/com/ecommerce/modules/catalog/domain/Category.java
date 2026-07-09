@@ -1,0 +1,49 @@
+package com.ecommerce.modules.catalog.domain;
+
+import com.ecommerce.modules.shared.domain.TenantAwareEntity;
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
+@Entity
+@Table(name = "categories")
+@Getter
+@Setter
+@NoArgsConstructor
+public class Category extends TenantAwareEntity {
+
+    @Column(name = "name", nullable = false)
+    private String name;
+
+    @Column(name = "slug", nullable = false)
+    private String slug;
+
+    @Column(name = "description", columnDefinition = "TEXT")
+    private String description;
+
+    @Column(name = "image_url")
+    private String imageUrl;
+
+    @Column(name = "parent_id")
+    private UUID parentId;
+
+    @Column(name = "active")
+    private boolean active = true;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "parent_id", insertable = false, updatable = false)
+    private Category parent;
+
+    @OneToMany(mappedBy = "parent", fetch = FetchType.LAZY)
+    @OrderBy("name ASC")
+    private List<Category> children = new ArrayList<>();
+
+    public boolean isRoot() {
+        return parentId == null;
+    }
+}
