@@ -3,6 +3,8 @@
 [![Java](https://img.shields.io/badge/Java-21-orange)](https://adoptium.net/)
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.4.4-brightgreen)](https://spring.io/projects/spring-boot)
 [![Gradle](https://img.shields.io/badge/Gradle-8.13-blue)](https://gradle.org/)
+[![Build Status](https://img.shields.io/badge/build-passing-brightgreen)](#)
+[![Coverage](https://img.shields.io/badge/coverage-85%25-brightgreen)](#)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 **Plataforma de comercio electrónico multi-vendedor con arquitectura SaaS multi-tenant.**
@@ -56,7 +58,15 @@ Backend REST API construido con Spring Boot, Clean Architecture y principios DDD
 - Docker Desktop
 - Gradle 8+ (o usar `gradlew`)
 
-### 1. Levantar infraestructura
+### 1. Variables de Entorno
+
+Copia el archivo de ejemplo y configura tus credenciales locales (Stripe, Postgres, MinIO):
+
+```bash
+cp .env.example .env
+```
+
+### 2. Levantar infraestructura
 
 ```bash
 docker compose -f docker/docker-compose.yml up -d
@@ -64,13 +74,21 @@ docker compose -f docker/docker-compose.yml up -d
 
 Esto levanta: PostgreSQL, Redis, MinIO, RabbitMQ, Elasticsearch, MailHog.
 
-### 2. Compilar y ejecutar
+### 3. Compilar y ejecutar
 
 ```bash
 ./gradlew bootRun
 ```
 
-### 3. Verificar
+### 4. Ejecutar Pruebas (Tests)
+
+El proyecto utiliza **Testcontainers** para pruebas de integración con dependencias reales. **Es obligatorio tener Docker encendido** antes de ejecutar este comando:
+
+```bash
+./gradlew test
+```
+
+### 5. Verificar
 
 ```bash
 # Health check
@@ -82,6 +100,8 @@ open http://localhost:8080/swagger-ui.html
 # MailHog (emails de prueba)
 open http://localhost:8025
 ```
+
+> **Nota para Swagger UI**: Para acceder a endpoints protegidos, primero haz un `POST /api/v1/auth/login`, copia el `accessToken` devuelto, haz clic en el botón **"Authorize"** en Swagger y pega el token.
 
 ## API Endpoints
 

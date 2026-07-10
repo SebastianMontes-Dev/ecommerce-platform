@@ -103,6 +103,11 @@ public class Order extends TenantAwareEntity {
         validateTransition(OrderStatus.PAID);
         this.status = OrderStatus.PAID;
     }
+    
+    public void process() {
+        validateTransition(OrderStatus.PROCESSING);
+        this.status = OrderStatus.PROCESSING;
+    }
 
     public void ship() {
         validateTransition(OrderStatus.SHIPPED);
@@ -115,15 +120,33 @@ public class Order extends TenantAwareEntity {
     }
 
     public void cancel(String reason) {
-        if (this.status != OrderStatus.PENDING && this.status != OrderStatus.CONFIRMED) {
-            throw new InvalidOperationException("Cannot cancel order in status: " + this.status);
-        }
+        validateTransition(OrderStatus.CANCELLED);
         this.status = OrderStatus.CANCELLED;
+    }
+    
+    public void refund(String reason) {
+        validateTransition(OrderStatus.REFUNDED);
+        this.status = OrderStatus.REFUNDED;
     }
 
     private void validateTransition(OrderStatus targetStatus) {
-        if (this.status == OrderStatus.CANCELLED || this.status == OrderStatus.REFUNDED) {
-            throw new InvalidOperationException("Cannot transition from " + this.status);
+        boolean isValid = switch (this.status) {
+            case PENDING -> targetStatus == OrderStatus.CONFIRMED || targetStatus == OrderStatus.CANCELLED;
+            case CONFIRMED -> targetStatus == OrderStatus.PAID || targetStatus == OrderStatus.CANCELLED;
+            case PAID -> targetStatus == OrderStatus.PROCESSING || targetStatus == OrderStatus.SHIPPED || targetStatus == OrderStatus.REFUNDED;
+            case PROCESSING -> targetStatus == OrderStatus.SHIPPED || targetStatus == OrderStatus.REFUNDED;
+            case SHIPPED -> targetStatus == OrderStatus.DELIVERED || targetStatus == OrderStatus.REFUNDED;
+            case DELIVERED -> targetStatus == OrderStatus.REFUNDED;
+            case CANCELLED, REFUNDED -> false;
+        };
+
+        if (!isValid) {
+            throw new InvalidOperationException(
+                String.format("Cannot transition order %s from %s to %s", 
+                    this.orderNumber != null ? this.orderNumber : "UNKNOWN", 
+                    this.status, 
+                    targetStatus)
+            );
         }
     }
 }
