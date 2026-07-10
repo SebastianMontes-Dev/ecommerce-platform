@@ -3,6 +3,7 @@ package com.ecommerce.modules.order.application;
 import com.ecommerce.modules.order.domain.*;
 import com.ecommerce.modules.shared.domain.EntityNotFoundException;
 import com.ecommerce.modules.shared.domain.Money;
+import com.ecommerce.modules.shared.domain.DomainEventPublisher;
 import com.ecommerce.modules.shared.infrastructure.PagedResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -17,6 +18,7 @@ import java.util.UUID;
 public class OrderUseCase {
 
     private final OrderRepository orderRepository;
+    private final DomainEventPublisher eventPublisher;
 
     @Transactional(readOnly = true)
     public OrderResponse getOrder(UUID orderId, UUID tenantId) {
@@ -46,6 +48,8 @@ public class OrderUseCase {
                 .orElseThrow(() -> new EntityNotFoundException("Order", orderId));
         order.cancel(reason);
         order = orderRepository.save(order);
+        eventPublisher.publish(order.getDomainEvents());
+        order.clearDomainEvents();
         return mapToResponse(order);
     }
 

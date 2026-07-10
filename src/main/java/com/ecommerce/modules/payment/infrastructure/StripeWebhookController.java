@@ -3,6 +3,8 @@ package com.ecommerce.modules.payment.infrastructure;
 import com.ecommerce.modules.payment.domain.Payment;
 import com.ecommerce.modules.payment.domain.PaymentRepository;
 import com.ecommerce.modules.payment.domain.PaymentStatus;
+import com.ecommerce.modules.payment.domain.ProcessedEvent;
+import com.ecommerce.modules.payment.domain.ProcessedEventRepository;
 import com.stripe.exception.SignatureVerificationException;
 import com.stripe.model.Event;
 import com.stripe.model.checkout.Session;
@@ -27,6 +29,7 @@ import java.util.Map;
 public class StripeWebhookController {
 
     private final PaymentRepository paymentRepository;
+    private final ProcessedEventRepository processedEventRepository;
 
     @Value("${app.stripe.webhook-secret}")
     private String webhookSecret;
@@ -58,6 +61,12 @@ public class StripeWebhookController {
             return ResponseEntity.badRequest().body("Invalid signature");
         }
 
+        // Idempotency check
+        if (processedEventRepository.existsById(event.getId())) {
+            log.info("Duplicate webhook event ignored: {}", event.getId());
+            return ResponseEntity.ok("Already processed");
+        }
+
         switch (event.getType()) {
             case "checkout.session.completed":
                 handleCheckoutCompleted(event);
@@ -71,6 +80,9 @@ public class StripeWebhookController {
             default:
                 log.debug("Unhandled event type: {}", event.getType());
         }
+
+        // Mark event as processed
+        processedEventRepository.save(new ProcessedEvent(event.getId(), event.getType()));
 
         return ResponseEntity.ok("OK");
     }
