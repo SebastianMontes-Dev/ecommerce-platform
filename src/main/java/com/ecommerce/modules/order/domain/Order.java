@@ -1,6 +1,7 @@
 package com.ecommerce.modules.order.domain;
 
 import com.ecommerce.modules.shared.domain.*;
+import com.ecommerce.modules.order.domain.events.OrderStatusChangedEvent;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -16,7 +17,7 @@ import java.util.UUID;
 @Getter
 @Setter
 @NoArgsConstructor
-public class Order extends TenantAwareEntity {
+public class Order extends TenantAwareAggregateRoot {
 
     @Column(name = "order_number", unique = true, nullable = false, length = 100)
     private String orderNumber;
@@ -95,38 +96,40 @@ public class Order extends TenantAwareEntity {
     private List<OrderStatusHistory> statusHistory = new ArrayList<>();
 
     public void confirm() {
-        validateTransition(OrderStatus.CONFIRMED);
-        this.status = OrderStatus.CONFIRMED;
+        changeStatus(OrderStatus.CONFIRMED);
     }
 
     public void markAsPaid() {
-        validateTransition(OrderStatus.PAID);
-        this.status = OrderStatus.PAID;
+        changeStatus(OrderStatus.PAID);
     }
     
     public void process() {
-        validateTransition(OrderStatus.PROCESSING);
-        this.status = OrderStatus.PROCESSING;
+        changeStatus(OrderStatus.PROCESSING);
     }
 
     public void ship() {
-        validateTransition(OrderStatus.SHIPPED);
-        this.status = OrderStatus.SHIPPED;
+        changeStatus(OrderStatus.SHIPPED);
     }
 
     public void deliver() {
-        validateTransition(OrderStatus.DELIVERED);
-        this.status = OrderStatus.DELIVERED;
+        changeStatus(OrderStatus.DELIVERED);
     }
 
     public void cancel(String reason) {
-        validateTransition(OrderStatus.CANCELLED);
-        this.status = OrderStatus.CANCELLED;
+        changeStatus(OrderStatus.CANCELLED);
     }
     
     public void refund(String reason) {
-        validateTransition(OrderStatus.REFUNDED);
-        this.status = OrderStatus.REFUNDED;
+        changeStatus(OrderStatus.REFUNDED);
+    }
+
+    private void changeStatus(OrderStatus newStatus) {
+        validateTransition(newStatus);
+        OrderStatus oldStatus = this.status;
+        this.status = newStatus;
+        if (this.getId() != null) {
+            registerEvent(new OrderStatusChangedEvent(this.getId(), this.getTenantId(), oldStatus, newStatus));
+        }
     }
 
     private void validateTransition(OrderStatus targetStatus) {
