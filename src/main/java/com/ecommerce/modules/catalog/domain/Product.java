@@ -1,7 +1,8 @@
 package com.ecommerce.modules.catalog.domain;
 
+import com.ecommerce.modules.catalog.domain.events.ProductCreatedEvent;
 import com.ecommerce.modules.shared.domain.Money;
-import com.ecommerce.modules.shared.domain.TenantAwareEntity;
+import com.ecommerce.modules.shared.domain.TenantAwareAggregateRoot;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -17,7 +18,7 @@ import java.util.UUID;
 @Getter
 @Setter
 @NoArgsConstructor
-public class Product extends TenantAwareEntity {
+public class Product extends TenantAwareAggregateRoot {
 
     @Column(name = "name", nullable = false)
     private String name;
@@ -111,5 +112,16 @@ public class Product extends TenantAwareEntity {
         if (this.inventoryTrackEnabled) {
             this.inventory += quantity;
         }
+    }
+
+    public void markAsCreated() {
+        registerEvent(new ProductCreatedEvent(
+                this.getId(),
+                this.getTenantId(),
+                this.getName(),
+                this.getSlug(),
+                this.getDescription(),
+                this.getStatus().name()
+        ));
     }
 }

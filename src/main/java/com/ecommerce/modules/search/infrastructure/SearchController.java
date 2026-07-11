@@ -8,6 +8,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import com.ecommerce.modules.search.application.SearchService;
+import com.ecommerce.modules.search.domain.ProductDocument;
 import java.util.List;
 import java.util.Map;
 
@@ -17,6 +19,8 @@ import java.util.Map;
 @Slf4j
 @Tag(name = "Search", description = "Full-text product search")
 public class SearchController {
+
+    private final SearchService searchService;
 
     @GetMapping
     @Operation(summary = "Search products")
@@ -32,12 +36,14 @@ public class SearchController {
 
         log.info("Search: q={}, tenant={}, category={}, priceRange=[{}-{}], rating={}", q, TenantContext.getTenantId(), category, minPrice, maxPrice, minRating);
 
+        List<ProductDocument> results = searchService.search(TenantContext.getTenantId(), q);
+
         return ResponseEntity.ok(Map.of(
-                "content", List.of(),
+                "content", results,
                 "page", page,
                 "size", size,
-                "totalElements", 0,
-                "totalPages", 0,
+                "totalElements", results.size(),
+                "totalPages", 1,
                 "query", q != null ? q : "",
                 "filters", Map.of(
                         "category", category != null ? category : "",

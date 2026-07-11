@@ -6,6 +6,8 @@ import com.ecommerce.modules.shared.domain.BusinessRuleViolationException;
 import com.ecommerce.modules.shared.domain.EntityNotFoundException;
 import com.ecommerce.modules.shared.domain.Money;
 import com.ecommerce.modules.shared.infrastructure.TenantContext;
+import com.ecommerce.modules.shared.domain.DomainEventPublisher;
+import com.ecommerce.modules.catalog.domain.events.ProductCreatedEvent;
 import com.ecommerce.modules.tenant.domain.TenantRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -21,6 +23,7 @@ import java.util.UUID;
 public class CreateProductUseCase {
 
     private final ProductRepository productRepository;
+    private final DomainEventPublisher eventPublisher;
 
     @Transactional
     public ProductResponse execute(CreateProductRequest request, UUID tenantId) {
@@ -53,6 +56,11 @@ public class CreateProductUseCase {
         }
 
         product = productRepository.save(product);
+
+        product.markAsCreated();
+        eventPublisher.publish(product.getDomainEvents());
+        product.clearDomainEvents();
+
         return mapToResponse(product);
     }
 
