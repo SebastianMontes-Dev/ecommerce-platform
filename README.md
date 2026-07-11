@@ -13,6 +13,19 @@ Backend REST API construido con Spring Boot, Clean Architecture y principios DDD
 
 ---
 
+## 🌟 Enterprise Engineering Highlights
+
+Este proyecto no es un simple CRUD. Fue diseñado para demostrar habilidades de ingeniería de software a gran escala:
+
+- **Arquitectura Basada en Eventos (Event-Driven)**: Desacoplamiento entre módulos usando *Domain Events* nativos y RabbitMQ.
+- **CQRS con Elasticsearch**: Los productos se escriben en PostgreSQL (Command) y se sincronizan vía eventos a Elasticsearch (Query) para búsquedas full-text de ultra-bajo lag.
+- **Resiliencia & Rate Limiting**: Protección contra ataques de fuerza bruta (DDoS/scraping) implementando Rate Limiting con Redis y Webhooks Idempotentes en Stripe.
+- **Caché de Alto Rendimiento**: Catálogo público servido directamente desde la memoria RAM (Redis `@Cacheable`), reduciendo la latencia a ~2ms.
+- **DevOps & CI/CD Real**: Pipeline automatizado en *GitHub Actions* corriendo tests de integración contra contenedores efímeros de Docker (usando **Testcontainers**).
+- **Observabilidad (SRE)**: Endpoints de Actuator exportando métricas de JVM, base de datos y peticiones HTTP en formato Prometheus.
+
+---
+
 ## Arquitectura
 
 ```
