@@ -20,15 +20,15 @@ public class SearchEventConsumer {
     @Async
     @EventListener
     public void onProductCreated(ProductCreatedEvent event) {
-        log.info("Received ProductCreatedEvent for product: {}", event.getProductId());
+        log.info("Received ProductCreatedEvent for product: {}", event.getIdProducto());
         
         ProductDocument doc = new ProductDocument();
-        doc.setId(event.getProductId().toString());
-        doc.setTenantId(event.getTenantId());
-        doc.setName(event.getName());
+        doc.setId(event.getIdProducto().toString());
+        doc.setIdTienda(event.getIdTienda());
+        doc.setNombre(event.getNombre());
         doc.setSlug(event.getSlug());
-        doc.setDescription(event.getDescription());
-        doc.setPrice(BigDecimal.ZERO); // Normally comes from event or API
+        doc.setDescripcion(event.getDescripcion());
+        doc.setPrecio(BigDecimal.ZERO); // Normally comes from event or API
         
         searchService.indexProduct(doc);
     }

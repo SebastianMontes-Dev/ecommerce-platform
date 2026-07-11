@@ -9,5 +9,5 @@ import java.util.UUID;
 @Repository
 public interface ProductVariantRepository extends BaseJpaRepository<ProductVariant> {
 
-    List<ProductVariant> findAllByProductId(UUID productId);
+    List<ProductVariant> findAllByProductId(UUID idProducto);
 }

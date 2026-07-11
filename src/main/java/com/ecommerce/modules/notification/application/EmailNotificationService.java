@@ -21,45 +21,45 @@ public class EmailNotificationService {
     private final OrderRepository orderRepository;
 
     @Transactional(readOnly = true)
-    public void sendOrderConfirmation(UUID orderId, UUID tenantId) {
-        sendOrderEmail(orderId, "Pedido Confirmado",
+    public void sendOrderConfirmation(UUID idOrden, UUID idTienda) {
+        sendOrderEmail(idOrden, "Pedido Confirmado",
                 "Tu pedido %s ha sido confirmado y está siendo procesado.");
     }
 
     @Transactional(readOnly = true)
-    public void sendPaymentReceived(UUID orderId, UUID tenantId) {
-        sendOrderEmail(orderId, "Pago Recibido",
+    public void sendPaymentReceived(UUID idOrden, UUID idTienda) {
+        sendOrderEmail(idOrden, "Pago Recibido",
                 "Hemos recibido el pago de tu pedido %s. ¡Gracias por tu compra!");
     }
 
     @Transactional(readOnly = true)
-    public void sendOrderShipped(UUID orderId, UUID tenantId) {
-        sendOrderEmail(orderId, "Pedido Enviado",
+    public void sendOrderShipped(UUID idOrden, UUID idTienda) {
+        sendOrderEmail(idOrden, "Pedido Enviado",
                 "Tu pedido %s ha sido enviado. Pronto lo recibirás.");
     }
 
     @Transactional(readOnly = true)
-    public void sendOrderDelivered(UUID orderId, UUID tenantId) {
-        sendOrderEmail(orderId, "Pedido Entregado",
+    public void sendOrderDelivered(UUID idOrden, UUID idTienda) {
+        sendOrderEmail(idOrden, "Pedido Entregado",
                 "Tu pedido %s ha sido entregado. ¡Esperamos que disfrutes tu compra!");
     }
 
     @Transactional(readOnly = true)
-    public void sendOrderCancelled(UUID orderId, UUID tenantId) {
-        sendOrderEmail(orderId, "Pedido Cancelado",
+    public void sendOrderCancelled(UUID idOrden, UUID idTienda) {
+        sendOrderEmail(idOrden, "Pedido Cancelado",
                 "Tu pedido %s ha sido cancelado. Si tienes preguntas, contáctanos.");
     }
 
     @Transactional(readOnly = true)
-    public void sendOrderRefunded(UUID orderId, UUID tenantId) {
-        sendOrderEmail(orderId, "Reembolso Procesado",
+    public void sendOrderRefunded(UUID idOrden, UUID idTienda) {
+        sendOrderEmail(idOrden, "Reembolso Procesado",
                 "El reembolso de tu pedido %s ha sido procesado. El monto será devuelto en los próximos días.");
     }
 
-    private void sendOrderEmail(UUID orderId, String subject, String bodyTemplate) {
+    private void sendOrderEmail(UUID idOrden, String subject, String bodyTemplate) {
         try {
-            Order order = orderRepository.findById(orderId)
-                    .orElseThrow(() -> new EntityNotFoundException("Order", orderId));
+            Order order = orderRepository.findById(idOrden)
+                    .orElseThrow(() -> new EntityNotFoundException("Order", idOrden));
 
             SimpleMailMessage message = new SimpleMailMessage();
             message.setTo(order.getCustomerEmail());
@@ -70,7 +70,7 @@ public class EmailNotificationService {
             mailSender.send(message);
             log.info("Email sent to {} for order {}: {}", order.getCustomerEmail(), order.getOrderNumber(), subject);
         } catch (Exception e) {
-            log.error("Failed to send email for order {}: {}", orderId, e.getMessage(), e);
+            log.error("Failed to send correo for order {}: {}", idOrden, e.getMessage(), e);
         }
     }
 }

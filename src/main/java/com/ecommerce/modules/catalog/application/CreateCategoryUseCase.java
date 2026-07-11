@@ -17,13 +17,13 @@ public class CreateCategoryUseCase {
     private final CategoryRepository categoryRepository;
 
     @Transactional
-    public CategoryResponse execute(CreateCategoryRequest request, UUID tenantId) {
+    public CategoryResponse execute(CreateCategoryRequest request, UUID idTienda) {
         Category category = new Category();
-        category.setTenantId(tenantId);
-        category.setName(request.getName());
+        category.setIdTienda(idTienda);
+        category.setNombre(request.getNombre());
         category.setSlug(request.getSlug());
-        category.setDescription(request.getDescription());
-        category.setImageUrl(request.getImageUrl());
+        category.setDescripcion(request.getDescripcion());
+        category.setUrlImagen(request.getUrlImagen());
 
         if (request.getParentId() != null) {
             category.setParentId(request.getParentId());
@@ -34,8 +34,8 @@ public class CreateCategoryUseCase {
     }
 
     @Transactional(readOnly = true)
-    public List<CategoryResponse> getCategories(UUID tenantId) {
-        return categoryRepository.findRootCategoriesWithChildren(tenantId).stream()
+    public List<CategoryResponse> getCategories(UUID idTienda) {
+        return categoryRepository.findRootCategoriesWithChildren(idTienda).stream()
                 .map(CreateCategoryUseCase::mapToResponse)
                 .toList();
     }
@@ -43,10 +43,10 @@ public class CreateCategoryUseCase {
     static CategoryResponse mapToResponse(Category category) {
         return CategoryResponse.builder()
                 .id(category.getId())
-                .name(category.getName())
+                .nombre(category.getNombre())
                 .slug(category.getSlug())
-                .description(category.getDescription())
-                .imageUrl(category.getImageUrl())
+                .descripcion(category.getDescripcion())
+                .urlImagen(category.getUrlImagen())
                 .parentId(category.getParentId())
                 .children(category.getChildren() != null ? category.getChildren().stream()
                         .map(CreateCategoryUseCase::mapToChildResponse).toList() : List.of())
@@ -56,10 +56,10 @@ public class CreateCategoryUseCase {
     static CategoryResponse mapToChildResponse(Category category) {
         return CategoryResponse.builder()
                 .id(category.getId())
-                .name(category.getName())
+                .nombre(category.getNombre())
                 .slug(category.getSlug())
-                .description(category.getDescription())
-                .imageUrl(category.getImageUrl())
+                .descripcion(category.getDescripcion())
+                .urlImagen(category.getUrlImagen())
                 .parentId(category.getParentId())
                 .children(List.of())
                 .build();

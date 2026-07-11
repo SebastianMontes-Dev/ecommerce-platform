@@ -20,7 +20,7 @@ import java.util.UUID;
 public class Payment extends TenantAwareEntity {
 
     @Column(name = "order_id", nullable = false)
-    private UUID orderId;
+    private UUID idOrden;
 
     @Column(name = "amount", precision = 10, scale = 2, nullable = false)
     private BigDecimal amount;
@@ -32,8 +32,8 @@ public class Payment extends TenantAwareEntity {
     private String paymentMethod;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "status", length = 20, nullable = false)
-    private PaymentStatus status = PaymentStatus.PENDING;
+    @Column(name = "estado", length = 20, nullable = false)
+    private PaymentStatus estado = PaymentStatus.PENDING;
 
     @Column(name = "external_id")
     private String externalId;
@@ -43,10 +43,10 @@ public class Payment extends TenantAwareEntity {
     private Map<String, Object> metadata;
 
     public void complete() {
-        this.status = PaymentStatus.COMPLETED;
+        this.estado = PaymentStatus.COMPLETED;
     }
 
     public void fail() {
-        this.status = PaymentStatus.FAILED;
+        this.estado = PaymentStatus.FAILED;
     }
 }

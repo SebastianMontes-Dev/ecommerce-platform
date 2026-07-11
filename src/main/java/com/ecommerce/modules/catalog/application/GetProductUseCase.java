@@ -19,18 +19,18 @@ public class GetProductUseCase {
     private final ProductRepository productRepository;
 
     @Transactional(readOnly = true)
-    public ProductResponse bySlug(String slug, UUID tenantId) {
-        Product product = productRepository.findByTenantIdAndSlugWithImages(tenantId, slug)
+    public ProductResponse bySlug(String slug, UUID idTienda) {
+        Product product = productRepository.findByTenantIdAndSlugWithImages(idTienda, slug)
                 .orElseThrow(() -> new EntityNotFoundException("Product", slug));
         return CreateProductUseCase.mapToResponse(product);
     }
 
     @Transactional(readOnly = true)
-    public ProductResponse byId(UUID id, UUID tenantId) {
+    public ProductResponse byId(UUID id, UUID idTienda) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Product", id));
 
-        if (!product.getTenantId().equals(tenantId)) {
+        if (!product.getIdTienda().equals(idTienda)) {
             throw new EntityNotFoundException("Product", id);
         }
 
@@ -38,8 +38,8 @@ public class GetProductUseCase {
     }
 
     @Transactional(readOnly = true)
-    public PagedResponse<ProductResponse> listProducts(UUID tenantId, Pageable pageable) {
-        Page<Product> page = productRepository.findAllByTenantId(tenantId, pageable);
+    public PagedResponse<ProductResponse> listProducts(UUID idTienda, Pageable pageable) {
+        Page<Product> page = productRepository.findAllByTenantId(idTienda, pageable);
         return PagedResponse.from(page.map(CreateProductUseCase::mapToResponse));
     }
 }

@@ -24,19 +24,19 @@ public class OrderController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
         return ResponseEntity.ok(orderUseCase.listOrdersByTenant(
-                TenantContext.getTenantId(),
+                TenantContext.getIdTienda(),
                 org.springframework.data.domain.PageRequest.of(page, size)));
     }
 
     @GetMapping("/{id}")
     @Operation(summary = "Get order by ID")
     public ResponseEntity<OrderResponse> getOrder(@PathVariable UUID id) {
-        return ResponseEntity.ok(orderUseCase.getOrder(id, TenantContext.getTenantId()));
+        return ResponseEntity.ok(orderUseCase.getOrder(id, TenantContext.getIdTienda()));
     }
 
     @PostMapping("/{id}/cancel")
     @Operation(summary = "Cancel an order")
     public ResponseEntity<OrderResponse> cancelOrder(@PathVariable UUID id, @RequestParam(defaultValue = "") String reason) {
-        return ResponseEntity.ok(orderUseCase.cancelOrder(id, TenantContext.getTenantId(), reason));
+        return ResponseEntity.ok(orderUseCase.cancelOrder(id, TenantContext.getIdTienda(), reason));
     }
 }

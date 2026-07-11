@@ -19,8 +19,8 @@ public class Subscription extends TenantAwareEntity {
     @Column(name = "plan_id", nullable = false)
     private UUID planId;
 
-    @Column(name = "status", nullable = false)
-    private String status = "ACTIVE";
+    @Column(name = "estado", nullable = false)
+    private String estado = "ACTIVE";
 
     @Column(name = "start_date", nullable = false)
     private LocalDateTime startDate;
@@ -33,12 +33,12 @@ public class Subscription extends TenantAwareEntity {
     private SubscriptionPlan plan;
 
     public boolean isActive() {
-        return "ACTIVE".equals(status) &&
+        return "ACTIVE".equals(estado) &&
                 (endDate == null || endDate.isAfter(LocalDateTime.now()));
     }
 
     public void cancel() {
-        this.status = "CANCELLED";
+        this.estado = "CANCELLED";
         this.endDate = LocalDateTime.now();
     }
 }

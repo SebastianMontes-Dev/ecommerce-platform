@@ -16,10 +16,10 @@ import java.util.UUID;
 public class OrderStatusHistory extends BaseEntity {
 
     @Column(name = "tenant_id", nullable = false)
-    private UUID tenantId;
+    private UUID idTienda;
 
     @Column(name = "order_id", nullable = false)
-    private UUID orderId;
+    private UUID idOrden;
 
     @Column(name = "previous_status")
     private String previousStatus;

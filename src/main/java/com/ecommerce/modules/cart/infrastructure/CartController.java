@@ -32,9 +32,9 @@ public class CartController {
 
         Cart cart;
         if (userDetails != null) {
-            cart = cartService.getOrCreateCart(userDetails.getUserId(), TenantContext.getTenantId());
+            cart = cartService.getOrCreateCart(userDetails.getUserId(), TenantContext.getIdTienda());
         } else {
-            cart = cartService.getOrCreateGuestCart(session.getId(), TenantContext.getTenantId());
+            cart = cartService.getOrCreateGuestCart(session.getId(), TenantContext.getIdTienda());
         }
         return ResponseEntity.ok(cart);
     }
@@ -46,37 +46,37 @@ public class CartController {
             @AuthenticationPrincipal CustomUserDetails userDetails,
             HttpSession session) {
 
-        item.setTenantId(TenantContext.getTenantId());
+        item.setIdTienda(TenantContext.getIdTienda());
 
         Cart cart;
         if (userDetails != null) {
-            cart = cartService.addItem(userDetails.getUserId(), TenantContext.getTenantId(), item);
+            cart = cartService.addItem(userDetails.getUserId(), TenantContext.getIdTienda(), item);
         } else {
-            cart = cartService.addItemToGuestCart(session.getId(), TenantContext.getTenantId(), item);
+            cart = cartService.addItemToGuestCart(session.getId(), TenantContext.getIdTienda(), item);
         }
         return ResponseEntity.ok(cart);
     }
 
-    @PutMapping("/items/{productId}")
-    @Operation(summary = "Update item quantity")
+    @PutMapping("/items/{idProducto}")
+    @Operation(summary = "Update item cantidad")
     public ResponseEntity<Cart> updateQuantity(
-            @PathVariable UUID productId,
-            @RequestParam(defaultValue = "0") int quantity,
+            @PathVariable UUID idProducto,
+            @RequestParam(defaultValue = "0") int cantidad,
             @RequestParam(required = false) UUID variantId,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
 
-        Cart cart = cartService.updateQuantity(userDetails.getUserId(), productId, variantId, quantity);
+        Cart cart = cartService.updateQuantity(userDetails.getUserId(), idProducto, variantId, cantidad);
         return ResponseEntity.ok(cart);
     }
 
-    @DeleteMapping("/items/{productId}")
+    @DeleteMapping("/items/{idProducto}")
     @Operation(summary = "Remove item from cart")
     public ResponseEntity<Cart> removeItem(
-            @PathVariable UUID productId,
+            @PathVariable UUID idProducto,
             @RequestParam(required = false) UUID variantId,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
 
-        Cart cart = cartService.removeItem(userDetails.getUserId(), productId, variantId);
+        Cart cart = cartService.removeItem(userDetails.getUserId(), idProducto, variantId);
         return ResponseEntity.ok(cart);
     }
 

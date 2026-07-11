@@ -16,7 +16,7 @@ import java.math.BigDecimal;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/v1/products/{productId}")
+@RequestMapping("/api/v1/products/{idProducto}")
 @RequiredArgsConstructor
 @Tag(name = "Reviews", description = "Product reviews and ratings")
 public class ReviewController {
@@ -26,18 +26,18 @@ public class ReviewController {
     @GetMapping("/reviews")
     @Operation(summary = "List product reviews")
     public ResponseEntity<?> listReviews(
-            @PathVariable UUID productId,
+            @PathVariable UUID idProducto,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        return ResponseEntity.ok(reviewRepository.findAllByProductIdAndActiveTrue(productId, PageRequest.of(page, size)));
+        return ResponseEntity.ok(reviewRepository.findAllByProductIdAndActiveTrue(idProducto, PageRequest.of(page, size)));
     }
 
     @PostMapping("/reviews")
     @Operation(summary = "Create a review")
-    public ResponseEntity<Review> createReview(@PathVariable UUID productId, @RequestBody CreateReviewRequest request) {
+    public ResponseEntity<Review> createReview(@PathVariable UUID idProducto, @RequestBody CreateReviewRequest request) {
         Review review = new Review();
-        review.setTenantId(TenantContext.getTenantId());
-        review.setProductId(productId);
+        review.setIdTienda(TenantContext.getIdTienda());
+        review.setIdProducto(idProducto);
         review.setRating(Rating.of(request.getRating()));
         review.setTitle(request.getTitle());
         review.setComment(request.getComment());

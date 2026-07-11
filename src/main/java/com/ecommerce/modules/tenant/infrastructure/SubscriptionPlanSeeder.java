@@ -27,9 +27,9 @@ public class SubscriptionPlanSeeder implements CommandLineRunner {
         }
 
         SubscriptionPlan free = new SubscriptionPlan();
-        free.setName("Free");
+        free.setNombre("Free");
         free.setPlanType(SubscriptionPlanType.FREE);
-        free.setPrice(BigDecimal.ZERO);
+        free.setPrecio(BigDecimal.ZERO);
         free.setMaxProducts(10);
         free.setCommissionRate(new BigDecimal("5.00"));
         free.setFeatures(Map.of(
@@ -43,9 +43,9 @@ public class SubscriptionPlanSeeder implements CommandLineRunner {
         planRepository.save(free);
 
         SubscriptionPlan pro = new SubscriptionPlan();
-        pro.setName("Professional");
+        pro.setNombre("Professional");
         pro.setPlanType(SubscriptionPlanType.PRO);
-        pro.setPrice(new BigDecimal("29.99"));
+        pro.setPrecio(new BigDecimal("29.99"));
         pro.setMaxProducts(1000);
         pro.setCommissionRate(new BigDecimal("2.00"));
         pro.setFeatures(Map.of(
@@ -59,9 +59,9 @@ public class SubscriptionPlanSeeder implements CommandLineRunner {
         planRepository.save(pro);
 
         SubscriptionPlan enterprise = new SubscriptionPlan();
-        enterprise.setName("Enterprise");
+        enterprise.setNombre("Enterprise");
         enterprise.setPlanType(SubscriptionPlanType.ENTERPRISE);
-        enterprise.setPrice(new BigDecimal("99.99"));
+        enterprise.setPrecio(new BigDecimal("99.99"));
         enterprise.setMaxProducts(100000);
         enterprise.setCommissionRate(new BigDecimal("0.50"));
         enterprise.setFeatures(Map.of(

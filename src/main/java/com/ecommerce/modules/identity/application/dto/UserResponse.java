@@ -16,12 +16,12 @@ import java.util.UUID;
 public class UserResponse {
 
     private UUID id;
-    private String email;
-    private String firstName;
-    private String lastName;
+    private String correo;
+    private String nombre;
+    private String apellido;
     private String fullName;
     private boolean emailVerified;
     private boolean enabled;
     private Set<String> roles;
-    private LocalDateTime createdAt;
+    private LocalDateTime creadoEn;
 }

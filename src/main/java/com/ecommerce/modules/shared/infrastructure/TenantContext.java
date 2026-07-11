@@ -8,11 +8,11 @@ public final class TenantContext {
 
     private TenantContext() {}
 
-    public static void setTenantId(UUID tenantId) {
-        CURRENT_TENANT.set(tenantId);
+    public static void setIdTienda(UUID idTienda) {
+        CURRENT_TENANT.set(idTienda);
     }
 
-    public static UUID getTenantId() {
+    public static UUID getIdTienda() {
         return CURRENT_TENANT.get();
     }
 

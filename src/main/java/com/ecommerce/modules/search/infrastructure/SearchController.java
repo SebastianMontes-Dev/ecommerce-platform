@@ -34,9 +34,9 @@ public class SearchController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
 
-        log.info("Search: q={}, tenant={}, category={}, priceRange=[{}-{}], rating={}", q, TenantContext.getTenantId(), category, minPrice, maxPrice, minRating);
+        log.info("Search: q={}, tenant={}, category={}, priceRange=[{}-{}], rating={}", q, TenantContext.getIdTienda(), category, minPrice, maxPrice, minRating);
 
-        List<ProductDocument> results = searchService.search(TenantContext.getTenantId(), q);
+        List<ProductDocument> results = searchService.search(TenantContext.getIdTienda(), q);
 
         return ResponseEntity.ok(Map.of(
                 "content", results,
@@ -57,7 +57,7 @@ public class SearchController {
     @PostMapping("/reindex")
     @Operation(summary = "Reindexar todos los productos (Administrador)")
     public ResponseEntity<Map<String, String>> reindex() {
-        log.info("Reindexación iniciada para el tenant: {}", TenantContext.getTenantId());
+        log.info("Reindexación iniciada para el tenant: {}", TenantContext.getIdTienda());
         return ResponseEntity.accepted().body(Map.of("message", "Reindexación programada"));
     }
 }

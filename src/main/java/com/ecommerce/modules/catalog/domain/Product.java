@@ -20,21 +20,21 @@ import java.util.UUID;
 @NoArgsConstructor
 public class Product extends TenantAwareAggregateRoot {
 
-    @Column(name = "name", nullable = false)
-    private String name;
+    @Column(name = "nombre", nullable = false)
+    private String nombre;
 
     @Column(name = "slug", nullable = false)
     private String slug;
 
-    @Column(name = "description", columnDefinition = "TEXT")
-    private String description;
+    @Column(name = "descripcion", columnDefinition = "TEXT")
+    private String descripcion;
 
     @Embedded
     @AttributeOverrides({
             @AttributeOverride(name = "amount", column = @Column(name = "amount", precision = 10, scale = 2)),
             @AttributeOverride(name = "currency", column = @Column(name = "currency", length = 3))
     })
-    private Money price;
+    private Money precio;
 
     @Embedded
     @AttributeOverrides({
@@ -56,8 +56,8 @@ public class Product extends TenantAwareAggregateRoot {
     @Column(name = "barcode")
     private String barcode;
 
-    @Column(name = "inventory")
-    private int inventory = 0;
+    @Column(name = "inventario")
+    private int inventario = 0;
 
     @Column(name = "inventory_track_enabled")
     private boolean inventoryTrackEnabled = true;
@@ -66,11 +66,11 @@ public class Product extends TenantAwareAggregateRoot {
     private boolean allowBackorder = false;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false)
-    private ProductStatus status = ProductStatus.DRAFT;
+    @Column(name = "estado", nullable = false)
+    private ProductStatus estado = ProductStatus.DRAFT;
 
     @Column(name = "category_id")
-    private UUID categoryId;
+    private UUID idCategoria;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id", insertable = false, updatable = false)
@@ -84,44 +84,44 @@ public class Product extends TenantAwareAggregateRoot {
     private List<ProductImage> images = new ArrayList<>();
 
     public void publish() {
-        if (this.status == ProductStatus.ARCHIVED) {
+        if (this.estado == ProductStatus.ARCHIVED) {
             throw new IllegalStateException("No se puede publicar un producto archivado");
         }
-        this.status = ProductStatus.ACTIVE;
+        this.estado = ProductStatus.ACTIVE;
     }
 
     public void archive() {
-        this.status = ProductStatus.ARCHIVED;
+        this.estado = ProductStatus.ARCHIVED;
     }
 
     public boolean isAvailable() {
-        return this.status == ProductStatus.ACTIVE &&
-                (!this.inventoryTrackEnabled || this.inventory > 0 || this.allowBackorder);
+        return this.estado == ProductStatus.ACTIVE &&
+                (!this.inventoryTrackEnabled || this.inventario > 0 || this.allowBackorder);
     }
 
-    public void decreaseInventory(int quantity) {
+    public void decreaseInventory(int cantidad) {
         if (this.inventoryTrackEnabled) {
-            if (this.inventory < quantity && !this.allowBackorder) {
-                throw new IllegalStateException("Inventario insuficiente para el producto: " + this.name);
+            if (this.inventario < cantidad && !this.allowBackorder) {
+                throw new IllegalStateException("Inventario insuficiente para el producto: " + this.nombre);
             }
-            this.inventory -= quantity;
+            this.inventario -= cantidad;
         }
     }
 
-    public void increaseInventory(int quantity) {
+    public void increaseInventory(int cantidad) {
         if (this.inventoryTrackEnabled) {
-            this.inventory += quantity;
+            this.inventario += cantidad;
         }
     }
 
     public void markAsCreated() {
         registerEvent(new ProductCreatedEvent(
                 this.getId(),
-                this.getTenantId(),
-                this.getName(),
+                this.getIdTienda(),
+                this.getNombre(),
                 this.getSlug(),
-                this.getDescription(),
-                this.getStatus().name()
+                this.getDescripcion(),
+                this.getEstado().name()
         ));
     }
 }

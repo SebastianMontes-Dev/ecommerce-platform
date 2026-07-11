@@ -46,7 +46,7 @@ public class RateLimitInterceptor implements HandlerInterceptor {
                     {
                         "type": "https://api.ecommerce.com/errors/rate-limit",
                         "title": "Too Many Requests",
-                        "status": 429,
+                        "estado": 429,
                         "detail": "Has excedido el límite de peticiones. Intenta de nuevo en un momento."
                     }
                     """);

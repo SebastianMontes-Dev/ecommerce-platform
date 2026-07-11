@@ -18,16 +18,16 @@ import java.math.BigDecimal;
 public class CreateProductRequest {
 
     @NotBlank
-    private String name;
+    private String nombre;
 
     @NotBlank
     private String slug;
 
-    private String description;
+    private String descripcion;
 
     @NotNull
     @Positive
-    private BigDecimal price;
+    private BigDecimal precio;
 
     @Default
     private String currency = "USD";
@@ -42,10 +42,10 @@ public class CreateProductRequest {
 
     @Positive
     @Default
-    private int inventory = 0;
+    private int inventario = 0;
 
     @Default
     private boolean inventoryTrackEnabled = true;
 
-    private java.util.UUID categoryId;
+    private java.util.UUID idCategoria;
 }

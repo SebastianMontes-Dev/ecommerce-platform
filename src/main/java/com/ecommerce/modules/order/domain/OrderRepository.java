@@ -13,7 +13,7 @@ public interface OrderRepository extends BaseJpaRepository<Order> {
 
     Optional<Order> findByOrderNumber(String orderNumber);
 
-    Page<Order> findAllByTenantId(UUID tenantId, Pageable pageable);
+    Page<Order> findAllByTenantId(UUID idTienda, Pageable pageable);
 
     Page<Order> findAllByCustomerId(UUID customerId, Pageable pageable);
 }

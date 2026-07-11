@@ -41,7 +41,7 @@ CREATE TABLE orders (
     shipping_currency VARCHAR(3) NOT NULL DEFAULT 'USD',
     total_amount DECIMAL(10,2) NOT NULL,
     total_currency VARCHAR(3) NOT NULL DEFAULT 'USD',
-    status VARCHAR(20) NOT NULL DEFAULT 'PENDING',
+    estado VARCHAR(20) NOT NULL DEFAULT 'PENDING',
     notes TEXT,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
@@ -58,7 +58,7 @@ CREATE TABLE order_items (
     product_name VARCHAR(255) NOT NULL,
     variant_id UUID,
     variant_name VARCHAR(255),
-    quantity INTEGER NOT NULL,
+    cantidad INTEGER NOT NULL,
     unit_price_amount DECIMAL(10,2) NOT NULL,
     unit_price_currency VARCHAR(3) NOT NULL DEFAULT 'USD',
     subtotal_amount DECIMAL(10,2) NOT NULL,
@@ -85,7 +85,7 @@ CREATE TABLE order_status_history (
 CREATE INDEX idx_addresses_user ON addresses(user_id);
 CREATE INDEX idx_orders_tenant ON orders(tenant_id);
 CREATE INDEX idx_orders_customer ON orders(customer_id);
-CREATE INDEX idx_orders_status ON orders(tenant_id, status);
+CREATE INDEX idx_orders_status ON orders(tenant_id, estado);
 CREATE INDEX idx_orders_number ON orders(order_number);
 CREATE INDEX idx_order_items_order ON order_items(order_id);
 CREATE INDEX idx_order_history_order ON order_status_history(order_id);

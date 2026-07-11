@@ -14,17 +14,17 @@ import java.util.UUID;
 @AllArgsConstructor
 public class CartItem {
 
-    private UUID productId;
+    private UUID idProducto;
     private String productName;
     private UUID variantId;
     private String variantName;
-    private int quantity;
+    private int cantidad;
     private BigDecimal unitPrice;
     private String currency;
-    private String imageUrl;
-    private UUID tenantId;
+    private String urlImagen;
+    private UUID idTienda;
 
     public BigDecimal getSubtotal() {
-        return unitPrice.multiply(BigDecimal.valueOf(quantity));
+        return unitPrice.multiply(BigDecimal.valueOf(cantidad));
     }
 }

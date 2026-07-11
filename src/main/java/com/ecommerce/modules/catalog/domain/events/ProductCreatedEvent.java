@@ -11,22 +11,22 @@ public class ProductCreatedEvent implements DomainEvent {
 
     private final UUID eventId;
     private final Instant occurredAt;
-    private final UUID productId;
-    private final UUID tenantId;
-    private final String name;
+    private final UUID idProducto;
+    private final UUID idTienda;
+    private final String nombre;
     private final String slug;
-    private final String description;
-    private final String status;
+    private final String descripcion;
+    private final String estado;
 
-    public ProductCreatedEvent(UUID productId, UUID tenantId, String name, String slug, String description, String status) {
+    public ProductCreatedEvent(UUID idProducto, UUID idTienda, String nombre, String slug, String descripcion, String estado) {
         this.eventId = UUID.randomUUID();
         this.occurredAt = Instant.now();
-        this.productId = productId;
-        this.tenantId = tenantId;
-        this.name = name;
+        this.idProducto = idProducto;
+        this.idTienda = idTienda;
+        this.nombre = nombre;
         this.slug = slug;
-        this.description = description;
-        this.status = status;
+        this.descripcion = descripcion;
+        this.estado = estado;
     }
 
     @Override

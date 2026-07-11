@@ -6,47 +6,47 @@ import java.util.UUID;
 public class ProductDocument {
 
     private String id;
-    private UUID tenantId;
-    private String name;
-    private String description;
+    private UUID idTienda;
+    private String nombre;
+    private String descripcion;
     private String slug;
-    private BigDecimal price;
+    private BigDecimal precio;
     private String categoryName;
-    private String imageUrl;
-    private double averageRating;
-    private long reviewCount;
+    private String urlImagen;
+    private double calificacionPromedio;
+    private long conteoResenas;
 
     public ProductDocument() {}
 
-    public ProductDocument(UUID productId, UUID tenantId, String name, String description,
-                           String slug, BigDecimal price, String categoryName) {
-        this.id = productId.toString();
-        this.tenantId = tenantId;
-        this.name = name;
-        this.description = description;
+    public ProductDocument(UUID idProducto, UUID idTienda, String nombre, String descripcion,
+                           String slug, BigDecimal precio, String categoryName) {
+        this.id = idProducto.toString();
+        this.idTienda = idTienda;
+        this.nombre = nombre;
+        this.descripcion = descripcion;
         this.slug = slug;
-        this.price = price;
+        this.precio = precio;
         this.categoryName = categoryName;
     }
 
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
-    public UUID getTenantId() { return tenantId; }
-    public void setTenantId(UUID tenantId) { this.tenantId = tenantId; }
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
-    public String getDescription() { return description; }
-    public void setDescription(String description) { this.description = description; }
+    public UUID getIdTienda() { return idTienda; }
+    public void setIdTienda(UUID idTienda) { this.idTienda = idTienda; }
+    public String getNombre() { return nombre; }
+    public void setNombre(String nombre) { this.nombre = nombre; }
+    public String getDescripcion() { return descripcion; }
+    public void setDescripcion(String descripcion) { this.descripcion = descripcion; }
     public String getSlug() { return slug; }
     public void setSlug(String slug) { this.slug = slug; }
-    public BigDecimal getPrice() { return price; }
-    public void setPrice(BigDecimal price) { this.price = price; }
+    public BigDecimal getPrecio() { return precio; }
+    public void setPrecio(BigDecimal precio) { this.precio = precio; }
     public String getCategoryName() { return categoryName; }
     public void setCategoryName(String categoryName) { this.categoryName = categoryName; }
-    public String getImageUrl() { return imageUrl; }
-    public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
-    public double getAverageRating() { return averageRating; }
-    public void setAverageRating(double averageRating) { this.averageRating = averageRating; }
-    public long getReviewCount() { return reviewCount; }
-    public void setReviewCount(long reviewCount) { this.reviewCount = reviewCount; }
+    public String getUrlImagen() { return urlImagen; }
+    public void setUrlImagen(String urlImagen) { this.urlImagen = urlImagen; }
+    public double getCalificacionPromedio() { return calificacionPromedio; }
+    public void setCalificacionPromedio(double calificacionPromedio) { this.calificacionPromedio = calificacionPromedio; }
+    public long getConteoResenas() { return conteoResenas; }
+    public void setConteoResenas(long conteoResenas) { this.conteoResenas = conteoResenas; }
 }

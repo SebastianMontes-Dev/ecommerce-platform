@@ -17,17 +17,17 @@ import java.util.UUID;
 @NoArgsConstructor
 public class Category extends TenantAwareEntity {
 
-    @Column(name = "name", nullable = false)
-    private String name;
+    @Column(name = "nombre", nullable = false)
+    private String nombre;
 
     @Column(name = "slug", nullable = false)
     private String slug;
 
-    @Column(name = "description", columnDefinition = "TEXT")
-    private String description;
+    @Column(name = "descripcion", columnDefinition = "TEXT")
+    private String descripcion;
 
     @Column(name = "image_url")
-    private String imageUrl;
+    private String urlImagen;
 
     @Column(name = "parent_id")
     private UUID parentId;
@@ -40,7 +40,7 @@ public class Category extends TenantAwareEntity {
     private Category parent;
 
     @OneToMany(mappedBy = "parent", fetch = FetchType.LAZY)
-    @OrderBy("name ASC")
+    @OrderBy("nombre ASC")
     private List<Category> children = new ArrayList<>();
 
     public boolean isRoot() {

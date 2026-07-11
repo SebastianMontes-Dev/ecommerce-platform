@@ -22,18 +22,18 @@ public abstract class BaseEntity {
     private UUID id;
 
     @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
+    private LocalDateTime creadoEn;
 
     @Column(name = "updated_at", nullable = false)
-    private LocalDateTime updatedAt;
+    private LocalDateTime actualizadoEn;
 
     @Version
     @Column(name = "version")
     private Long version;
 
     protected BaseEntity() {
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
+        this.creadoEn = LocalDateTime.now();
+        this.actualizadoEn = LocalDateTime.now();
     }
 
     @Override

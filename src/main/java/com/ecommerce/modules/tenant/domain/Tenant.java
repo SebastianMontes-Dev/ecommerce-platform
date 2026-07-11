@@ -17,14 +17,14 @@ import java.util.UUID;
 @NoArgsConstructor
 public class Tenant extends BaseAuditableEntity {
 
-    @Column(name = "name", nullable = false)
-    private String name;
+    @Column(name = "nombre", nullable = false)
+    private String nombre;
 
     @Column(name = "slug", nullable = false, unique = true)
     private String slug;
 
-    @Column(name = "description", columnDefinition = "TEXT")
-    private String description;
+    @Column(name = "descripcion", columnDefinition = "TEXT")
+    private String descripcion;
 
     @Column(name = "logo_url")
     private String logoUrl;
@@ -39,39 +39,39 @@ public class Tenant extends BaseAuditableEntity {
     private String bannerAltText;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false)
-    private TenantStatus status = TenantStatus.TRIAL;
+    @Column(name = "estado", nullable = false)
+    private TenantStatus estado = TenantStatus.TRIAL;
 
     @Column(name = "owner_id", nullable = false)
     private UUID ownerId;
 
-    public Tenant(String name, String slug, UUID ownerId) {
-        this.name = name;
+    public Tenant(String nombre, String slug, UUID ownerId) {
+        this.nombre = nombre;
         this.slug = Slug.of(slug).getValue();
         this.ownerId = ownerId;
-        this.status = TenantStatus.TRIAL;
+        this.estado = TenantStatus.TRIAL;
     }
 
     public void suspend() {
-        if (this.status == TenantStatus.CANCELLED) {
+        if (this.estado == TenantStatus.CANCELLED) {
             throw new IllegalStateException("Cannot suspend a cancelled tenant");
         }
-        this.status = TenantStatus.SUSPENDED;
+        this.estado = TenantStatus.SUSPENDED;
     }
 
     public void activate() {
-        if (this.status == TenantStatus.CANCELLED) {
+        if (this.estado == TenantStatus.CANCELLED) {
             throw new IllegalStateException("Cannot activate a cancelled tenant");
         }
-        this.status = TenantStatus.ACTIVE;
+        this.estado = TenantStatus.ACTIVE;
     }
 
     public void cancel() {
-        this.status = TenantStatus.CANCELLED;
+        this.estado = TenantStatus.CANCELLED;
     }
 
     public boolean isActive() {
-        return this.status == TenantStatus.ACTIVE || this.status == TenantStatus.TRIAL;
+        return this.estado == TenantStatus.ACTIVE || this.estado == TenantStatus.TRIAL;
     }
 
     public boolean isOwnedBy(UUID userId) {
@@ -80,11 +80,11 @@ public class Tenant extends BaseAuditableEntity {
 
     public Image getLogo() {
         if (logoUrl == null) return null;
-        return Image.of(logoUrl, logoAltText != null ? logoAltText : name + " logo");
+        return Image.of(logoUrl, logoAltText != null ? logoAltText : nombre + " logo");
     }
 
     public Image getBanner() {
         if (bannerUrl == null) return null;
-        return Image.of(bannerUrl, bannerAltText != null ? bannerAltText : name + " banner");
+        return Image.of(bannerUrl, bannerAltText != null ? bannerAltText : nombre + " banner");
     }
 }

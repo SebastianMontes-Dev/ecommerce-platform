@@ -31,8 +31,8 @@ public class Notification extends BaseEntity {
     @Column(name = "body", columnDefinition = "TEXT")
     private String body;
 
-    @Column(name = "status", length = 20)
-    private String status = "PENDING";
+    @Column(name = "estado", length = 20)
+    private String estado = "PENDING";
 
     @Column(name = "sent_at")
     private LocalDateTime sentAt;
@@ -41,12 +41,12 @@ public class Notification extends BaseEntity {
     private String errorMessage;
 
     public void markAsSent() {
-        this.status = "SENT";
+        this.estado = "SENT";
         this.sentAt = LocalDateTime.now();
     }
 
     public void markAsFailed(String errorMessage) {
-        this.status = "FAILED";
+        this.estado = "FAILED";
         this.errorMessage = errorMessage;
     }
 }

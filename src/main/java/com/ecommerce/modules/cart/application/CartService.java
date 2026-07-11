@@ -29,54 +29,54 @@ public class CartService {
     private final ObjectMapper objectMapper;
     private final ProductRepository productRepository;
 
-    public Cart getOrCreateCart(UUID userId, UUID tenantId) {
+    public Cart getOrCreateCart(UUID userId, UUID idTienda) {
         String key = CART_KEY_PREFIX + userId;
         Cart cart = loadCart(key);
         if (cart == null) {
             cart = new Cart();
             cart.setId(key);
-            cart.setTenantId(tenantId);
+            cart.setIdTienda(idTienda);
         }
         return cart;
     }
 
-    public Cart getOrCreateGuestCart(String sessionId, UUID tenantId) {
+    public Cart getOrCreateGuestCart(String sessionId, UUID idTienda) {
         String key = SESSION_KEY_PREFIX + sessionId;
         Cart cart = loadCart(key);
         if (cart == null) {
             cart = new Cart();
             cart.setId(key);
-            cart.setTenantId(tenantId);
+            cart.setIdTienda(idTienda);
         }
         return cart;
     }
 
-    public Cart addItem(UUID userId, UUID tenantId, CartItem item) {
-        Cart cart = getOrCreateCart(userId, tenantId);
+    public Cart addItem(UUID userId, UUID idTienda, CartItem item) {
+        Cart cart = getOrCreateCart(userId, idTienda);
         validateCartItem(item);
         cart.addItem(item);
         saveCart(cart);
         return cart;
     }
 
-    public Cart addItemToGuestCart(String sessionId, UUID tenantId, CartItem item) {
-        Cart cart = getOrCreateGuestCart(sessionId, tenantId);
+    public Cart addItemToGuestCart(String sessionId, UUID idTienda, CartItem item) {
+        Cart cart = getOrCreateGuestCart(sessionId, idTienda);
         validateCartItem(item);
         cart.addItem(item);
         saveCart(cart);
         return cart;
     }
 
-    public Cart removeItem(UUID userId, UUID productId, UUID variantId) {
+    public Cart removeItem(UUID userId, UUID idProducto, UUID variantId) {
         Cart cart = getOrCreateCart(userId, null);
-        cart.removeItem(productId, variantId);
+        cart.removeItem(idProducto, variantId);
         saveCart(cart);
         return cart;
     }
 
-    public Cart updateQuantity(UUID userId, UUID productId, UUID variantId, int quantity) {
+    public Cart updateQuantity(UUID userId, UUID idProducto, UUID variantId, int cantidad) {
         Cart cart = getOrCreateCart(userId, null);
-        cart.updateQuantity(productId, variantId, quantity);
+        cart.updateQuantity(idProducto, variantId, cantidad);
         saveCart(cart);
         return cart;
     }
@@ -86,21 +86,21 @@ public class CartService {
         redisTemplate.delete(key);
     }
 
-    public void mergeGuestCartIntoUserCart(String sessionId, UUID userId, UUID tenantId) {
+    public void mergeGuestCartIntoUserCart(String sessionId, UUID userId, UUID idTienda) {
         Cart guestCart = loadCart(SESSION_KEY_PREFIX + sessionId);
         if (guestCart == null || guestCart.isEmpty()) return;
 
-        Cart userCart = getOrCreateCart(userId, tenantId);
+        Cart userCart = getOrCreateCart(userId, idTienda);
         guestCart.getItems().forEach(userCart::addItem);
         saveCart(userCart);
         redisTemplate.delete(SESSION_KEY_PREFIX + sessionId);
     }
 
     private void validateCartItem(CartItem item) {
-        Product product = productRepository.findById(item.getProductId())
-                .orElseThrow(() -> new EntityNotFoundException("Product", item.getProductId()));
+        Product product = productRepository.findById(item.getIdProducto())
+                .orElseThrow(() -> new EntityNotFoundException("Product", item.getIdProducto()));
 
-        if (!product.getTenantId().equals(item.getTenantId())) {
+        if (!product.getIdTienda().equals(item.getIdTienda())) {
             throw new IllegalStateException("Product does not belong to the specified tenant");
         }
     }

@@ -82,8 +82,8 @@ public class Order extends TenantAwareAggregateRoot {
     private Money total;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false)
-    private OrderStatus status = OrderStatus.PENDING;
+    @Column(name = "estado", nullable = false)
+    private OrderStatus estado = OrderStatus.PENDING;
 
     @Column(name = "notes", columnDefinition = "TEXT")
     private String notes;
@@ -92,7 +92,7 @@ public class Order extends TenantAwareAggregateRoot {
     private List<OrderItem> items = new ArrayList<>();
 
     @OneToMany(mappedBy = "order", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    @OrderBy("createdAt ASC")
+    @OrderBy("creadoEn ASC")
     private List<OrderStatusHistory> statusHistory = new ArrayList<>();
 
     public void confirm() {
@@ -125,15 +125,15 @@ public class Order extends TenantAwareAggregateRoot {
 
     private void changeStatus(OrderStatus newStatus) {
         validateTransition(newStatus);
-        OrderStatus oldStatus = this.status;
-        this.status = newStatus;
+        OrderStatus oldStatus = this.estado;
+        this.estado = newStatus;
         if (this.getId() != null) {
-            registerEvent(new OrderStatusChangedEvent(this.getId(), this.getTenantId(), oldStatus, newStatus));
+            registerEvent(new OrderStatusChangedEvent(this.getId(), this.getIdTienda(), oldStatus, newStatus));
         }
     }
 
     private void validateTransition(OrderStatus targetStatus) {
-        boolean isValid = switch (this.status) {
+        boolean isValid = switch (this.estado) {
             case PENDING -> targetStatus == OrderStatus.CONFIRMED || targetStatus == OrderStatus.CANCELLED;
             case CONFIRMED -> targetStatus == OrderStatus.PAID || targetStatus == OrderStatus.CANCELLED;
             case PAID -> targetStatus == OrderStatus.PROCESSING || targetStatus == OrderStatus.SHIPPED || targetStatus == OrderStatus.REFUNDED;
@@ -147,7 +147,7 @@ public class Order extends TenantAwareAggregateRoot {
             throw new InvalidOperationException(
                 String.format("Cannot transition order %s from %s to %s", 
                     this.orderNumber != null ? this.orderNumber : "UNKNOWN", 
-                    this.status, 
+                    this.estado, 
                     targetStatus)
             );
         }

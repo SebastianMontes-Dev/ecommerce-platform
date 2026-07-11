@@ -27,10 +27,10 @@ public class TenantFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
         try {
-            UUID tenantId = extractTenantId(request);
-            if (tenantId != null) {
-                TenantContext.setTenantId(tenantId);
-                log.debug("Tenant context set to: {}", tenantId);
+            UUID idTienda = extractTenantId(request);
+            if (idTienda != null) {
+                TenantContext.setIdTienda(idTienda);
+                log.debug("Tenant context set to: {}", idTienda);
             }
             filterChain.doFilter(request, response);
         } finally {
@@ -41,7 +41,7 @@ public class TenantFilter extends OncePerRequestFilter {
     private UUID extractTenantId(HttpServletRequest request) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth != null && auth.getDetails() instanceof TenantPrincipal tenantPrincipal) {
-            return tenantPrincipal.getTenantId();
+            return tenantPrincipal.getIdTienda();
         }
 
         String header = request.getHeader(TENANT_HEADER);

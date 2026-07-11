@@ -11,14 +11,14 @@ import java.util.UUID;
 @Repository
 public interface CategoryRepository extends BaseJpaRepository<Category> {
 
-    Optional<Category> findByTenantIdAndSlug(UUID tenantId, String slug);
+    Optional<Category> findByTenantIdAndSlug(UUID idTienda, String slug);
 
-    List<Category> findAllByTenantIdAndParentIdIsNull(UUID tenantId);
+    List<Category> findAllByTenantIdAndParentIdIsNull(UUID idTienda);
 
-    List<Category> findAllByTenantIdAndParentId(UUID tenantId, UUID parentId);
+    List<Category> findAllByTenantIdAndParentId(UUID idTienda, UUID parentId);
 
-    List<Category> findAllByTenantIdAndActiveTrue(UUID tenantId);
+    List<Category> findAllByTenantIdAndActiveTrue(UUID idTienda);
 
-    @Query("SELECT c FROM Category c LEFT JOIN FETCH c.children WHERE c.tenantId = :tenantId AND c.parentId IS NULL")
-    List<Category> findRootCategoriesWithChildren(UUID tenantId);
+    @Query("SELECT c FROM Category c LEFT JOIN FETCH c.children WHERE c.idTienda = :idTienda AND c.parentId IS NULL")
+    List<Category> findRootCategoriesWithChildren(UUID idTienda);
 }

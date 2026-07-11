@@ -21,16 +21,16 @@ public class PaymentController {
 
     private final PaymentRepository paymentRepository;
 
-    @PostMapping("/checkout/{orderId}")
+    @PostMapping("/checkout/{idOrden}")
     @Operation(summary = "Create a checkout session for an order")
-    public ResponseEntity<Map<String, Object>> checkout(@PathVariable UUID orderId) {
+    public ResponseEntity<Map<String, Object>> checkout(@PathVariable UUID idOrden) {
         Payment payment = new Payment();
-        payment.setTenantId(TenantContext.getTenantId());
-        payment.setOrderId(orderId);
+        payment.setIdTienda(TenantContext.getIdTienda());
+        payment.setIdOrden(idOrden);
         payment.setAmount(new BigDecimal("0"));
         payment.setCurrency("USD");
         payment.setPaymentMethod("STRIPE");
-        payment.setStatus(PaymentStatus.PENDING);
+        payment.setEstado(PaymentStatus.PENDING);
         payment.setExternalId("simulated-checkout-" + UUID.randomUUID());
         paymentRepository.save(payment);
 

@@ -9,7 +9,7 @@ import java.util.UUID;
 @Repository
 public interface ProductImageRepository extends BaseJpaRepository<ProductImage> {
 
-    List<ProductImage> findAllByProductIdOrderBySortOrderAsc(UUID productId);
+    List<ProductImage> findAllByProductIdOrderBySortOrderAsc(UUID idProducto);
 
-    void deleteAllByProductId(UUID productId);
+    void deleteAllByProductId(UUID idProducto);
 }

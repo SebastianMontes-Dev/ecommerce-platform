@@ -15,10 +15,10 @@ import java.util.UUID;
 public class ProductVariantResponse {
 
     private UUID id;
-    private String name;
+    private String nombre;
     private String sku;
-    private java.math.BigDecimal price;
+    private java.math.BigDecimal precio;
     private String currency;
-    private int inventory;
+    private int inventario;
     private Map<String, String> attributes;
 }

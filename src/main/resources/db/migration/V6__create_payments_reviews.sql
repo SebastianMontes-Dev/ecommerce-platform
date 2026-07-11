@@ -5,7 +5,7 @@ CREATE TABLE payments (
     amount DECIMAL(10,2) NOT NULL,
     currency VARCHAR(3) NOT NULL DEFAULT 'USD',
     payment_method VARCHAR(20) NOT NULL,
-    status VARCHAR(20) NOT NULL DEFAULT 'PENDING',
+    estado VARCHAR(20) NOT NULL DEFAULT 'PENDING',
     external_id VARCHAR(255),
     metadata JSONB,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
@@ -23,7 +23,7 @@ CREATE TABLE refunds (
     currency VARCHAR(3) NOT NULL DEFAULT 'USD',
     reason TEXT,
     external_id VARCHAR(255),
-    status VARCHAR(20) NOT NULL DEFAULT 'PENDING',
+    estado VARCHAR(20) NOT NULL DEFAULT 'PENDING',
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
     version BIGINT DEFAULT 0
@@ -52,7 +52,7 @@ CREATE TABLE notifications (
     recipient_email VARCHAR(255) NOT NULL,
     subject VARCHAR(500),
     body TEXT,
-    status VARCHAR(20) NOT NULL DEFAULT 'PENDING',
+    estado VARCHAR(20) NOT NULL DEFAULT 'PENDING',
     sent_at TIMESTAMP,
     error_message TEXT,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
@@ -62,9 +62,9 @@ CREATE TABLE notifications (
 
 CREATE INDEX idx_payments_order ON payments(order_id);
 CREATE INDEX idx_payments_external ON payments(external_id);
-CREATE INDEX idx_payments_status ON payments(status);
+CREATE INDEX idx_payments_status ON payments(estado);
 CREATE INDEX idx_reviews_product ON reviews(product_id);
 CREATE INDEX idx_reviews_customer ON reviews(customer_id);
 CREATE INDEX idx_reviews_tenant ON reviews(tenant_id);
 CREATE INDEX idx_notifications_user ON notifications(user_id);
-CREATE INDEX idx_notifications_status ON notifications(status);
+CREATE INDEX idx_notifications_status ON notifications(estado);

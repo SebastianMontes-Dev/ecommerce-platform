@@ -12,16 +12,16 @@ public class OrderStatusChangedEvent implements DomainEvent {
 
     private final UUID eventId;
     private final Instant occurredAt;
-    private final UUID orderId;
-    private final UUID tenantId;
+    private final UUID idOrden;
+    private final UUID idTienda;
     private final OrderStatus oldStatus;
     private final OrderStatus newStatus;
 
-    public OrderStatusChangedEvent(UUID orderId, UUID tenantId, OrderStatus oldStatus, OrderStatus newStatus) {
+    public OrderStatusChangedEvent(UUID idOrden, UUID idTienda, OrderStatus oldStatus, OrderStatus newStatus) {
         this.eventId = UUID.randomUUID();
         this.occurredAt = Instant.now();
-        this.orderId = orderId;
-        this.tenantId = tenantId;
+        this.idOrden = idOrden;
+        this.idTienda = idTienda;
         this.oldStatus = oldStatus;
         this.newStatus = newStatus;
     }

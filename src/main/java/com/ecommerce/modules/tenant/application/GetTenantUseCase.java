@@ -36,14 +36,14 @@ public class GetTenantUseCase {
     private TenantResponse mapToResponse(Tenant tenant) {
         return TenantResponse.builder()
                 .id(tenant.getId())
-                .name(tenant.getName())
+                .nombre(tenant.getNombre())
                 .slug(tenant.getSlug())
-                .description(tenant.getDescription())
+                .descripcion(tenant.getDescripcion())
                 .logoUrl(tenant.getLogoUrl())
                 .bannerUrl(tenant.getBannerUrl())
-                .status(tenant.getStatus().name())
+                .estado(tenant.getEstado().name())
                 .ownerId(tenant.getOwnerId())
-                .createdAt(tenant.getCreatedAt())
+                .creadoEn(tenant.getCreadoEn())
                 .build();
     }
 }

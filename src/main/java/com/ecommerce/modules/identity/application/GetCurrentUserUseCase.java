@@ -29,14 +29,14 @@ public class GetCurrentUserUseCase {
     private UserResponse mapToResponse(User user) {
         return UserResponse.builder()
                 .id(user.getId())
-                .email(user.getEmail())
-                .firstName(user.getFirstName())
-                .lastName(user.getLastName())
+                .correo(user.getCorreo())
+                .nombre(user.getNombre())
+                .apellido(user.getApellido())
                 .fullName(user.getFullName())
                 .emailVerified(user.isEmailVerified())
                 .enabled(user.isEnabled())
                 .roles(user.getRoles().stream().map(Enum::name).collect(Collectors.toSet()))
-                .createdAt(user.getCreatedAt())
+                .creadoEn(user.getCreadoEn())
                 .build();
     }
 }

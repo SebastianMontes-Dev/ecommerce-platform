@@ -23,11 +23,11 @@ public class RegisterUserUseCase {
     public UserResponse execute(RegisterRequest request) {
         List<String> violations = new java.util.ArrayList<>();
 
-        if (!request.getPassword().equals(request.getConfirmPassword())) {
+        if (!request.getContrasena().equals(request.getConfirmPassword())) {
             violations.add("Passwords do not match");
         }
 
-        if (userRepository.existsByEmail(request.getEmail())) {
+        if (userRepository.existsByEmail(request.getCorreo())) {
             violations.add("Email is already registered");
         }
 
@@ -36,10 +36,10 @@ public class RegisterUserUseCase {
         }
 
         User user = new User(
-                request.getEmail().toLowerCase().trim(),
-                passwordEncoder.encode(request.getPassword()),
-                request.getFirstName(),
-                request.getLastName()
+                request.getCorreo().toLowerCase().trim(),
+                passwordEncoder.encode(request.getContrasena()),
+                request.getNombre(),
+                request.getApellido()
         );
         user.addRole(UserRole.CUSTOMER);
 
@@ -51,14 +51,14 @@ public class RegisterUserUseCase {
     private UserResponse mapToResponse(User user) {
         return UserResponse.builder()
                 .id(user.getId())
-                .email(user.getEmail())
-                .firstName(user.getFirstName())
-                .lastName(user.getLastName())
+                .correo(user.getCorreo())
+                .nombre(user.getNombre())
+                .apellido(user.getApellido())
                 .fullName(user.getFullName())
                 .emailVerified(user.isEmailVerified())
                 .enabled(user.isEnabled())
                 .roles(user.getRoles().stream().map(Enum::name).collect(Collectors.toSet()))
-                .createdAt(user.getCreatedAt())
+                .creadoEn(user.getCreadoEn())
                 .build();
     }
 }

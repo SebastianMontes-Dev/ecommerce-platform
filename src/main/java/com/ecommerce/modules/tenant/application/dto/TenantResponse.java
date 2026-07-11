@@ -15,12 +15,12 @@ import java.util.UUID;
 public class TenantResponse {
 
     private UUID id;
-    private String name;
+    private String nombre;
     private String slug;
-    private String description;
+    private String descripcion;
     private String logoUrl;
     private String bannerUrl;
-    private String status;
+    private String estado;
     private UUID ownerId;
-    private LocalDateTime createdAt;
+    private LocalDateTime creadoEn;
 }

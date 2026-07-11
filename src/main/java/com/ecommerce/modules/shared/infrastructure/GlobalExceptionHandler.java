@@ -99,7 +99,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<ProblemDetail> handleBadCredentials(BadCredentialsException ex, HttpServletRequest request) {
-        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, "Invalid email or password");
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, "Invalid correo or contrasena");
         problem.setTitle("Authentication Failed");
         problem.setType(URI.create("https://api.ecommerce.com/errors/auth-failed"));
         problem.setProperty("timestamp", Instant.now());

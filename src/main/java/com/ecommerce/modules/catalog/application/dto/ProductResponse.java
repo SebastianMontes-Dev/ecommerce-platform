@@ -17,23 +17,23 @@ import java.util.UUID;
 public class ProductResponse {
 
     private UUID id;
-    private UUID tenantId;
-    private String name;
+    private UUID idTienda;
+    private String nombre;
     private String slug;
-    private String description;
-    private BigDecimal price;
+    private String descripcion;
+    private BigDecimal precio;
     private String currency;
     private BigDecimal compareAtPrice;
     private BigDecimal costPrice;
     private String sku;
     private String barcode;
-    private int inventory;
+    private int inventario;
     private boolean inventoryTrackEnabled;
-    private String status;
-    private UUID categoryId;
+    private String estado;
+    private UUID idCategoria;
     private String categoryName;
     private List<ProductVariantResponse> variants;
     private List<ProductImageResponse> images;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+    private LocalDateTime creadoEn;
+    private LocalDateTime actualizadoEn;
 }

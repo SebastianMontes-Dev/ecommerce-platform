@@ -19,15 +19,15 @@ import java.util.UUID;
 @NoArgsConstructor
 public class SubscriptionPlan extends BaseEntity {
 
-    @Column(name = "name", nullable = false)
-    private String name;
+    @Column(name = "nombre", nullable = false)
+    private String nombre;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "plan_type", nullable = false)
     private SubscriptionPlanType planType;
 
-    @Column(name = "price", nullable = false)
-    private BigDecimal price;
+    @Column(name = "precio", nullable = false)
+    private BigDecimal precio;
 
     @Column(name = "max_products", nullable = false)
     private int maxProducts;

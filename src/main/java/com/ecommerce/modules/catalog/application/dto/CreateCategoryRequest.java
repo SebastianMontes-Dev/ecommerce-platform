@@ -13,14 +13,14 @@ import lombok.NoArgsConstructor;
 public class CreateCategoryRequest {
 
     @NotBlank
-    private String name;
+    private String nombre;
 
     @NotBlank
     private String slug;
 
-    private String description;
+    private String descripcion;
 
-    private String imageUrl;
+    private String urlImagen;
 
     private java.util.UUID parentId;
 }

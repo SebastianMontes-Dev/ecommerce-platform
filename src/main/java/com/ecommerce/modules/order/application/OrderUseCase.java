@@ -21,18 +21,18 @@ public class OrderUseCase {
     private final DomainEventPublisher eventPublisher;
 
     @Transactional(readOnly = true)
-    public OrderResponse getOrder(UUID orderId, UUID tenantId) {
-        Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new EntityNotFoundException("Order", orderId));
-        if (!order.getTenantId().equals(tenantId)) {
-            throw new EntityNotFoundException("Order", orderId);
+    public OrderResponse getOrder(UUID idOrden, UUID idTienda) {
+        Order order = orderRepository.findById(idOrden)
+                .orElseThrow(() -> new EntityNotFoundException("Order", idOrden));
+        if (!order.getIdTienda().equals(idTienda)) {
+            throw new EntityNotFoundException("Order", idOrden);
         }
         return mapToResponse(order);
     }
 
     @Transactional(readOnly = true)
-    public PagedResponse<OrderResponse> listOrdersByTenant(UUID tenantId, Pageable pageable) {
-        Page<Order> page = orderRepository.findAllByTenantId(tenantId, pageable);
+    public PagedResponse<OrderResponse> listOrdersByTenant(UUID idTienda, Pageable pageable) {
+        Page<Order> page = orderRepository.findAllByTenantId(idTienda, pageable);
         return PagedResponse.from(page.map(OrderUseCase::mapToResponse));
     }
 
@@ -43,9 +43,9 @@ public class OrderUseCase {
     }
 
     @Transactional
-    public OrderResponse cancelOrder(UUID orderId, UUID tenantId, String reason) {
-        Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new EntityNotFoundException("Order", orderId));
+    public OrderResponse cancelOrder(UUID idOrden, UUID idTienda, String reason) {
+        Order order = orderRepository.findById(idOrden)
+                .orElseThrow(() -> new EntityNotFoundException("Order", idOrden));
         order.cancel(reason);
         order = orderRepository.save(order);
         eventPublisher.publish(order.getDomainEvents());
@@ -65,10 +65,10 @@ public class OrderUseCase {
                 .shippingAmount(order.getShippingAmount() != null ? order.getShippingAmount().getAmount() : null)
                 .total(order.getTotal() != null ? order.getTotal().getAmount() : null)
                 .currency(order.getTotal() != null ? order.getTotal().getCurrency() : "USD")
-                .status(order.getStatus().name())
+                .estado(order.getEstado().name())
                 .notes(order.getNotes())
-                .createdAt(order.getCreatedAt())
-                .updatedAt(order.getUpdatedAt())
+                .creadoEn(order.getCreadoEn())
+                .actualizadoEn(order.getActualizadoEn())
                 .build();
     }
 }

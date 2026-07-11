@@ -30,13 +30,13 @@ public class LoginUseCase {
         try {
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
-                            request.getEmail().toLowerCase().trim(),
-                            request.getPassword()
+                            request.getCorreo().toLowerCase().trim(),
+                            request.getContrasena()
                     )
             );
 
             CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
-            User user = userRepository.findByEmail(userDetails.getUsername())
+            User user = userRepository.findByCorreo(userDetails.getUsername())
                     .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
             if (!user.isEnabled()) {
@@ -61,7 +61,7 @@ public class LoginUseCase {
                     .tokenType("Bearer")
                     .build();
         } catch (BadCredentialsException e) {
-            throw new UnauthorizedException("Invalid email or password");
+            throw new UnauthorizedException("Invalid correo or contrasena");
         }
     }
 }

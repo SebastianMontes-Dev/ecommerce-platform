@@ -26,17 +26,17 @@ public class CreateProductUseCase {
     private final DomainEventPublisher eventPublisher;
 
     @Transactional
-    public ProductResponse execute(CreateProductRequest request, UUID tenantId) {
-        if (productRepository.countByTenantId(tenantId) >= 999999) {
+    public ProductResponse execute(CreateProductRequest request, UUID idTienda) {
+        if (productRepository.countByIdTienda(idTienda) >= 999999) {
             throw new BusinessRuleViolationException("Se ha alcanzado el número máximo de productos para su plan");
         }
 
         Product product = new Product();
-        product.setTenantId(tenantId);
-        product.setName(request.getName());
+        product.setIdTienda(idTienda);
+        product.setNombre(request.getNombre());
         product.setSlug(request.getSlug());
-        product.setDescription(request.getDescription());
-        product.setPrice(Money.of(request.getPrice(), request.getCurrency()));
+        product.setDescripcion(request.getDescripcion());
+        product.setPrecio(Money.of(request.getPrecio(), request.getCurrency()));
 
         if (request.getCompareAtPrice() != null) {
             product.setCompareAtPrice(Money.of(request.getCompareAtPrice(), request.getCurrency()));
@@ -47,12 +47,12 @@ public class CreateProductUseCase {
 
         product.setSku(request.getSku());
         product.setBarcode(request.getBarcode());
-        product.setInventory(request.getInventory());
+        product.setInventario(request.getInventario());
         product.setInventoryTrackEnabled(request.isInventoryTrackEnabled());
-        product.setStatus(ProductStatus.DRAFT);
+        product.setEstado(ProductStatus.DRAFT);
 
-        if (request.getCategoryId() != null) {
-            product.setCategoryId(request.getCategoryId());
+        if (request.getIdCategoria() != null) {
+            product.setIdCategoria(request.getIdCategoria());
         }
 
         product = productRepository.save(product);
@@ -67,29 +67,29 @@ public class CreateProductUseCase {
     static ProductResponse mapToResponse(Product product) {
         return ProductResponse.builder()
                 .id(product.getId())
-                .tenantId(product.getTenantId())
-                .name(product.getName())
+                .idTienda(product.getIdTienda())
+                .nombre(product.getNombre())
                 .slug(product.getSlug())
-                .description(product.getDescription())
-                .price(product.getPrice() != null ? product.getPrice().getAmount() : null)
-                .currency(product.getPrice() != null ? product.getPrice().getCurrency() : "USD")
+                .descripcion(product.getDescripcion())
+                .precio(product.getPrecio() != null ? product.getPrecio().getAmount() : null)
+                .currency(product.getPrecio() != null ? product.getPrecio().getCurrency() : "USD")
                 .compareAtPrice(product.getCompareAtPrice() != null ? product.getCompareAtPrice().getAmount() : null)
                 .costPrice(product.getCostPrice() != null ? product.getCostPrice().getAmount() : null)
                 .sku(product.getSku())
                 .barcode(product.getBarcode())
-                .inventory(product.getInventory())
+                .inventario(product.getInventario())
                 .inventoryTrackEnabled(product.isInventoryTrackEnabled())
-                .status(product.getStatus().name())
-                .categoryId(product.getCategoryId())
-                .categoryName(product.getCategory() != null ? product.getCategory().getName() : null)
+                .estado(product.getEstado().name())
+                .idCategoria(product.getIdCategoria())
+                .categoryName(product.getCategory() != null ? product.getCategory().getNombre() : null)
                 .variants(product.getVariants() != null ? product.getVariants().stream().map(v ->
                         ProductVariantResponse.builder()
                                 .id(v.getId())
-                                .name(v.getName())
+                                .nombre(v.getNombre())
                                 .sku(v.getSku())
-                                .price(v.getAmount())
+                                .precio(v.getAmount())
                                 .currency(v.getCurrency())
-                                .inventory(v.getInventory())
+                                .inventario(v.getInventario())
                                 .attributes(v.getAttributes())
                                 .build()
                 ).toList() : List.of())
@@ -103,8 +103,8 @@ public class CreateProductUseCase {
                                 .sortOrder(i.getSortOrder())
                                 .build()
                 ).toList() : List.of())
-                .createdAt(product.getCreatedAt())
-                .updatedAt(product.getUpdatedAt())
+                .creadoEn(product.getCreadoEn())
+                .actualizadoEn(product.getActualizadoEn())
                 .build();
     }
 }

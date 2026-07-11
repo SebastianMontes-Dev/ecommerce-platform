@@ -33,11 +33,11 @@ public class RegisterTenantUseCase {
         }
 
         Tenant tenant = new Tenant(
-                request.getName(),
+                request.getNombre(),
                 request.getSlug(),
                 userDetails.getUserId()
         );
-        tenant.setDescription(request.getDescription());
+        tenant.setDescripcion(request.getDescripcion());
 
         tenant = tenantRepository.save(tenant);
 
@@ -45,9 +45,9 @@ public class RegisterTenantUseCase {
                 .orElseThrow(() -> new IllegalStateException("Default FREE plan not found"));
 
         Subscription subscription = new Subscription();
-        subscription.setTenantId(tenant.getId());
+        subscription.setIdTienda(tenant.getId());
         subscription.setPlanId(freePlan.getId());
-        subscription.setStatus("ACTIVE");
+        subscription.setEstado("ACTIVE");
         subscription.setStartDate(LocalDateTime.now());
         subscriptionRepository.save(subscription);
 
@@ -57,14 +57,14 @@ public class RegisterTenantUseCase {
     private TenantResponse mapToResponse(Tenant tenant) {
         return TenantResponse.builder()
                 .id(tenant.getId())
-                .name(tenant.getName())
+                .nombre(tenant.getNombre())
                 .slug(tenant.getSlug())
-                .description(tenant.getDescription())
+                .descripcion(tenant.getDescripcion())
                 .logoUrl(tenant.getLogoUrl())
                 .bannerUrl(tenant.getBannerUrl())
-                .status(tenant.getStatus().name())
+                .estado(tenant.getEstado().name())
                 .ownerId(tenant.getOwnerId())
-                .createdAt(tenant.getCreatedAt())
+                .creadoEn(tenant.getCreadoEn())
                 .build();
     }
 

@@ -4,13 +4,13 @@ import java.util.UUID;
 
 public class TenantPrincipal {
 
-    private final UUID tenantId;
+    private final UUID idTienda;
 
-    public TenantPrincipal(UUID tenantId) {
-        this.tenantId = tenantId;
+    public TenantPrincipal(UUID idTienda) {
+        this.idTienda = idTienda;
     }
 
-    public UUID getTenantId() {
-        return tenantId;
+    public UUID getIdTienda() {
+        return idTienda;
     }
 }

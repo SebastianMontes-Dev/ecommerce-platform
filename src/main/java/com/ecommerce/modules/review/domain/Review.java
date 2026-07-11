@@ -18,13 +18,13 @@ import java.util.UUID;
 public class Review extends TenantAwareEntity {
 
     @Column(name = "product_id", nullable = false)
-    private UUID productId;
+    private UUID idProducto;
 
     @Column(name = "customer_id", nullable = false)
     private UUID customerId;
 
     @Column(name = "order_id", nullable = false)
-    private UUID orderId;
+    private UUID idOrden;
 
     @Embedded
     @AttributeOverride(name = "value", column = @Column(name = "value", precision = 2, scale = 1))

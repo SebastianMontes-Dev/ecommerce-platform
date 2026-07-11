@@ -30,16 +30,16 @@ public class HibernateTenantFilterConfig {
         TransactionTemplate tt = new TransactionTemplate(transactionManager);
         tt.execute(new TransactionCallbackWithoutResult() {
             @Override
-            protected void doInTransactionWithoutResult(TransactionStatus status) {
+            protected void doInTransactionWithoutResult(TransactionStatus estado) {
                 log.info("Hibernate tenant filter registered");
             }
         });
     }
 
-    public static void enableFilter(Session session, UUID tenantId) {
-        if (tenantId != null) {
+    public static void enableFilter(Session session, UUID idTienda) {
+        if (idTienda != null) {
             session.enableFilter("tenantFilter")
-                    .setParameter("tenantId", tenantId);
+                    .setParameter("idTienda", idTienda);
         }
     }
 }

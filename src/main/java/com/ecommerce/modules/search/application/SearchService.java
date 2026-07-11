@@ -34,15 +34,15 @@ public class SearchService {
         }
     }
 
-    public List<ProductDocument> search(UUID tenantId, String query) {
+    public List<ProductDocument> search(UUID idTienda, String query) {
         try {
             SearchResponse<ProductDocument> response = elasticsearchClient.search(s -> s
                     .index(INDEX_NAME)
                     .query(q -> q
                         .bool(b -> b
-                            .must(m -> m.term(t -> t.field("tenantId.keyword").value(tenantId.toString())))
+                            .must(m -> m.term(t -> t.field("idTienda.keyword").value(idTienda.toString())))
                             .must(m -> m.multiMatch(mm -> mm
-                                .fields("name", "description", "categoryName")
+                                .fields("nombre", "descripcion", "categoryName")
                                 .query(query)
                                 .fuzziness("AUTO")
                             ))

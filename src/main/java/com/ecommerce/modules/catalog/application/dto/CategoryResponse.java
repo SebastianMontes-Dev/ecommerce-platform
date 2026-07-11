@@ -15,10 +15,10 @@ import java.util.UUID;
 public class CategoryResponse {
 
     private UUID id;
-    private String name;
+    private String nombre;
     private String slug;
-    private String description;
-    private String imageUrl;
+    private String descripcion;
+    private String urlImagen;
     private UUID parentId;
     private List<CategoryResponse> children;
 }

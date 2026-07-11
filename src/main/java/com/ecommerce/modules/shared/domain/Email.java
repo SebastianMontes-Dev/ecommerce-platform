@@ -16,12 +16,12 @@ public class Email {
     private static final Pattern EMAIL_PATTERN =
             Pattern.compile("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$");
 
-    @Column(name = "email")
+    @Column(name = "correo")
     private String value;
 
     private Email(String value) {
         if (value == null || !EMAIL_PATTERN.matcher(value).matches()) {
-            throw new IllegalArgumentException("Invalid email format: " + value);
+            throw new IllegalArgumentException("Invalid correo format: " + value);
         }
         this.value = value.toLowerCase().trim();
     }

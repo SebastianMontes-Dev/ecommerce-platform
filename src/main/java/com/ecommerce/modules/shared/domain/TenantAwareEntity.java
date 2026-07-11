@@ -12,10 +12,10 @@ import java.util.UUID;
 @Getter
 @Setter
 @MappedSuperclass
-@FilterDef(name = "tenantFilter", parameters = @ParamDef(name = "tenantId", type = UUID.class))
-@Filter(name = "tenantFilter", condition = "tenant_id = :tenantId")
+@FilterDef(name = "tenantFilter", parameters = @ParamDef(name = "idTienda", type = UUID.class))
+@Filter(name = "tenantFilter", condition = "tenant_id = :idTienda")
 public abstract class TenantAwareEntity extends BaseAuditableEntity {
 
     @Column(name = "tenant_id", nullable = false)
-    private UUID tenantId;
+    private UUID idTienda;
 }

@@ -18,13 +18,13 @@ import java.util.UUID;
 public class OrderItem extends BaseEntity {
 
     @Column(name = "tenant_id", nullable = false)
-    private UUID tenantId;
+    private UUID idTienda;
 
     @Column(name = "order_id", nullable = false)
-    private UUID orderId;
+    private UUID idOrden;
 
     @Column(name = "product_id", nullable = false)
-    private UUID productId;
+    private UUID idProducto;
 
     @Column(name = "product_name", nullable = false)
     private String productName;
@@ -35,8 +35,8 @@ public class OrderItem extends BaseEntity {
     @Column(name = "variant_name")
     private String variantName;
 
-    @Column(name = "quantity", nullable = false)
-    private int quantity;
+    @Column(name = "cantidad", nullable = false)
+    private int cantidad;
 
     @Embedded
     @AttributeOverrides({
@@ -53,7 +53,7 @@ public class OrderItem extends BaseEntity {
     private Money subtotal;
 
     @Column(name = "image_url")
-    private String imageUrl;
+    private String urlImagen;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id", insertable = false, updatable = false)

@@ -16,10 +16,10 @@ import java.util.UUID;
 public class ProductImage extends BaseEntity {
 
     @Column(name = "tenant_id", nullable = false)
-    private UUID tenantId;
+    private UUID idTienda;
 
     @Column(name = "product_id", nullable = false)
-    private UUID productId;
+    private UUID idProducto;
 
     @Column(name = "url", nullable = false, length = 500)
     private String url;

@@ -94,15 +94,16 @@ public class StripeWebhookController {
 
         if (session == null) return;
 
-        String clientReferenceId = session.getClientReferenceId();
-        if (clientReferenceId == null) return;
+        String idReferenciaCliente = session.getClientReferenceId();
+        if (idReferenciaCliente == null) return;
 
-        Payment payment = paymentRepository.findByExternalId(clientReferenceId)
-                .orElseThrow(() -> new IllegalStateException("Pago no encontrado para la sesión de Stripe con clientReferenceId: " + clientReferenceId));
+        Payment payment = paymentRepository.findByExternalId(idReferenciaCliente)
+                .orElseThrow(() -> new IllegalStateException("Pago no encontrado para la sesión de Stripe con idReferenciaCliente: " + idReferenciaCliente));
 
-        payment.markAsCompleted(session.getPaymentIntent());
+        payment.setExternalId(session.getPaymentIntent());
+        payment.complete();
         paymentRepository.save(payment);
-        log.info("Pago completado exitosamente para la orden: {}", payment.getOrderId());
+        log.info("Pago completado exitosamente para la orden: {}", payment.getIdOrden());
     }
 
     private void handleCheckoutExpired(Event event) {
@@ -112,11 +113,11 @@ public class StripeWebhookController {
 
         if (session == null) return;
 
-        String clientReferenceId = session.getClientReferenceId();
-        if (clientReferenceId == null) return;
+        String idReferenciaCliente = session.getClientReferenceId();
+        if (idReferenciaCliente == null) return;
 
-        paymentRepository.findByExternalId(clientReferenceId).ifPresent(payment -> {
-            payment.setStatus(PaymentStatus.FAILED);
+        paymentRepository.findByExternalId(idReferenciaCliente).ifPresent(payment -> {
+            payment.setEstado(PaymentStatus.FAILED);
             paymentRepository.save(payment);
             log.info("Pago expirado: {}", payment.getId());
         });
@@ -130,7 +131,7 @@ public class StripeWebhookController {
         if (intent == null) return;
 
         paymentRepository.findByExternalId(intent.getId()).ifPresent(payment -> {
-            payment.setStatus(PaymentStatus.FAILED);
+            payment.setEstado(PaymentStatus.FAILED);
             paymentRepository.save(payment);
             log.info("Pago fallido: {}", payment.getId());
         });

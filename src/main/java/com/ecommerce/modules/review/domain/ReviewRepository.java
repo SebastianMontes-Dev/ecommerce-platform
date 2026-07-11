@@ -11,9 +11,9 @@ import java.util.UUID;
 @Repository
 public interface ReviewRepository extends BaseJpaRepository<Review> {
 
-    Page<Review> findAllByProductIdAndActiveTrue(UUID productId, Pageable pageable);
+    Page<Review> findAllByProductIdAndActiveTrue(UUID idProducto, Pageable pageable);
 
-    boolean existsByProductIdAndCustomerIdAndOrderId(UUID productId, UUID customerId, UUID orderId);
+    boolean existsByProductIdAndCustomerIdAndOrderId(UUID idProducto, UUID customerId, UUID idOrden);
 
-    Optional<Review> findByProductIdAndCustomerIdAndOrderId(UUID productId, UUID customerId, UUID orderId);
+    Optional<Review> findByProductIdAndCustomerIdAndOrderId(UUID idProducto, UUID customerId, UUID idOrden);
 }

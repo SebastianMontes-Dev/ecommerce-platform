@@ -21,6 +21,6 @@ public class CurrentTenantArgumentResolver implements HandlerMethodArgumentResol
     @Override
     public Object resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer,
                                   NativeWebRequest webRequest, WebDataBinderFactory binderFactory) {
-        return TenantContext.getTenantId();
+        return TenantContext.getIdTienda();
     }
 }

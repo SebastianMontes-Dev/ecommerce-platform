@@ -9,5 +9,5 @@ import java.util.UUID;
 @Repository
 public interface OrderItemRepository extends BaseJpaRepository<OrderItem> {
 
-    List<OrderItem> findAllByOrderId(UUID orderId);
+    List<OrderItem> findAllByOrderId(UUID idOrden);
 }

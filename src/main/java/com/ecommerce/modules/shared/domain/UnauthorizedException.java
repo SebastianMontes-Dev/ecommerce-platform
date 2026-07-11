@@ -7,7 +7,7 @@ public class UnauthorizedException extends RuntimeException {
     }
 
     public static UnauthorizedException invalidCredentials() {
-        return new UnauthorizedException("Invalid email or password");
+        return new UnauthorizedException("Invalid correo or contrasena");
     }
 
     public static UnauthorizedException tokenExpired() {

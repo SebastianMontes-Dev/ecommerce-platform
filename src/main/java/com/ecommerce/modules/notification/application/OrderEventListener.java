@@ -18,16 +18,16 @@ public class OrderEventListener {
     @Async
     @EventListener
     public void onOrderStatusChanged(OrderStatusChangedEvent event) {
-        log.info("Order {} status changed: {} -> {}", event.getOrderId(), event.getOldStatus(), event.getNewStatus());
+        log.info("Order {} estado changed: {} -> {}", event.getIdOrden(), event.getOldStatus(), event.getNewStatus());
 
         switch (event.getNewStatus()) {
-            case CONFIRMED -> emailNotificationService.sendOrderConfirmation(event.getOrderId(), event.getTenantId());
-            case PAID -> emailNotificationService.sendPaymentReceived(event.getOrderId(), event.getTenantId());
-            case SHIPPED -> emailNotificationService.sendOrderShipped(event.getOrderId(), event.getTenantId());
-            case DELIVERED -> emailNotificationService.sendOrderDelivered(event.getOrderId(), event.getTenantId());
-            case CANCELLED -> emailNotificationService.sendOrderCancelled(event.getOrderId(), event.getTenantId());
-            case REFUNDED -> emailNotificationService.sendOrderRefunded(event.getOrderId(), event.getTenantId());
-            default -> log.debug("No notification configured for status: {}", event.getNewStatus());
+            case CONFIRMED -> emailNotificationService.sendOrderConfirmation(event.getIdOrden(), event.getIdTienda());
+            case PAID -> emailNotificationService.sendPaymentReceived(event.getIdOrden(), event.getIdTienda());
+            case SHIPPED -> emailNotificationService.sendOrderShipped(event.getIdOrden(), event.getIdTienda());
+            case DELIVERED -> emailNotificationService.sendOrderDelivered(event.getIdOrden(), event.getIdTienda());
+            case CANCELLED -> emailNotificationService.sendOrderCancelled(event.getIdOrden(), event.getIdTienda());
+            case REFUNDED -> emailNotificationService.sendOrderRefunded(event.getIdOrden(), event.getIdTienda());
+            default -> log.debug("No notification configured for estado: {}", event.getNewStatus());
         }
     }
 }

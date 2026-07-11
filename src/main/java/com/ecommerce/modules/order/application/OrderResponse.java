@@ -25,8 +25,8 @@ public class OrderResponse {
     private BigDecimal shippingAmount;
     private BigDecimal total;
     private String currency;
-    private String status;
+    private String estado;
     private String notes;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+    private LocalDateTime creadoEn;
+    private LocalDateTime actualizadoEn;
 }

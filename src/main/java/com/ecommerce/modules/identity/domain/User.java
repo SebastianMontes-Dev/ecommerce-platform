@@ -24,17 +24,17 @@ import java.util.Set;
 @NoArgsConstructor
 public class User extends BaseAuditableEntity {
 
-    @Column(name = "email", unique = true, nullable = false)
-    private String email;
+    @Column(name = "correo", unique = true, nullable = false)
+    private String correo;
 
     @Column(name = "password_hash", nullable = false)
     private String passwordHash;
 
     @Column(name = "first_name")
-    private String firstName;
+    private String nombre;
 
     @Column(name = "last_name")
-    private String lastName;
+    private String apellido;
 
     @Column(name = "enabled")
     private boolean enabled = true;
@@ -45,14 +45,14 @@ public class User extends BaseAuditableEntity {
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
     @Enumerated(EnumType.STRING)
-    @Column(name = "role")
+    @Column(name = "rol")
     private Set<UserRole> roles = new HashSet<>();
 
-    public User(String email, String passwordHash, String firstName, String lastName) {
-        this.email = email;
+    public User(String correo, String passwordHash, String nombre, String apellido) {
+        this.correo = correo;
         this.passwordHash = passwordHash;
-        this.firstName = firstName;
-        this.lastName = lastName;
+        this.nombre = nombre;
+        this.apellido = apellido;
         this.enabled = true;
         this.emailVerified = false;
         this.roles = new HashSet<>();
@@ -74,24 +74,24 @@ public class User extends BaseAuditableEntity {
         this.passwordHash = newPasswordHash;
     }
 
-    public void addRole(UserRole role) {
-        this.roles.add(role);
+    public void addRole(UserRole rol) {
+        this.roles.add(rol);
     }
 
-    public void removeRole(UserRole role) {
-        this.roles.remove(role);
+    public void removeRole(UserRole rol) {
+        this.roles.remove(rol);
     }
 
-    public boolean hasRole(UserRole role) {
-        return this.roles.contains(role);
+    public boolean hasRole(UserRole rol) {
+        return this.roles.contains(rol);
     }
 
     public String getFullName() {
-        if (firstName != null && lastName != null) {
-            return firstName + " " + lastName;
+        if (nombre != null && apellido != null) {
+            return nombre + " " + apellido;
         }
-        if (firstName != null) return firstName;
-        if (lastName != null) return lastName;
-        return email;
+        if (nombre != null) return nombre;
+        if (apellido != null) return apellido;
+        return correo;
     }
 }

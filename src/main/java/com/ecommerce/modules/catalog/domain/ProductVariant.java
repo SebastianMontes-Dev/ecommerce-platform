@@ -21,10 +21,10 @@ import java.util.UUID;
 public class ProductVariant extends TenantAwareEntity {
 
     @Column(name = "product_id", nullable = false)
-    private UUID productId;
+    private UUID idProducto;
 
-    @Column(name = "name", nullable = false)
-    private String name;
+    @Column(name = "nombre", nullable = false)
+    private String nombre;
 
     @Column(name = "sku")
     private String sku;
@@ -35,8 +35,8 @@ public class ProductVariant extends TenantAwareEntity {
     @Column(name = "currency")
     private String currency = "USD";
 
-    @Column(name = "inventory")
-    private int inventory = 0;
+    @Column(name = "inventario")
+    private int inventario = 0;
 
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "attributes", columnDefinition = "jsonb")
@@ -46,17 +46,17 @@ public class ProductVariant extends TenantAwareEntity {
     @JoinColumn(name = "product_id", insertable = false, updatable = false)
     private Product product;
 
-    public Money getPrice() {
+    public Money getPrecio() {
         if (amount != null && currency != null) {
             return Money.of(amount, currency);
         }
-        return product != null ? product.getPrice() : null;
+        return product != null ? product.getPrecio() : null;
     }
 
-    public void decreaseInventory(int quantity) {
-        if (this.inventory < quantity) {
-            throw new IllegalStateException("Insufficient inventory for variant: " + this.name);
+    public void decreaseInventory(int cantidad) {
+        if (this.inventario < cantidad) {
+            throw new IllegalStateException("Insufficient inventario for variant: " + this.nombre);
         }
-        this.inventory -= quantity;
+        this.inventario -= cantidad;
     }
 }
