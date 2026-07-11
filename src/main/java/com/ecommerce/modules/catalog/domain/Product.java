@@ -85,7 +85,7 @@ public class Product extends TenantAwareAggregateRoot {
 
     public void publish() {
         if (this.status == ProductStatus.ARCHIVED) {
-            throw new IllegalStateException("Cannot publish an archived product");
+            throw new IllegalStateException("No se puede publicar un producto archivado");
         }
         this.status = ProductStatus.ACTIVE;
     }
@@ -102,7 +102,7 @@ public class Product extends TenantAwareAggregateRoot {
     public void decreaseInventory(int quantity) {
         if (this.inventoryTrackEnabled) {
             if (this.inventory < quantity && !this.allowBackorder) {
-                throw new IllegalStateException("Insufficient inventory for product: " + this.name);
+                throw new IllegalStateException("Inventario insuficiente para el producto: " + this.name);
             }
             this.inventory -= quantity;
         }

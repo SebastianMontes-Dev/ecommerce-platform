@@ -57,14 +57,14 @@ public class StripeWebhookController {
         try {
             event = Webhook.constructEvent(payload, sigHeader, webhookSecret);
         } catch (SignatureVerificationException e) {
-            log.error("Invalid Stripe webhook signature", e);
-            return ResponseEntity.badRequest().body("Invalid signature");
+            log.error("Firma de webhook inválida", e);
+            return ResponseEntity.badRequest().body("Firma inválida");
         }
 
         // Idempotency check
         if (processedEventRepository.existsById(event.getId())) {
-            log.info("Duplicate webhook event ignored: {}", event.getId());
-            return ResponseEntity.ok("Already processed");
+            log.info("Evento webhook duplicado ignorado: {}", event.getId());
+            return ResponseEntity.ok("Ya procesado");
         }
 
         switch (event.getType()) {
@@ -78,7 +78,7 @@ public class StripeWebhookController {
                 handlePaymentFailed(event);
                 break;
             default:
-                log.debug("Unhandled event type: {}", event.getType());
+                log.debug("Tipo de evento no manejado: {}", event.getType());
         }
 
         // Mark event as processed
@@ -97,11 +97,12 @@ public class StripeWebhookController {
         String clientReferenceId = session.getClientReferenceId();
         if (clientReferenceId == null) return;
 
-        paymentRepository.findByExternalId(clientReferenceId).ifPresent(payment -> {
-            payment.setStatus(PaymentStatus.COMPLETED);
-            paymentRepository.save(payment);
-            log.info("Payment completed: {}", payment.getId());
-        });
+        Payment payment = paymentRepository.findByExternalId(clientReferenceId)
+                .orElseThrow(() -> new IllegalStateException("Pago no encontrado para la sesión de Stripe con clientReferenceId: " + clientReferenceId));
+
+        payment.markAsCompleted(session.getPaymentIntent());
+        paymentRepository.save(payment);
+        log.info("Pago completado exitosamente para la orden: {}", payment.getOrderId());
     }
 
     private void handleCheckoutExpired(Event event) {
@@ -117,7 +118,7 @@ public class StripeWebhookController {
         paymentRepository.findByExternalId(clientReferenceId).ifPresent(payment -> {
             payment.setStatus(PaymentStatus.FAILED);
             paymentRepository.save(payment);
-            log.info("Payment expired: {}", payment.getId());
+            log.info("Pago expirado: {}", payment.getId());
         });
     }
 
@@ -131,7 +132,7 @@ public class StripeWebhookController {
         paymentRepository.findByExternalId(intent.getId()).ifPresent(payment -> {
             payment.setStatus(PaymentStatus.FAILED);
             paymentRepository.save(payment);
-            log.info("Payment failed: {}", payment.getId());
+            log.info("Pago fallido: {}", payment.getId());
         });
     }
 }

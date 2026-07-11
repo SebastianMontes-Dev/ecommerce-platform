@@ -19,7 +19,7 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/v1/catalog")
 @RequiredArgsConstructor
-@Tag(name = "Catalog", description = "Product catalog management")
+@Tag(name = "Catálogo", description = "Gestión del catálogo de productos")
 public class CatalogController {
 
     private final CreateProductUseCase createProductUseCase;
@@ -27,7 +27,7 @@ public class CatalogController {
     private final CreateCategoryUseCase createCategoryUseCase;
 
     @PostMapping("/categories")
-    @Operation(summary = "Create a category")
+    @Operation(summary = "Crear una categoría")
     @CacheEvict(value = "categories", key = "#T(com.ecommerce.modules.shared.infrastructure.TenantContext).getTenantId()")
     public ResponseEntity<CategoryResponse> createCategory(@Valid @RequestBody CreateCategoryRequest request) {
         CategoryResponse response = createCategoryUseCase.execute(request, TenantContext.getTenantId());
@@ -35,22 +35,22 @@ public class CatalogController {
     }
 
     @GetMapping("/categories")
-    @Operation(summary = "List categories")
+    @Operation(summary = "Listar categorías")
     @Cacheable(value = "categories", key = "#T(com.ecommerce.modules.shared.infrastructure.TenantContext).getTenantId()")
     public ResponseEntity<List<CategoryResponse>> listCategories() {
         return ResponseEntity.ok(createCategoryUseCase.getCategories(TenantContext.getTenantId()));
     }
 
     @PostMapping("/products")
-    @Operation(summary = "Create a product")
-    @CacheEvict(value = {"products", "product_details"}, allEntries = true) // Clear all product cache for now
+    @Operation(summary = "Crear un producto")
+    @CacheEvict(value = {"products", "product_details"}, allEntries = true) // Limpiar todo el caché de productos por ahora
     public ResponseEntity<ProductResponse> createProduct(@Valid @RequestBody CreateProductRequest request) {
         ProductResponse response = createProductUseCase.execute(request, TenantContext.getTenantId());
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @GetMapping("/products")
-    @Operation(summary = "List products")
+    @Operation(summary = "Listar productos")
     @Cacheable(value = "products", key = "#T(com.ecommerce.modules.shared.infrastructure.TenantContext).getTenantId() + '_' + #page + '_' + #size")
     public ResponseEntity<?> listProducts(
             @RequestParam(defaultValue = "0") int page,
@@ -61,7 +61,7 @@ public class CatalogController {
     }
 
     @GetMapping("/products/{slug}")
-    @Operation(summary = "Get product by slug")
+    @Operation(summary = "Obtener producto por slug (URL)")
     @Cacheable(value = "product_details", key = "#T(com.ecommerce.modules.shared.infrastructure.TenantContext).getTenantId() + '_' + #slug")
     public ResponseEntity<ProductResponse> getProduct(@PathVariable String slug) {
         return ResponseEntity.ok(getProductUseCase.bySlug(slug, TenantContext.getTenantId()));

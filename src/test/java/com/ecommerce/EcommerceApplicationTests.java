@@ -62,7 +62,7 @@ class EcommerceApplicationTests {
 
     @Test
     @Order(1)
-    @DisplayName("Should register a new user")
+    @DisplayName("Debería registrar un nuevo usuario y devolver JWT")
     void registerUser() {
         RegisterRequest request = RegisterRequest.builder()
                 .email(TEST_EMAIL)
@@ -82,7 +82,7 @@ class EcommerceApplicationTests {
 
     @Test
     @Order(2)
-    @DisplayName("Should login and obtain JWT tokens")
+    @DisplayName("Debería iniciar sesión y obtener tokens JWT")
     void login() {
         LoginRequest request = LoginRequest.builder()
                 .email(TEST_EMAIL)
@@ -101,7 +101,7 @@ class EcommerceApplicationTests {
 
     @Test
     @Order(3)
-    @DisplayName("Should register a tenant")
+    @DisplayName("Debería registrar un nuevo Tenant (Tienda)")
     void registerTenant() {
         assertThat(accessToken).isNotBlank();
 
@@ -130,7 +130,7 @@ class EcommerceApplicationTests {
 
     @Test
     @Order(4)
-    @DisplayName("Should create a product")
+    @DisplayName("Debería crear un producto")
     void createProduct() {
         assertThat(accessToken).isNotBlank();
         assertThat(tenantId).isNotBlank();
@@ -161,7 +161,7 @@ class EcommerceApplicationTests {
 
     @Test
     @Order(5)
-    @DisplayName("Should reject mismatched passwords")
+    @DisplayName("Debería rechazar contraseñas que no coinciden")
     void registerWithMismatchedPasswords() {
         RegisterRequest request = RegisterRequest.builder()
                 .email("bad-" + System.currentTimeMillis() + "@test.com")
@@ -179,7 +179,7 @@ class EcommerceApplicationTests {
 
     @Test
     @Order(6)
-    @DisplayName("Should reject duplicate email")
+    @DisplayName("Debería rechazar un registro con email duplicado")
     void registerDuplicateEmail() {
         RegisterRequest request = RegisterRequest.builder()
                 .email(TEST_EMAIL)
@@ -197,7 +197,7 @@ class EcommerceApplicationTests {
 
     @Test
     @Order(7)
-    @DisplayName("Should reject unauthenticated access")
+    @DisplayName("Debería devolver Perfil no Autorizado (401)")
     void unauthenticatedAccess() {
         try {
             ResponseEntity<Map> response = restTemplate.exchange(

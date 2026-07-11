@@ -17,13 +17,13 @@ import java.util.Map;
 @RequestMapping("/api/v1/search")
 @RequiredArgsConstructor
 @Slf4j
-@Tag(name = "Search", description = "Full-text product search")
+@Tag(name = "Búsqueda", description = "Búsqueda de productos de texto completo (Full-text search)")
 public class SearchController {
 
     private final SearchService searchService;
 
     @GetMapping
-    @Operation(summary = "Search products")
+    @Operation(summary = "Buscar productos")
     public ResponseEntity<Map<String, Object>> searchProducts(
             @RequestParam(required = false) String q,
             @RequestParam(required = false) String category,
@@ -55,9 +55,9 @@ public class SearchController {
     }
 
     @PostMapping("/reindex")
-    @Operation(summary = "Reindex all products (admin)")
+    @Operation(summary = "Reindexar todos los productos (Administrador)")
     public ResponseEntity<Map<String, String>> reindex() {
-        log.info("Reindex triggered for tenant: {}", TenantContext.getTenantId());
-        return ResponseEntity.accepted().body(Map.of("message", "Reindex scheduled"));
+        log.info("Reindexación iniciada para el tenant: {}", TenantContext.getTenantId());
+        return ResponseEntity.accepted().body(Map.of("message", "Reindexación programada"));
     }
 }

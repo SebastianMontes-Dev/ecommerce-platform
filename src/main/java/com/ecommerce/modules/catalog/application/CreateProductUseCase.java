@@ -28,7 +28,7 @@ public class CreateProductUseCase {
     @Transactional
     public ProductResponse execute(CreateProductRequest request, UUID tenantId) {
         if (productRepository.countByTenantId(tenantId) >= 999999) {
-            throw new BusinessRuleViolationException("Maximum number of products reached for your plan");
+            throw new BusinessRuleViolationException("Se ha alcanzado el número máximo de productos para su plan");
         }
 
         Product product = new Product();
