@@ -1,6 +1,6 @@
 services:
   postgres:
-    image: postgres:16-alpine
+    image: postgres:15-alpine
     container_name: ecommerce-postgres
     environment:
       POSTGRES_DB: ecommerce_db
@@ -126,7 +126,7 @@ services:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: my_database
     ports:
-      - "3306:3306"
+      - "3307:3306"
     volumes:
       - mysql_data:/var/lib/mysql
     networks:
