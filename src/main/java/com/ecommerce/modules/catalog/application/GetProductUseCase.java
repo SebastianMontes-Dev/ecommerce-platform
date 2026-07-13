@@ -20,7 +20,7 @@ public class GetProductUseCase {
 
     @Transactional(readOnly = true)
     public ProductResponse bySlug(String slug, UUID idTienda) {
-        Product product = productRepository.findByTenantIdAndSlugWithImages(idTienda, slug)
+        Product product = productRepository.findByIdTiendaAndSlugWithImages(idTienda, slug)
                 .orElseThrow(() -> new EntityNotFoundException("Product", slug));
         return CreateProductUseCase.mapToResponse(product);
     }
@@ -39,7 +39,7 @@ public class GetProductUseCase {
 
     @Transactional(readOnly = true)
     public PagedResponse<ProductResponse> listProducts(UUID idTienda, Pageable pageable) {
-        Page<Product> page = productRepository.findAllByTenantId(idTienda, pageable);
+        Page<Product> page = productRepository.findAllByIdTienda(idTienda, pageable);
         return PagedResponse.from(page.map(CreateProductUseCase::mapToResponse));
     }
 }

@@ -32,7 +32,7 @@ public class OrderUseCase {
 
     @Transactional(readOnly = true)
     public PagedResponse<OrderResponse> listOrdersByTenant(UUID idTienda, Pageable pageable) {
-        Page<Order> page = orderRepository.findAllByTenantId(idTienda, pageable);
+        Page<Order> page = orderRepository.findAllByIdTienda(idTienda, pageable);
         return PagedResponse.from(page.map(OrderUseCase::mapToResponse));
     }
 

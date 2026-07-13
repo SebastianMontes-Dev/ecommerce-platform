@@ -24,11 +24,11 @@ public class RegisterUserUseCase {
         List<String> violations = new java.util.ArrayList<>();
 
         if (!request.getContrasena().equals(request.getConfirmPassword())) {
-            violations.add("Passwords do not match");
+            violations.add("Las contraseñas no coinciden");
         }
 
-        if (userRepository.existsByEmail(request.getCorreo())) {
-            violations.add("Email is already registered");
+        if (userRepository.existsByCorreo(request.getCorreo())) {
+            violations.add("El correo ya está registrado");
         }
 
         if (!violations.isEmpty()) {

@@ -29,18 +29,25 @@ public class ReviewController {
             @PathVariable UUID idProducto,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        return ResponseEntity.ok(reviewRepository.findAllByProductIdAndActiveTrue(idProducto, PageRequest.of(page, size)));
+        return ResponseEntity.ok(reviewRepository.findAllByIdProductoAndActivoTrue(idProducto, PageRequest.of(page, size)));
     }
 
     @PostMapping("/reviews")
     @Operation(summary = "Create a review")
-    public ResponseEntity<Review> createReview(@PathVariable UUID idProducto, @RequestBody CreateReviewRequest request) {
+    public ResponseEntity<Review> createReview(
+            @PathVariable UUID idProducto, 
+            @RequestBody CreateReviewRequest request,
+            @org.springframework.security.core.annotation.AuthenticationPrincipal com.ecommerce.modules.identity.application.CustomUserDetails userDetails) {
         Review review = new Review();
         review.setIdTienda(TenantContext.getIdTienda());
         review.setIdProducto(idProducto);
+        if (userDetails != null) {
+            review.setCustomerId(userDetails.getUserId());
+            review.setCustomerName(userDetails.getUsername());
+        }
         review.setRating(Rating.of(request.getRating()));
-        review.setTitle(request.getTitle());
-        review.setComment(request.getComment());
+        review.setTitulo(request.getTitulo());
+        review.setComentario(request.getComentario());
         review = reviewRepository.save(review);
         return ResponseEntity.status(HttpStatus.CREATED).body(review);
     }
@@ -48,7 +55,7 @@ public class ReviewController {
     @lombok.Data
     static class CreateReviewRequest {
         private int rating;
-        private String title;
-        private String comment;
+        private String titulo;
+        private String comentario;
     }
 }

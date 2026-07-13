@@ -28,7 +28,7 @@ public class CatalogController {
 
     @PostMapping("/categories")
     @Operation(summary = "Crear una categoría")
-    @CacheEvict(value = "categories", key = "#T(com.ecommerce.modules.shared.infrastructure.TenantContext).getIdTienda()")
+    @CacheEvict(value = "categories", key = "T(com.ecommerce.modules.shared.infrastructure.TenantContext).getIdTienda()")
     public ResponseEntity<CategoryResponse> createCategory(@Valid @RequestBody CreateCategoryRequest request) {
         CategoryResponse response = createCategoryUseCase.execute(request, TenantContext.getIdTienda());
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
@@ -36,7 +36,7 @@ public class CatalogController {
 
     @GetMapping("/categories")
     @Operation(summary = "Listar categorías")
-    @Cacheable(value = "categories", key = "#T(com.ecommerce.modules.shared.infrastructure.TenantContext).getIdTienda()")
+    @Cacheable(value = "categories", key = "T(com.ecommerce.modules.shared.infrastructure.TenantContext).getIdTienda()")
     public ResponseEntity<List<CategoryResponse>> listCategories() {
         return ResponseEntity.ok(createCategoryUseCase.getCategories(TenantContext.getIdTienda()));
     }
@@ -51,7 +51,7 @@ public class CatalogController {
 
     @GetMapping("/products")
     @Operation(summary = "Listar productos")
-    @Cacheable(value = "products", key = "#T(com.ecommerce.modules.shared.infrastructure.TenantContext).getIdTienda() + '_' + #page + '_' + #size")
+    @Cacheable(value = "products", key = "T(com.ecommerce.modules.shared.infrastructure.TenantContext).getIdTienda() + '_' + #page + '_' + #size")
     public ResponseEntity<?> listProducts(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
@@ -62,7 +62,7 @@ public class CatalogController {
 
     @GetMapping("/products/{slug}")
     @Operation(summary = "Obtener producto por slug (URL)")
-    @Cacheable(value = "product_details", key = "#T(com.ecommerce.modules.shared.infrastructure.TenantContext).getIdTienda() + '_' + #slug")
+    @Cacheable(value = "product_details", key = "T(com.ecommerce.modules.shared.infrastructure.TenantContext).getIdTienda() + '_' + #slug")
     public ResponseEntity<ProductResponse> getProduct(@PathVariable String slug) {
         return ResponseEntity.ok(getProductUseCase.bySlug(slug, TenantContext.getIdTienda()));
     }

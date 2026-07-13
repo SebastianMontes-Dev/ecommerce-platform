@@ -11,5 +11,5 @@ public interface UserRepository extends BaseJpaRepository<User> {
 
     Optional<User> findByCorreo(String correo);
 
-    boolean existsByEmail(String correo);
+    boolean existsByCorreo(String correo);
 }

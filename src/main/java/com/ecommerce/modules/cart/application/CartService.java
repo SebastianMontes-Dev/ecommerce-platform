@@ -103,6 +103,10 @@ public class CartService {
         if (!product.getIdTienda().equals(item.getIdTienda())) {
             throw new IllegalStateException("Product does not belong to the specified tenant");
         }
+
+        item.setUnitPrice(product.getPrecio().getAmount());
+        item.setProductName(product.getNombre());
+        item.setCurrency(product.getPrecio().getCurrency());
     }
 
     private Cart loadCart(String key) {

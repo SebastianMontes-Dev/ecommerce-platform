@@ -15,18 +15,18 @@ import java.time.LocalDateTime;
 public class ProcessedEvent {
 
     @Id
-    @Column(name = "event_id", length = 255)
-    private String eventId;
+    @Column(name = "id_evento", length = 255)
+    private String idEvento;
 
-    @Column(name = "event_type", nullable = false)
-    private String eventType;
+    @Column(name = "tipo_evento", nullable = false)
+    private String tipoEvento;
 
-    @Column(name = "processed_at", nullable = false)
-    private LocalDateTime processedAt;
+    @Column(name = "procesado_en", nullable = false)
+    private LocalDateTime procesadoEn;
 
-    public ProcessedEvent(String eventId, String eventType) {
-        this.eventId = eventId;
-        this.eventType = eventType;
-        this.processedAt = LocalDateTime.now();
+    public ProcessedEvent(String idEvento, String tipoEvento) {
+        this.idEvento = idEvento;
+        this.tipoEvento = tipoEvento;
+        this.procesadoEn = LocalDateTime.now();
     }
 }

@@ -9,5 +9,5 @@ import java.util.UUID;
 @Repository
 public interface SubscriptionRepository extends BaseJpaRepository<Subscription> {
 
-    Optional<Subscription> findByTenantIdAndStatus(UUID idTienda, String estado);
+    Optional<Subscription> findByIdTiendaAndEstado(UUID idTienda, String estado);
 }

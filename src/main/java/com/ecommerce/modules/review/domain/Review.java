@@ -21,7 +21,7 @@ public class Review extends TenantAwareEntity {
     private UUID idProducto;
 
     @Column(name = "customer_id", nullable = false)
-    private UUID customerId;
+    private UUID idCliente;
 
     @Column(name = "order_id", nullable = false)
     private UUID idOrden;
@@ -31,19 +31,19 @@ public class Review extends TenantAwareEntity {
     private Rating rating;
 
     @Column(name = "title")
-    private String title;
+    private String titulo;
 
     @Column(name = "comment", columnDefinition = "TEXT")
-    private String comment;
+    private String comentario;
 
     @Column(name = "active")
-    private boolean active = true;
+    private boolean activo = true;
 
     public void hide() {
-        this.active = false;
+        this.activo = false;
     }
 
     public void show() {
-        this.active = true;
+        this.activo = true;
     }
 }

@@ -12,18 +12,18 @@ import java.util.UUID;
 @Repository
 public interface ProductRepository extends BaseJpaRepository<Product> {
 
-    Optional<Product> findByTenantIdAndSlug(UUID idTienda, String slug);
+    Optional<Product> findByIdTiendaAndSlug(UUID idTienda, String slug);
 
     @Query("SELECT p FROM Product p LEFT JOIN FETCH p.images WHERE p.idTienda = :idTienda AND p.slug = :slug")
-    Optional<Product> findByTenantIdAndSlugWithImages(UUID idTienda, String slug);
+    Optional<Product> findByIdTiendaAndSlugWithImages(UUID idTienda, String slug);
 
-    Page<Product> findAllByTenantId(UUID idTienda, Pageable pageable);
+    Page<Product> findAllByIdTienda(UUID idTienda, Pageable pageable);
 
-    Page<Product> findAllByTenantIdAndStatus(UUID idTienda, ProductStatus estado, Pageable pageable);
+    Page<Product> findAllByIdTiendaAndEstado(UUID idTienda, ProductStatus estado, Pageable pageable);
 
-    Page<Product> findAllByTenantIdAndCategoryId(UUID idTienda, UUID idCategoria, Pageable pageable);
+    Page<Product> findAllByIdTiendaAndIdCategoria(UUID idTienda, UUID idCategoria, Pageable pageable);
 
     long countByIdTienda(UUID idTienda);
 
-    long countByTenantIdAndStatus(UUID idTienda, ProductStatus estado);
+    long countByIdTiendaAndEstado(UUID idTienda, ProductStatus estado);
 }
