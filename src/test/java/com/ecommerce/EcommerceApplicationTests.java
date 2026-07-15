@@ -1,6 +1,6 @@
 package com.ecommerce;
 
-import com.ecommerce.modules.identity.application.dto.*;
+import com.ecommerce.modulos.identidad.application.dto.*;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -21,7 +21,7 @@ import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-        classes = com.ecommerce.bootstrap.EcommerceApplication.class)
+        classes = com.ecommerce.bootstrap.AplicacionEcommerce.class)
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
@@ -64,7 +64,7 @@ class EcommerceApplicationTests {
     @Order(1)
     @DisplayName("Debería registrar un nuevo usuario y devolver JWT")
     void registerUser() {
-        RegisterRequest request = RegisterRequest.builder()
+        SolicitudRegistro request = SolicitudRegistro.builder()
                 .correo(TEST_EMAIL)
                 .contrasena("secure123")
                 .confirmarContrasena("secure123")
@@ -72,8 +72,8 @@ class EcommerceApplicationTests {
                 .apellido("Seller")
                 .build();
 
-        ResponseEntity<UserResponse> response = restTemplate.postForEntity(
-                "/api/v1/auth/register", request, UserResponse.class);
+        ResponseEntity<RespuestaUsuario> response = restTemplate.postForEntity(
+                "/api/v1/auth/register", request, RespuestaUsuario.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
         assertThat(response.getBody()).isNotNull();
@@ -84,13 +84,13 @@ class EcommerceApplicationTests {
     @Order(2)
     @DisplayName("Debería iniciar sesión y obtener tokens JWT")
     void login() {
-        LoginRequest request = LoginRequest.builder()
+        SolicitudInicioSesion request = SolicitudInicioSesion.builder()
                 .correo(TEST_EMAIL)
                 .contrasena("secure123")
                 .build();
 
-        ResponseEntity<AuthResponse> response = restTemplate.postForEntity(
-                "/api/v1/auth/login", request, AuthResponse.class);
+        ResponseEntity<RespuestaAutenticacion> response = restTemplate.postForEntity(
+                "/api/v1/auth/login", request, RespuestaAutenticacion.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull();
@@ -101,22 +101,22 @@ class EcommerceApplicationTests {
 
     @Test
     @Order(3)
-    @DisplayName("Debería registrar un nuevo Tenant (Tienda)")
+    @DisplayName("Debería registrar un nuevo Inquilino (Tienda)")
     void registerTenant() {
         assertThat(accessToken).isNotBlank();
 
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(accessToken);
 
-        String slug = "test-store-" + System.currentTimeMillis();
+        String enlaceCorto = "test-store-" + System.currentTimeMillis();
         Map<String, String> body = Map.of(
                 "nombre", "Test Store",
-                "slug", slug,
+                "enlaceCorto", enlaceCorto,
                 "descripcion", "Test store descripcion"
         );
 
         ResponseEntity<Map> response = restTemplate.exchange(
-                "/api/v1/tenants",
+                "/api/v1/inquilinos",
                 HttpMethod.POST,
                 new HttpEntity<>(body, headers),
                 Map.class);
@@ -137,25 +137,25 @@ class EcommerceApplicationTests {
 
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(accessToken);
-        headers.set("X-Tenant-ID", idTienda);
+        headers.set("X-Inquilino-ID", idTienda);
 
-        String slug = "test-product-" + System.currentTimeMillis();
+        String enlaceCorto = "test-producto-" + System.currentTimeMillis();
         Map<String, Object> body = Map.of(
-                "nombre", "Test Product",
-                "slug", slug,
-                "descripcion", "Test product desc",
+                "nombre", "Test Producto",
+                "enlaceCorto", enlaceCorto,
+                "descripcion", "Test producto desc",
                 "precio", 49.99,
                 "inventario", 100
         );
 
         ResponseEntity<Map> response = restTemplate.exchange(
-                "/api/v1/catalog/products",
+                "/api/v1/catalogo/productos",
                 HttpMethod.POST,
                 new HttpEntity<>(body, headers),
                 Map.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
-        assertThat(response.getBody().get("nombre")).isEqualTo("Test Product");
+        assertThat(response.getBody().get("nombre")).isEqualTo("Test Producto");
         assertThat(response.getBody().get("estado")).isEqualTo("DRAFT");
     }
 
@@ -163,12 +163,12 @@ class EcommerceApplicationTests {
     @Order(5)
     @DisplayName("Debería rechazar contraseñas que no coinciden")
     void registerWithMismatchedPasswords() {
-        RegisterRequest request = RegisterRequest.builder()
+        SolicitudRegistro request = SolicitudRegistro.builder()
                 .correo("bad-" + System.currentTimeMillis() + "@test.com")
                 .contrasena("secure123")
                 .confirmarContrasena("different")
                 .nombre("Bad")
-                .apellido("User")
+                .apellido("Usuario")
                 .build();
 
         ResponseEntity<Map> response = restTemplate.postForEntity(
@@ -181,12 +181,12 @@ class EcommerceApplicationTests {
     @Order(6)
     @DisplayName("Debería rechazar un registro con correo duplicado")
     void registerDuplicateEmail() {
-        RegisterRequest request = RegisterRequest.builder()
+        SolicitudRegistro request = SolicitudRegistro.builder()
                 .correo(TEST_EMAIL)
                 .contrasena("secure123")
                 .confirmarContrasena("secure123")
                 .nombre("Duplicate")
-                .apellido("User")
+                .apellido("Usuario")
                 .build();
 
         ResponseEntity<Map> response = restTemplate.postForEntity(
@@ -201,7 +201,7 @@ class EcommerceApplicationTests {
     void unauthenticatedAccess() {
         try {
             ResponseEntity<Map> response = restTemplate.exchange(
-                    "/api/v1/tenants/me",
+                    "/api/v1/inquilinos/me",
                     HttpMethod.GET,
                     null,
                     Map.class);

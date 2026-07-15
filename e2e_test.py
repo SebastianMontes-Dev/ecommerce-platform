@@ -3,7 +3,7 @@ import json
 import time
 import uuid
 
-BASE_URL = 'http://localhost:8080/api/v1'
+BASE_URL = 'http://localhost:8081/api/v1'
 
 def print_result(step, response):
     print(f"\n--- {step} ---")
@@ -22,7 +22,7 @@ payload_register = {
     "nombre": "Test",
     "apellido": "User"
 }
-res = requests.post(f"{BASE_URL}/auth/register", json=payload_register)
+res = requests.post(f"{BASE_URL}/auth/registro", json=payload_register)
 print_result("Register User", res)
 
 # 2. Login
@@ -46,13 +46,13 @@ headers = {
 # 3. Create Tenant
 payload_tenant = {
     "nombre": f"Test Store {uid}",
-    "slug": f"test-store-{uid}"
+    "enlaceCorto": f"test-store-{uid}"
 }
-res = requests.post(f"{BASE_URL}/tenants", json=payload_tenant, headers=headers)
+res = requests.post(f"{BASE_URL}/inquilinos", json=payload_tenant, headers=headers)
 print_result("Create Tenant", res)
 
 # Get tenant details
-res = requests.get(f"{BASE_URL}/tenants/me", headers=headers)
+res = requests.get(f"{BASE_URL}/inquilinos/yo", headers=headers)
 print_result("Get My Tenant", res)
 tenant = res.json()
 if 'id' not in tenant:
@@ -61,15 +61,15 @@ if 'id' not in tenant:
 tenant_id = tenant['id']
 
 headers_with_tenant = headers.copy()
-headers_with_tenant["X-Tenant-ID"] = tenant_id
+headers_with_tenant["X-Inquilino-ID"] = tenant_id
 
 # 4. Create Category
 payload_category = {
     "nombre": f"Electronics {uid}",
-    "slug": f"electronics-{uid}",
+    "enlaceCorto": f"electronics-{uid}",
     "descripcion": "Gadgets and tech"
 }
-res = requests.post(f"{BASE_URL}/catalog/categories", json=payload_category, headers=headers_with_tenant)
+res = requests.post(f"{BASE_URL}/catalogo/categorias", json=payload_category, headers=headers_with_tenant)
 print_result("Create Category", res)
 try:
     category_id = res.json().get('id')
@@ -80,14 +80,14 @@ except:
 if category_id:
     payload_product = {
         "nombre": f"Test Laptop {uid}",
-        "slug": f"test-laptop-{uid}",
+        "enlaceCorto": f"test-laptop-{uid}",
         "descripcion": "A powerful test laptop",
         "precio": 999.99,
         "sku": f"LAP123-{uid}",
         "inventario": 10,
         "idCategoria": category_id
     }
-    res = requests.post(f"{BASE_URL}/catalog/products", json=payload_product, headers=headers_with_tenant)
+    res = requests.post(f"{BASE_URL}/catalogo/productos", json=payload_product, headers=headers_with_tenant)
     print_result("Create Product", res)
     try:
         product_id = res.json().get('id')
@@ -102,25 +102,25 @@ if product_id:
         "idProducto": product_id,
         "cantidad": 1
     }
-    res = requests.post(f"{BASE_URL}/cart/items", json=payload_cart, headers=headers_with_tenant)
+    res = requests.post(f"{BASE_URL}/carrito/articulos", json=payload_cart, headers=headers_with_tenant)
     print_result("Add to Cart", res)
 
     # 7. Get Cart
-    res = requests.get(f"{BASE_URL}/cart", headers=headers_with_tenant)
+    res = requests.get(f"{BASE_URL}/carrito", headers=headers_with_tenant)
     print_result("Get Cart", res)
 
     # 8. Create Review
     payload_review = {
-        "rating": 5,
+        "calificacion": 5,
         "titulo": "Excellent product!",
         "comentario": "Really loved it."
     }
-    res = requests.post(f"{BASE_URL}/products/{product_id}/reviews", json=payload_review, headers=headers_with_tenant)
+    res = requests.post(f"{BASE_URL}/productos/{product_id}/resenas", json=payload_review, headers=headers_with_tenant)
     print_result("Create Review", res)
 
     # 9. Create Checkout Session (with fake order id)
     fake_order_id = str(uuid.uuid4())
-    res = requests.post(f"{BASE_URL}/payments/checkout/{fake_order_id}", headers=headers_with_tenant)
+    res = requests.post(f"{BASE_URL}/pagos/checkout/{fake_order_id}", headers=headers_with_tenant)
     print_result("Create Checkout", res)
 
 # This is a marker

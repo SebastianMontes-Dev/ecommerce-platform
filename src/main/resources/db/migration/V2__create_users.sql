@@ -1,4 +1,4 @@
-CREATE TABLE users (
+CREATE TABLE usuarios (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     correo VARCHAR(255) NOT NULL UNIQUE,
     hash_contrasena VARCHAR(255) NOT NULL,
@@ -14,7 +14,7 @@ CREATE TABLE users (
 );
 
 CREATE TABLE user_roles (
-    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    user_id UUID NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
     rol VARCHAR(50) NOT NULL,
     PRIMARY KEY (user_id, rol)
 );
@@ -22,7 +22,7 @@ CREATE TABLE user_roles (
 CREATE TABLE refresh_tokens (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     token VARCHAR(512) NOT NULL UNIQUE,
-    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    user_id UUID NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
     expira_en TIMESTAMP NOT NULL,
     revoked BOOLEAN NOT NULL DEFAULT false,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
@@ -30,7 +30,7 @@ CREATE TABLE refresh_tokens (
     version BIGINT DEFAULT 0
 );
 
-CREATE INDEX idx_users_email ON users(correo);
-CREATE INDEX idx_users_created_at ON users(created_at);
+CREATE INDEX idx_users_email ON usuarios(correo);
+CREATE INDEX idx_users_created_at ON usuarios(created_at);
 CREATE INDEX idx_refresh_tokens_token ON refresh_tokens(token);
 CREATE INDEX idx_refresh_tokens_user_id ON refresh_tokens(user_id);

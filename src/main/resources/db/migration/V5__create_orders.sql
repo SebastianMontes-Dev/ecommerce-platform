@@ -1,6 +1,6 @@
-CREATE TABLE addresses (
+CREATE TABLE direcciones (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    user_id UUID NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
     street VARCHAR(255) NOT NULL,
     city VARCHAR(100) NOT NULL,
     state VARCHAR(100),
@@ -14,11 +14,11 @@ CREATE TABLE addresses (
     version BIGINT DEFAULT 0
 );
 
-CREATE TABLE orders (
+CREATE TABLE ordenes (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
+    tenant_id UUID NOT NULL REFERENCES inquilinos(id) ON DELETE CASCADE,
     numero_orden VARCHAR(100) NOT NULL UNIQUE,
-    id_cliente UUID NOT NULL REFERENCES users(id),
+    id_cliente UUID NOT NULL REFERENCES usuarios(id),
     correo_cliente VARCHAR(255) NOT NULL,
     nombre_cliente VARCHAR(255),
     shipping_street VARCHAR(255),
@@ -53,7 +53,7 @@ CREATE TABLE orders (
 CREATE TABLE order_items (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     tenant_id UUID NOT NULL,
-    order_id UUID NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+    order_id UUID NOT NULL REFERENCES ordenes(id) ON DELETE CASCADE,
     product_id UUID NOT NULL,
     product_name VARCHAR(255) NOT NULL,
     variant_id UUID,
@@ -63,7 +63,7 @@ CREATE TABLE order_items (
     unit_price_currency VARCHAR(3) NOT NULL DEFAULT 'USD',
     subtotal_amount DECIMAL(10,2) NOT NULL,
     subtotal_currency VARCHAR(3) NOT NULL DEFAULT 'USD',
-    image_url VARCHAR(500),
+    imagen_url VARCHAR(500),
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
     version BIGINT DEFAULT 0
@@ -72,7 +72,7 @@ CREATE TABLE order_items (
 CREATE TABLE order_status_history (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     tenant_id UUID NOT NULL,
-    order_id UUID NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+    order_id UUID NOT NULL REFERENCES ordenes(id) ON DELETE CASCADE,
     estado_previo VARCHAR(20),
     nuevo_estado VARCHAR(20) NOT NULL,
     changed_by UUID,
@@ -82,10 +82,10 @@ CREATE TABLE order_status_history (
     version BIGINT DEFAULT 0
 );
 
-CREATE INDEX idx_addresses_user ON addresses(user_id);
-CREATE INDEX idx_orders_tenant ON orders(tenant_id);
-CREATE INDEX idx_orders_customer ON orders(id_cliente);
-CREATE INDEX idx_orders_status ON orders(tenant_id, estado);
-CREATE INDEX idx_orders_number ON orders(numero_orden);
+CREATE INDEX idx_addresses_user ON direcciones(user_id);
+CREATE INDEX idx_orders_tenant ON ordenes(tenant_id);
+CREATE INDEX idx_orders_customer ON ordenes(id_cliente);
+CREATE INDEX idx_orders_status ON ordenes(tenant_id, estado);
+CREATE INDEX idx_orders_number ON ordenes(numero_orden);
 CREATE INDEX idx_order_items_order ON order_items(order_id);
 CREATE INDEX idx_order_history_order ON order_status_history(order_id);

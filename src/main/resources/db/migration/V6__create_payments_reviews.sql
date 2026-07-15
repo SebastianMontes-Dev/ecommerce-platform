@@ -1,7 +1,7 @@
-CREATE TABLE payments (
+CREATE TABLE pagos (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
-    order_id UUID NOT NULL REFERENCES orders(id),
+    tenant_id UUID NOT NULL REFERENCES inquilinos(id) ON DELETE CASCADE,
+    order_id UUID NOT NULL REFERENCES ordenes(id),
     amount DECIMAL(10,2) NOT NULL,
     currency VARCHAR(3) NOT NULL DEFAULT 'USD',
     metodo_pago VARCHAR(20) NOT NULL,
@@ -18,7 +18,7 @@ CREATE TABLE payments (
 CREATE TABLE refunds (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     tenant_id UUID NOT NULL,
-    payment_id UUID NOT NULL REFERENCES payments(id) ON DELETE CASCADE,
+    payment_id UUID NOT NULL REFERENCES pagos(id) ON DELETE CASCADE,
     amount DECIMAL(10,2) NOT NULL,
     currency VARCHAR(3) NOT NULL DEFAULT 'USD',
     reason TEXT,
@@ -29,12 +29,12 @@ CREATE TABLE refunds (
     version BIGINT DEFAULT 0
 );
 
-CREATE TABLE reviews (
+CREATE TABLE resenas (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
-    product_id UUID NOT NULL REFERENCES products(id) ON DELETE CASCADE,
-    id_cliente UUID NOT NULL REFERENCES users(id),
-    order_id UUID NOT NULL REFERENCES orders(id),
+    tenant_id UUID NOT NULL REFERENCES inquilinos(id) ON DELETE CASCADE,
+    product_id UUID NOT NULL REFERENCES productos(id) ON DELETE CASCADE,
+    id_cliente UUID NOT NULL REFERENCES usuarios(id),
+    order_id UUID NOT NULL REFERENCES ordenes(id),
     value DECIMAL(2,1) NOT NULL CHECK (value >= 0 AND value <= 5),
     title VARCHAR(255),
     comment TEXT,
@@ -47,7 +47,7 @@ CREATE TABLE reviews (
 
 CREATE TABLE notifications (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    user_id UUID NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
     tipo_notificacion VARCHAR(50) NOT NULL,
     correo_destinatario VARCHAR(255) NOT NULL,
     subject VARCHAR(500),
@@ -60,11 +60,11 @@ CREATE TABLE notifications (
     version BIGINT DEFAULT 0
 );
 
-CREATE INDEX idx_payments_order ON payments(order_id);
-CREATE INDEX idx_payments_external ON payments(id_externo);
-CREATE INDEX idx_payments_status ON payments(estado);
-CREATE INDEX idx_reviews_product ON reviews(product_id);
-CREATE INDEX idx_reviews_customer ON reviews(id_cliente);
-CREATE INDEX idx_reviews_tenant ON reviews(tenant_id);
+CREATE INDEX idx_payments_order ON pagos(order_id);
+CREATE INDEX idx_payments_external ON pagos(id_externo);
+CREATE INDEX idx_payments_status ON pagos(estado);
+CREATE INDEX idx_reviews_product ON resenas(product_id);
+CREATE INDEX idx_reviews_customer ON resenas(id_cliente);
+CREATE INDEX idx_reviews_tenant ON resenas(tenant_id);
 CREATE INDEX idx_notifications_user ON notifications(user_id);
 CREATE INDEX idx_notifications_status ON notifications(estado);
