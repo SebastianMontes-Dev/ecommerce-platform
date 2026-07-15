@@ -11,9 +11,9 @@ public interface TenantRepository extends BaseJpaRepository<Tenant> {
 
     Optional<Tenant> findBySlug(String slug);
 
-    Optional<Tenant> findByOwnerId(UUID ownerId);
+    Optional<Tenant> findByIdPropietario(UUID idPropietario);
 
     boolean existsBySlug(String slug);
 
-    boolean existsByOwnerId(UUID ownerId);
+    boolean existsByIdPropietario(UUID idPropietario);
 }

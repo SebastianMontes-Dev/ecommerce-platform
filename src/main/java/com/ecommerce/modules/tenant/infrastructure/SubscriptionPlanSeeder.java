@@ -28,10 +28,10 @@ public class SubscriptionPlanSeeder implements CommandLineRunner {
 
         SubscriptionPlan free = new SubscriptionPlan();
         free.setNombre("Free");
-        free.setPlanType(SubscriptionPlanType.FREE);
+        free.setTipoPlan(SubscriptionPlanType.FREE);
         free.setPrecio(BigDecimal.ZERO);
         free.setMaxProducts(10);
-        free.setCommissionRate(new BigDecimal("5.00"));
+        free.setTasaComision(new BigDecimal("5.00"));
         free.setFeatures(Map.of(
                 "customDomain", false,
                 "analytics", false,
@@ -44,10 +44,10 @@ public class SubscriptionPlanSeeder implements CommandLineRunner {
 
         SubscriptionPlan pro = new SubscriptionPlan();
         pro.setNombre("Professional");
-        pro.setPlanType(SubscriptionPlanType.PRO);
+        pro.setTipoPlan(SubscriptionPlanType.PRO);
         pro.setPrecio(new BigDecimal("29.99"));
         pro.setMaxProducts(1000);
-        pro.setCommissionRate(new BigDecimal("2.00"));
+        pro.setTasaComision(new BigDecimal("2.00"));
         pro.setFeatures(Map.of(
                 "customDomain", true,
                 "analytics", true,
@@ -60,10 +60,10 @@ public class SubscriptionPlanSeeder implements CommandLineRunner {
 
         SubscriptionPlan enterprise = new SubscriptionPlan();
         enterprise.setNombre("Enterprise");
-        enterprise.setPlanType(SubscriptionPlanType.ENTERPRISE);
+        enterprise.setTipoPlan(SubscriptionPlanType.ENTERPRISE);
         enterprise.setPrecio(new BigDecimal("99.99"));
         enterprise.setMaxProducts(100000);
-        enterprise.setCommissionRate(new BigDecimal("0.50"));
+        enterprise.setTasaComision(new BigDecimal("0.50"));
         enterprise.setFeatures(Map.of(
                 "customDomain", true,
                 "analytics", true,

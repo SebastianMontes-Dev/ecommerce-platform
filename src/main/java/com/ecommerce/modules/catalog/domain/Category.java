@@ -29,14 +29,14 @@ public class Category extends TenantAwareEntity {
     @Column(name = "image_url")
     private String urlImagen;
 
-    @Column(name = "parent_id")
-    private UUID parentId;
+    @Column(name = "id_padre")
+    private UUID idPadre;
 
     @Column(name = "active")
     private boolean active = true;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "parent_id", insertable = false, updatable = false)
+    @JoinColumn(name = "id_padre", insertable = false, updatable = false)
     private Category parent;
 
     @OneToMany(mappedBy = "parent", fetch = FetchType.LAZY)
@@ -44,6 +44,6 @@ public class Category extends TenantAwareEntity {
     private List<Category> children = new ArrayList<>();
 
     public boolean isRoot() {
-        return parentId == null;
+        return idPadre == null;
     }
 }

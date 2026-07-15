@@ -15,10 +15,10 @@ public interface CategoryRepository extends BaseJpaRepository<Category> {
 
     List<Category> findAllByIdTiendaAndParentIdIsNull(UUID idTienda);
 
-    List<Category> findAllByIdTiendaAndParentId(UUID idTienda, UUID parentId);
+    List<Category> findAllByIdTiendaAndIdPadre(UUID idTienda, UUID idPadre);
 
     List<Category> findAllByIdTiendaAndActiveTrue(UUID idTienda);
 
-    @Query("SELECT c FROM Category c LEFT JOIN FETCH c.children WHERE c.idTienda = :idTienda AND c.parentId IS NULL")
+    @Query("SELECT c FROM Category c LEFT JOIN FETCH c.children WHERE c.idTienda = :idTienda AND c.idPadre IS NULL")
     List<Category> findRootCategoriesWithChildren(UUID idTienda);
 }

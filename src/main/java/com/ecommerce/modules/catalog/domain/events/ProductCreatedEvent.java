@@ -9,8 +9,8 @@ import java.util.UUID;
 @Getter
 public class ProductCreatedEvent implements DomainEvent {
 
-    private final UUID eventId;
-    private final Instant occurredAt;
+    private final UUID idEvento;
+    private final Instant ocurrioEn;
     private final UUID idProducto;
     private final UUID idTienda;
     private final String nombre;
@@ -19,8 +19,8 @@ public class ProductCreatedEvent implements DomainEvent {
     private final String estado;
 
     public ProductCreatedEvent(UUID idProducto, UUID idTienda, String nombre, String slug, String descripcion, String estado) {
-        this.eventId = UUID.randomUUID();
-        this.occurredAt = Instant.now();
+        this.idEvento = UUID.randomUUID();
+        this.ocurrioEn = Instant.now();
         this.idProducto = idProducto;
         this.idTienda = idTienda;
         this.nombre = nombre;
@@ -30,7 +30,7 @@ public class ProductCreatedEvent implements DomainEvent {
     }
 
     @Override
-    public String getEventType() {
+    public String getTipoEvento() {
         return "PRODUCT_CREATED";
     }
 }

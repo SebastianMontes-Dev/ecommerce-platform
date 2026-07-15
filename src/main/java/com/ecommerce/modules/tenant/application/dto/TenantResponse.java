@@ -18,9 +18,9 @@ public class TenantResponse {
     private String nombre;
     private String slug;
     private String descripcion;
-    private String logoUrl;
-    private String bannerUrl;
+    private String urlLogo;
+    private String urlBanner;
     private String estado;
-    private UUID ownerId;
+    private UUID idPropietario;
     private LocalDateTime creadoEn;
 }

@@ -97,10 +97,10 @@ public class StripeWebhookController {
         String idReferenciaCliente = session.getClientReferenceId();
         if (idReferenciaCliente == null) return;
 
-        Payment payment = paymentRepository.findByExternalId(idReferenciaCliente)
+        Payment payment = paymentRepository.findByIdExterno(idReferenciaCliente)
                 .orElseThrow(() -> new IllegalStateException("Pago no encontrado para la sesión de Stripe con idReferenciaCliente: " + idReferenciaCliente));
 
-        payment.setExternalId(session.getPaymentIntent());
+        payment.setIdExterno(session.getPaymentIntent());
         payment.complete();
         paymentRepository.save(payment);
         log.info("Pago completado exitosamente para la orden: {}", payment.getIdOrden());
@@ -116,7 +116,7 @@ public class StripeWebhookController {
         String idReferenciaCliente = session.getClientReferenceId();
         if (idReferenciaCliente == null) return;
 
-        paymentRepository.findByExternalId(idReferenciaCliente).ifPresent(payment -> {
+        paymentRepository.findByIdExterno(idReferenciaCliente).ifPresent(payment -> {
             payment.setEstado(PaymentStatus.FAILED);
             paymentRepository.save(payment);
             log.info("Pago expirado: {}", payment.getId());
@@ -130,7 +130,7 @@ public class StripeWebhookController {
 
         if (intent == null) return;
 
-        paymentRepository.findByExternalId(intent.getId()).ifPresent(payment -> {
+        paymentRepository.findByIdExterno(intent.getId()).ifPresent(payment -> {
             payment.setEstado(PaymentStatus.FAILED);
             paymentRepository.save(payment);
             log.info("Pago fallido: {}", payment.getId());

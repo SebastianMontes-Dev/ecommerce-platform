@@ -104,9 +104,9 @@ public class CartService {
             throw new IllegalStateException("Product does not belong to the specified tenant");
         }
 
-        item.setUnitPrice(product.getPrecio().getAmount());
-        item.setProductName(product.getNombre());
-        item.setCurrency(product.getPrecio().getCurrency());
+        item.setUnitPrice(product.getPrecio().getMonto());
+        item.setNombreProducto(product.getNombre());
+        item.setMoneda(product.getPrecio().getMoneda());
     }
 
     private Cart loadCart(String key) {

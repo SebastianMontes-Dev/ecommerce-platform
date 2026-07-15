@@ -19,39 +19,39 @@ import java.util.UUID;
 @NoArgsConstructor
 public class Order extends TenantAwareAggregateRoot {
 
-    @Column(name = "order_number", unique = true, nullable = false, length = 100)
-    private String orderNumber;
+    @Column(name = "numero_orden", unique = true, nullable = false, length = 100)
+    private String numeroOrden;
 
-    @Column(name = "customer_id", nullable = false)
-    private UUID customerId;
+    @Column(name = "id_cliente", nullable = false)
+    private UUID idCliente;
 
-    @Column(name = "customer_email", nullable = false)
-    private String customerEmail;
+    @Column(name = "correo_cliente", nullable = false)
+    private String correoCliente;
 
-    @Column(name = "customer_name")
-    private String customerName;
+    @Column(name = "nombre_cliente")
+    private String nombreCliente;
 
     @Embedded
     @AttributeOverrides({
             @AttributeOverride(name = "street", column = @Column(name = "shipping_street")),
             @AttributeOverride(name = "city", column = @Column(name = "shipping_city")),
             @AttributeOverride(name = "state", column = @Column(name = "shipping_state")),
-            @AttributeOverride(name = "zipCode", column = @Column(name = "shipping_zip_code")),
+            @AttributeOverride(name = "codigoPostal", column = @Column(name = "shipping_zip_code")),
             @AttributeOverride(name = "country", column = @Column(name = "shipping_country")),
             @AttributeOverride(name = "additionalInfo", column = @Column(name = "shipping_additional_info"))
     })
-    private Address shippingAddress;
+    private Address direccionEnvio;
 
     @Embedded
     @AttributeOverrides({
             @AttributeOverride(name = "street", column = @Column(name = "billing_street")),
             @AttributeOverride(name = "city", column = @Column(name = "billing_city")),
             @AttributeOverride(name = "state", column = @Column(name = "billing_state")),
-            @AttributeOverride(name = "zipCode", column = @Column(name = "billing_zip_code")),
+            @AttributeOverride(name = "codigoPostal", column = @Column(name = "billing_zip_code")),
             @AttributeOverride(name = "country", column = @Column(name = "billing_country")),
             @AttributeOverride(name = "additionalInfo", column = @Column(name = "billing_additional_info"))
     })
-    private Address billingAddress;
+    private Address direccionFacturacion;
 
     @Embedded
     @AttributeOverrides({
@@ -62,17 +62,17 @@ public class Order extends TenantAwareAggregateRoot {
 
     @Embedded
     @AttributeOverrides({
-            @AttributeOverride(name = "amount", column = @Column(name = "tax_amount", precision = 10, scale = 2)),
+            @AttributeOverride(name = "amount", column = @Column(name = "monto_impuesto", precision = 10, scale = 2)),
             @AttributeOverride(name = "currency", column = @Column(name = "tax_currency", length = 3))
     })
-    private Money taxAmount;
+    private Money montoImpuesto;
 
     @Embedded
     @AttributeOverrides({
-            @AttributeOverride(name = "amount", column = @Column(name = "shipping_amount", precision = 10, scale = 2)),
+            @AttributeOverride(name = "amount", column = @Column(name = "monto_envio", precision = 10, scale = 2)),
             @AttributeOverride(name = "currency", column = @Column(name = "shipping_currency", length = 3))
     })
-    private Money shippingAmount;
+    private Money montoEnvio;
 
     @Embedded
     @AttributeOverrides({
@@ -93,42 +93,52 @@ public class Order extends TenantAwareAggregateRoot {
 
     @OneToMany(mappedBy = "order", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("creadoEn ASC")
-    private List<OrderStatusHistory> statusHistory = new ArrayList<>();
+    private List<OrderHistorialEstados> historialEstados = new ArrayList<>();
 
     public void confirm() {
-        changeStatus(OrderStatus.CONFIRMED);
+        changeStatus(OrderStatus.CONFIRMED, null);
     }
 
     public void markAsPaid() {
-        changeStatus(OrderStatus.PAID);
+        changeStatus(OrderStatus.PAID, null);
     }
     
     public void process() {
-        changeStatus(OrderStatus.PROCESSING);
+        changeStatus(OrderStatus.PROCESSING, null);
     }
 
     public void ship() {
-        changeStatus(OrderStatus.SHIPPED);
+        changeStatus(OrderStatus.SHIPPED, null);
     }
 
     public void deliver() {
-        changeStatus(OrderStatus.DELIVERED);
+        changeStatus(OrderStatus.DELIVERED, null);
     }
 
     public void cancel(String reason) {
-        changeStatus(OrderStatus.CANCELLED);
+        changeStatus(OrderStatus.CANCELLED, reason);
     }
     
     public void refund(String reason) {
-        changeStatus(OrderStatus.REFUNDED);
+        changeStatus(OrderStatus.REFUNDED, reason);
     }
 
-    private void changeStatus(OrderStatus newStatus) {
-        validateTransition(newStatus);
-        OrderStatus oldStatus = this.estado;
-        this.estado = newStatus;
+    private void changeStatus(OrderStatus nuevoEstado, String notes) {
+        validateTransition(nuevoEstado);
+        OrderStatus estadoAnterior = this.estado;
+        this.estado = nuevoEstado;
+        
+        OrderHistorialEstados history = new OrderHistorialEstados();
+        history.setIdTienda(this.getIdTienda());
+        history.setIdOrden(this.getId());
+        history.setEstadoPrevio(estadoAnterior != null ? estadoAnterior.nombre() : null);
+        history.setNuevoEstado(nuevoEstado.nombre());
+        history.setNotes(notes);
+        history.setOrder(this);
+        this.historialEstados.add(history);
+
         if (this.getId() != null) {
-            registerEvent(new OrderStatusChangedEvent(this.getId(), this.getIdTienda(), oldStatus, newStatus));
+            registerEvent(new OrderStatusChangedEvent(this.getId(), this.getIdTienda(), estadoAnterior, nuevoEstado, notes));
         }
     }
 
@@ -146,7 +156,7 @@ public class Order extends TenantAwareAggregateRoot {
         if (!isValid) {
             throw new InvalidOperationException(
                 String.format("Cannot transition order %s from %s to %s", 
-                    this.orderNumber != null ? this.orderNumber : "UNKNOWN", 
+                    this.numeroOrden != null ? this.numeroOrden : "UNKNOWN", 
                     this.estado, 
                     targetStatus)
             );

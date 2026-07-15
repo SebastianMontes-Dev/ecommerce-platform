@@ -37,8 +37,8 @@ public class OrderUseCase {
     }
 
     @Transactional(readOnly = true)
-    public PagedResponse<OrderResponse> listOrdersByCustomer(UUID customerId, Pageable pageable) {
-        Page<Order> page = orderRepository.findAllByCustomerId(customerId, pageable);
+    public PagedResponse<OrderResponse> listOrdersByCustomer(UUID idCliente, Pageable pageable) {
+        Page<Order> page = orderRepository.findAllByIdCliente(idCliente, pageable);
         return PagedResponse.from(page.map(OrderUseCase::mapToResponse));
     }
 
@@ -56,15 +56,15 @@ public class OrderUseCase {
     static OrderResponse mapToResponse(Order order) {
         return OrderResponse.builder()
                 .id(order.getId())
-                .orderNumber(order.getOrderNumber())
-                .customerId(order.getCustomerId())
-                .customerEmail(order.getCustomerEmail())
-                .customerName(order.getCustomerName())
-                .subtotal(order.getSubtotal() != null ? order.getSubtotal().getAmount() : null)
-                .taxAmount(order.getTaxAmount() != null ? order.getTaxAmount().getAmount() : null)
-                .shippingAmount(order.getShippingAmount() != null ? order.getShippingAmount().getAmount() : null)
-                .total(order.getTotal() != null ? order.getTotal().getAmount() : null)
-                .currency(order.getTotal() != null ? order.getTotal().getCurrency() : "USD")
+                .numeroOrden(order.getNumeroOrden())
+                .idCliente(order.getIdCliente())
+                .correoCliente(order.getCorreoCliente())
+                .nombreCliente(order.getNombreCliente())
+                .subtotal(order.getSubtotal() != null ? order.getSubtotal().getMonto() : null)
+                .montoImpuesto(order.getMontoImpuesto() != null ? order.getMontoImpuesto().getMonto() : null)
+                .montoEnvio(order.getMontoEnvio() != null ? order.getMontoEnvio().getMonto() : null)
+                .total(order.getTotal() != null ? order.getTotal().getMonto() : null)
+                .currency(order.getTotal() != null ? order.getTotal().getMoneda() : "USD")
                 .estado(order.getEstado().name())
                 .notes(order.getNotes())
                 .creadoEn(order.getCreadoEn())

@@ -19,6 +19,6 @@ public class CategoryResponse {
     private String slug;
     private String descripcion;
     private String urlImagen;
-    private UUID parentId;
+    private UUID idPadre;
     private List<CategoryResponse> children;
 }

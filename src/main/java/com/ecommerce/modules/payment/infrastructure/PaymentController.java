@@ -27,11 +27,11 @@ public class PaymentController {
         Payment payment = new Payment();
         payment.setIdTienda(TenantContext.getIdTienda());
         payment.setIdOrden(idOrden);
-        payment.setAmount(new BigDecimal("0"));
-        payment.setCurrency("USD");
-        payment.setPaymentMethod("STRIPE");
+        payment.setMonto(new BigDecimal("0"));
+        payment.setMoneda("USD");
+        payment.setMetodoPago("STRIPE");
         payment.setEstado(PaymentStatus.PENDING);
-        payment.setExternalId("simulated-checkout-" + UUID.randomUUID());
+        payment.setIdExterno("simulated-checkout-" + UUID.randomUUID());
         paymentRepository.save(payment);
 
         return ResponseEntity.ok(Map.of(

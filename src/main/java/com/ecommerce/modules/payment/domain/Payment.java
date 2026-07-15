@@ -28,15 +28,15 @@ public class Payment extends TenantAwareEntity {
     @Column(name = "currency", length = 3, nullable = false)
     private String currency = "USD";
 
-    @Column(name = "payment_method", length = 20, nullable = false)
-    private String paymentMethod;
+    @Column(name = "metodo_pago", length = 20, nullable = false)
+    private String metodoPago;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "estado", length = 20, nullable = false)
     private PaymentStatus estado = PaymentStatus.PENDING;
 
-    @Column(name = "external_id")
-    private String externalId;
+    @Column(name = "id_externo")
+    private String idExterno;
 
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "metadata", columnDefinition = "jsonb")

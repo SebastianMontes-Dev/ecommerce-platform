@@ -11,7 +11,7 @@ public class ProductDocument {
     private String descripcion;
     private String slug;
     private BigDecimal precio;
-    private String categoryName;
+    private String nombreCategoria;
     private String urlImagen;
     private double calificacionPromedio;
     private long conteoResenas;
@@ -19,14 +19,14 @@ public class ProductDocument {
     public ProductDocument() {}
 
     public ProductDocument(UUID idProducto, UUID idTienda, String nombre, String descripcion,
-                           String slug, BigDecimal precio, String categoryName) {
+                           String slug, BigDecimal precio, String nombreCategoria) {
         this.id = idProducto.toString();
         this.idTienda = idTienda;
         this.nombre = nombre;
         this.descripcion = descripcion;
         this.slug = slug;
         this.precio = precio;
-        this.categoryName = categoryName;
+        this.nombreCategoria = nombreCategoria;
     }
 
     public String getId() { return id; }
@@ -41,8 +41,8 @@ public class ProductDocument {
     public void setSlug(String slug) { this.slug = slug; }
     public BigDecimal getPrecio() { return precio; }
     public void setPrecio(BigDecimal precio) { this.precio = precio; }
-    public String getCategoryName() { return categoryName; }
-    public void setCategoryName(String categoryName) { this.categoryName = categoryName; }
+    public String getNombreCategoria() { return nombreCategoria; }
+    public void setNombreCategoria(String nombreCategoria) { this.nombreCategoria = nombreCategoria; }
     public String getUrlImagen() { return urlImagen; }
     public void setUrlImagen(String urlImagen) { this.urlImagen = urlImagen; }
     public double getCalificacionPromedio() { return calificacionPromedio; }

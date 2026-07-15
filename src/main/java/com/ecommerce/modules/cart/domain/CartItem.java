@@ -17,7 +17,7 @@ import java.util.UUID;
 public class CartItem {
 
     private UUID idProducto;
-    private String productName;
+    private String nombreProducto;
     private UUID variantId;
     private String variantName;
     private int cantidad;

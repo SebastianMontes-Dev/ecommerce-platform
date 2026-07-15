@@ -27,8 +27,8 @@ public class User extends BaseAuditableEntity {
     @Column(name = "correo", unique = true, nullable = false)
     private String correo;
 
-    @Column(name = "password_hash", nullable = false)
-    private String passwordHash;
+    @Column(name = "hash_contrasena", nullable = false)
+    private String hashContrasena;
 
     @Column(name = "first_name")
     private String nombre;
@@ -48,9 +48,9 @@ public class User extends BaseAuditableEntity {
     @Column(name = "rol")
     private Set<UserRole> roles = new HashSet<>();
 
-    public User(String correo, String passwordHash, String nombre, String apellido) {
+    public User(String correo, String hashContrasena, String nombre, String apellido) {
         this.correo = correo;
-        this.passwordHash = passwordHash;
+        this.hashContrasena = hashContrasena;
         this.nombre = nombre;
         this.apellido = apellido;
         this.enabled = true;
@@ -71,7 +71,7 @@ public class User extends BaseAuditableEntity {
     }
 
     public void changePassword(String newPasswordHash) {
-        this.passwordHash = newPasswordHash;
+        this.hashContrasena = newPasswordHash;
     }
 
     public void addRole(UserRole rol) {
@@ -86,7 +86,7 @@ public class User extends BaseAuditableEntity {
         return this.roles.contains(rol);
     }
 
-    public String getFullName() {
+    public String getNombreCompleto() {
         if (nombre != null && apellido != null) {
             return nombre + " " + apellido;
         }

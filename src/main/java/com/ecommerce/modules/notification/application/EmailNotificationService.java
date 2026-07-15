@@ -62,13 +62,13 @@ public class EmailNotificationService {
                     .orElseThrow(() -> new EntityNotFoundException("Order", idOrden));
 
             SimpleMailMessage message = new SimpleMailMessage();
-            message.setTo(order.getCustomerEmail());
-            message.setSubject(subject + " - #" + order.getOrderNumber());
-            message.setText(String.format(bodyTemplate, order.getOrderNumber()));
+            message.setTo(order.getCorreoCliente());
+            message.setSubject(subject + " - #" + order.getNumeroOrden());
+            message.setText(String.format(bodyTemplate, order.getNumeroOrden()));
             message.setFrom("noreply@ecommerce.com");
 
             mailSender.send(message);
-            log.info("Email sent to {} for order {}: {}", order.getCustomerEmail(), order.getOrderNumber(), subject);
+            log.info("Email sent to {} for order {}: {}", order.getCorreoCliente(), order.getNumeroOrden(), subject);
         } catch (Exception e) {
             log.error("Failed to send correo for order {}: {}", idOrden, e.getMessage(), e);
         }

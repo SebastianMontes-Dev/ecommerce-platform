@@ -13,7 +13,7 @@ import java.util.UUID;
 @Getter
 @Setter
 @NoArgsConstructor
-public class OrderStatusHistory extends BaseEntity {
+public class OrderHistorialEstados extends BaseEntity {
 
     @Column(name = "tenant_id", nullable = false)
     private UUID idTienda;
@@ -21,11 +21,11 @@ public class OrderStatusHistory extends BaseEntity {
     @Column(name = "order_id", nullable = false)
     private UUID idOrden;
 
-    @Column(name = "previous_status")
-    private String previousStatus;
+    @Column(name = "estado_previo")
+    private String estadoPrevio;
 
-    @Column(name = "new_status", nullable = false)
-    private String newStatus;
+    @Column(name = "nuevo_estado", nullable = false)
+    private String nuevoEstado;
 
     @Column(name = "changed_by")
     private UUID changedBy;

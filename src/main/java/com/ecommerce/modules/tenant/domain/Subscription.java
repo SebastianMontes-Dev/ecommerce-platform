@@ -16,29 +16,29 @@ import java.util.UUID;
 @NoArgsConstructor
 public class Subscription extends TenantAwareEntity {
 
-    @Column(name = "plan_id", nullable = false)
-    private UUID planId;
+    @Column(name = "id_plan", nullable = false)
+    private UUID idPlan;
 
     @Column(name = "estado", nullable = false)
     private String estado = "ACTIVE";
 
-    @Column(name = "start_date", nullable = false)
-    private LocalDateTime startDate;
+    @Column(name = "fecha_inicio", nullable = false)
+    private LocalDateTime fechaInicio;
 
-    @Column(name = "end_date")
-    private LocalDateTime endDate;
+    @Column(name = "fecha_fin")
+    private LocalDateTime fechaFin;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "plan_id", insertable = false, updatable = false)
+    @JoinColumn(name = "id_plan", insertable = false, updatable = false)
     private SubscriptionPlan plan;
 
     public boolean isActive() {
         return "ACTIVE".equals(estado) &&
-                (endDate == null || endDate.isAfter(LocalDateTime.now()));
+                (fechaFin == null || fechaFin.isAfter(LocalDateTime.now()));
     }
 
     public void cancel() {
         this.estado = "CANCELLED";
-        this.endDate = LocalDateTime.now();
+        this.fechaFin = LocalDateTime.now();
     }
 }

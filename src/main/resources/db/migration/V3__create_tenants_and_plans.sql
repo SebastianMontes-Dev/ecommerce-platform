@@ -3,12 +3,12 @@ CREATE TABLE tenants (
     nombre VARCHAR(255) NOT NULL,
     slug VARCHAR(100) NOT NULL UNIQUE,
     descripcion TEXT,
-    logo_url VARCHAR(500),
-    logo_alt_text VARCHAR(255),
-    banner_url VARCHAR(500),
-    banner_alt_text VARCHAR(255),
+    url_logo VARCHAR(500),
+    texto_alternativo_logo VARCHAR(255),
+    url_banner VARCHAR(500),
+    texto_alternativo_banner VARCHAR(255),
     estado VARCHAR(20) NOT NULL DEFAULT 'TRIAL',
-    owner_id UUID NOT NULL REFERENCES users(id),
+    id_propietario UUID NOT NULL REFERENCES users(id),
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
     created_by UUID,
@@ -19,10 +19,10 @@ CREATE TABLE tenants (
 CREATE TABLE subscription_plans (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     nombre VARCHAR(100) NOT NULL,
-    plan_type VARCHAR(50) NOT NULL,
+    tipo_plan VARCHAR(50) NOT NULL,
     precio DECIMAL(10,2) NOT NULL DEFAULT 0,
     max_products INTEGER NOT NULL DEFAULT 10,
-    commission_rate DECIMAL(5,2) NOT NULL DEFAULT 5.00,
+    tasa_comision DECIMAL(5,2) NOT NULL DEFAULT 5.00,
     features JSONB NOT NULL DEFAULT '{}',
     active BOOLEAN NOT NULL DEFAULT true,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
@@ -33,10 +33,10 @@ CREATE TABLE subscription_plans (
 CREATE TABLE subscriptions (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
-    plan_id UUID NOT NULL REFERENCES subscription_plans(id),
+    id_plan UUID NOT NULL REFERENCES subscription_plans(id),
     estado VARCHAR(20) NOT NULL DEFAULT 'ACTIVE',
-    start_date TIMESTAMP NOT NULL,
-    end_date TIMESTAMP,
+    fecha_inicio TIMESTAMP NOT NULL,
+    fecha_fin TIMESTAMP,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
     created_by UUID,
@@ -45,7 +45,7 @@ CREATE TABLE subscriptions (
 );
 
 CREATE INDEX idx_tenants_slug ON tenants(slug);
-CREATE INDEX idx_tenants_owner_id ON tenants(owner_id);
+CREATE INDEX idx_tenants_owner_id ON tenants(id_propietario);
 CREATE INDEX idx_tenants_status ON tenants(estado);
 CREATE INDEX idx_subscriptions_tenant_id ON subscriptions(tenant_id);
-CREATE INDEX idx_subscription_plans_type ON subscription_plans(plan_type);
+CREATE INDEX idx_subscription_plans_type ON subscription_plans(tipo_plan);

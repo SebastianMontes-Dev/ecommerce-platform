@@ -21,7 +21,7 @@ public class SpringDomainEventPublisher implements DomainEventPublisher {
 
     @Override
     public <T extends DomainEvent> void publish(T event) {
-        log.debug("Publishing domain event: {}", event.getEventType());
+        log.debug("Publishing domain event: {}", event.getTipoEvento());
         publisher.publishEvent(event);
     }
 

@@ -25,8 +25,8 @@ public class CreateCategoryUseCase {
         category.setDescripcion(request.getDescripcion());
         category.setUrlImagen(request.getUrlImagen());
 
-        if (request.getParentId() != null) {
-            category.setParentId(request.getParentId());
+        if (request.getIdPadre() != null) {
+            category.setIdPadre(request.getIdPadre());
         }
 
         category = categoryRepository.save(category);
@@ -47,7 +47,7 @@ public class CreateCategoryUseCase {
                 .slug(category.getSlug())
                 .descripcion(category.getDescripcion())
                 .urlImagen(category.getUrlImagen())
-                .parentId(category.getParentId())
+                .idPadre(category.getIdPadre())
                 .children(category.getChildren() != null ? category.getChildren().stream()
                         .map(CreateCategoryUseCase::mapToChildResponse).toList() : List.of())
                 .build();
@@ -60,7 +60,7 @@ public class CreateCategoryUseCase {
                 .slug(category.getSlug())
                 .descripcion(category.getDescripcion())
                 .urlImagen(category.getUrlImagen())
-                .parentId(category.getParentId())
+                .idPadre(category.getIdPadre())
                 .children(List.of())
                 .build();
     }

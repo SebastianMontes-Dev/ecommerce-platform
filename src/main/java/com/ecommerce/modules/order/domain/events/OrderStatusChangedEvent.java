@@ -10,24 +10,26 @@ import java.util.UUID;
 @Getter
 public class OrderStatusChangedEvent implements DomainEvent {
 
-    private final UUID eventId;
-    private final Instant occurredAt;
+    private final UUID idEvento;
+    private final Instant ocurrioEn;
     private final UUID idOrden;
     private final UUID idTienda;
-    private final OrderStatus oldStatus;
-    private final OrderStatus newStatus;
+    private final OrderStatus estadoAnterior;
+    private final OrderStatus nuevoEstado;
+    private final String notes;
 
-    public OrderStatusChangedEvent(UUID idOrden, UUID idTienda, OrderStatus oldStatus, OrderStatus newStatus) {
-        this.eventId = UUID.randomUUID();
-        this.occurredAt = Instant.now();
+    public OrderStatusChangedEvent(UUID idOrden, UUID idTienda, OrderStatus estadoAnterior, OrderStatus nuevoEstado, String notes) {
+        this.idEvento = UUID.randomUUID();
+        this.ocurrioEn = Instant.now();
         this.idOrden = idOrden;
         this.idTienda = idTienda;
-        this.oldStatus = oldStatus;
-        this.newStatus = newStatus;
+        this.estadoAnterior = estadoAnterior;
+        this.nuevoEstado = nuevoEstado;
+        this.notes = notes;
     }
 
     @Override
-    public String getEventType() {
+    public String getTipoEvento() {
         return "ORDER_STATUS_CHANGED";
     }
 }

@@ -19,11 +19,11 @@ public class Notification extends BaseEntity {
     @Column(name = "user_id", nullable = false)
     private UUID userId;
 
-    @Column(name = "notification_type", length = 50, nullable = false)
-    private String notificationType;
+    @Column(name = "tipo_notificacion", length = 50, nullable = false)
+    private String tipoNotificacion;
 
-    @Column(name = "recipient_email", nullable = false)
-    private String recipientEmail;
+    @Column(name = "correo_destinatario", nullable = false)
+    private String correoDestinatario;
 
     @Column(name = "subject")
     private String subject;
@@ -34,19 +34,19 @@ public class Notification extends BaseEntity {
     @Column(name = "estado", length = 20)
     private String estado = "PENDING";
 
-    @Column(name = "sent_at")
-    private LocalDateTime sentAt;
+    @Column(name = "enviado_en")
+    private LocalDateTime enviadoEn;
 
-    @Column(name = "error_message", columnDefinition = "TEXT")
-    private String errorMessage;
+    @Column(name = "mensaje_error", columnDefinition = "TEXT")
+    private String mensajeError;
 
     public void markAsSent() {
         this.estado = "SENT";
-        this.sentAt = LocalDateTime.now();
+        this.enviadoEn = LocalDateTime.now();
     }
 
-    public void markAsFailed(String errorMessage) {
+    public void markAsFailed(String mensajeError) {
         this.estado = "FAILED";
-        this.errorMessage = errorMessage;
+        this.mensajeError = mensajeError;
     }
 }

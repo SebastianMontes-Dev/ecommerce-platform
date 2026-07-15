@@ -8,5 +8,5 @@ import java.util.Optional;
 @Repository
 public interface SubscriptionPlanRepository extends BaseJpaRepository<SubscriptionPlan> {
 
-    Optional<SubscriptionPlan> findByPlanTypeAndActiveTrue(SubscriptionPlanType planType);
+    Optional<SubscriptionPlan> findByTipoPlanAndActiveTrue(SubscriptionPlanType tipoPlan);
 }

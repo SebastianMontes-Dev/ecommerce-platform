@@ -36,19 +36,19 @@ public class CreateProductUseCase {
         product.setNombre(request.getNombre());
         product.setSlug(request.getSlug());
         product.setDescripcion(request.getDescripcion());
-        product.setPrecio(Money.of(request.getPrecio(), request.getCurrency()));
+        product.setPrecio(Money.of(request.getPrecio(), request.getMoneda()));
 
-        if (request.getCompareAtPrice() != null) {
-            product.setCompareAtPrice(Money.of(request.getCompareAtPrice(), request.getCurrency()));
+        if (request.getPrecioComparacion() != null) {
+            product.setPrecioComparacion(Money.of(request.getPrecioComparacion(), request.getMoneda()));
         }
-        if (request.getCostPrice() != null) {
-            product.setCostPrice(Money.of(request.getCostPrice(), request.getCurrency()));
+        if (request.getPrecioCosto() != null) {
+            product.setPrecioCosto(Money.of(request.getPrecioCosto(), request.getMoneda()));
         }
 
         product.setSku(request.getSku());
-        product.setBarcode(request.getBarcode());
+        product.setCodigoBarras(request.getCodigoBarras());
         product.setInventario(request.getInventario());
-        product.setInventoryTrackEnabled(request.isInventoryTrackEnabled());
+        product.setRastreoInventarioHabilitado(request.isRastreoInventarioHabilitado());
         product.setEstado(ProductStatus.DRAFT);
 
         if (request.getIdCategoria() != null) {
@@ -71,24 +71,24 @@ public class CreateProductUseCase {
                 .nombre(product.getNombre())
                 .slug(product.getSlug())
                 .descripcion(product.getDescripcion())
-                .precio(product.getPrecio() != null ? product.getPrecio().getAmount() : null)
-                .currency(product.getPrecio() != null ? product.getPrecio().getCurrency() : "USD")
-                .compareAtPrice(product.getCompareAtPrice() != null ? product.getCompareAtPrice().getAmount() : null)
-                .costPrice(product.getCostPrice() != null ? product.getCostPrice().getAmount() : null)
+                .precio(product.getPrecio() != null ? product.getPrecio().getMonto() : null)
+                .currency(product.getPrecio() != null ? product.getPrecio().getMoneda() : "USD")
+                .precioComparacion(product.getPrecioComparacion() != null ? product.getPrecioComparacion().getMonto() : null)
+                .precioCosto(product.getPrecioCosto() != null ? product.getPrecioCosto().getMonto() : null)
                 .sku(product.getSku())
-                .barcode(product.getBarcode())
+                .codigoBarras(product.getCodigoBarras())
                 .inventario(product.getInventario())
-                .inventoryTrackEnabled(product.isInventoryTrackEnabled())
+                .rastreoInventarioHabilitado(product.isRastreoInventarioHabilitado())
                 .estado(product.getEstado().name())
                 .idCategoria(product.getIdCategoria())
-                .categoryName(product.getCategory() != null ? product.getCategory().getNombre() : null)
+                .nombreCategoria(product.getCategory() != null ? product.getCategory().getNombre() : null)
                 .variants(product.getVariants() != null ? product.getVariants().stream().map(v ->
                         ProductVariantResponse.builder()
                                 .id(v.getId())
                                 .nombre(v.getNombre())
                                 .sku(v.getSku())
-                                .precio(v.getAmount())
-                                .currency(v.getCurrency())
+                                .precio(v.getMonto())
+                                .currency(v.getMoneda())
                                 .inventario(v.getInventario())
                                 .attributes(v.getAttributes())
                                 .build()

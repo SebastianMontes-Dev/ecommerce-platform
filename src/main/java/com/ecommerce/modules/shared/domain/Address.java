@@ -21,8 +21,8 @@ public class Address {
     @Column(name = "state")
     private String state;
 
-    @Column(name = "zip_code")
-    private String zipCode;
+    @Column(name = "codigo_postal")
+    private String codigoPostal;
 
     @Column(name = "country")
     private String country;
@@ -30,34 +30,34 @@ public class Address {
     @Column(name = "additional_info")
     private String additionalInfo;
 
-    private Address(String street, String city, String state, String zipCode, String country, String additionalInfo) {
+    private Address(String street, String city, String state, String codigoPostal, String country, String additionalInfo) {
         this.street = street;
         this.city = city;
         this.state = state;
-        this.zipCode = zipCode;
+        this.codigoPostal = codigoPostal;
         this.country = country;
         this.additionalInfo = additionalInfo;
     }
 
-    public static Address of(String street, String city, String state, String zipCode, String country) {
+    public static Address of(String street, String city, String state, String codigoPostal, String country) {
         if (street == null || street.isBlank()) throw new IllegalArgumentException("Street is required");
         if (city == null || city.isBlank()) throw new IllegalArgumentException("City is required");
         if (country == null || country.isBlank()) throw new IllegalArgumentException("Country is required");
-        return new Address(street, city, state, zipCode, country, null);
+        return new Address(street, city, state, codigoPostal, country, null);
     }
 
-    public static Address of(String street, String city, String state, String zipCode, String country, String additionalInfo) {
+    public static Address of(String street, String city, String state, String codigoPostal, String country, String additionalInfo) {
         if (street == null || street.isBlank()) throw new IllegalArgumentException("Street is required");
         if (city == null || city.isBlank()) throw new IllegalArgumentException("City is required");
         if (country == null || country.isBlank()) throw new IllegalArgumentException("Country is required");
-        return new Address(street, city, state, zipCode, country, additionalInfo);
+        return new Address(street, city, state, codigoPostal, country, additionalInfo);
     }
 
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder(street).append(", ").append(city);
         if (state != null) sb.append(", ").append(state);
-        if (zipCode != null) sb.append(" ").append(zipCode);
+        if (codigoPostal != null) sb.append(" ").append(codigoPostal);
         sb.append(", ").append(country);
         return sb.toString();
     }

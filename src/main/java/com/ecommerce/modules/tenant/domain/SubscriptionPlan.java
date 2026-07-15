@@ -23,8 +23,8 @@ public class SubscriptionPlan extends BaseEntity {
     private String nombre;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "plan_type", nullable = false)
-    private SubscriptionPlanType planType;
+    @Column(name = "tipo_plan", nullable = false)
+    private SubscriptionPlanType tipoPlan;
 
     @Column(name = "precio", nullable = false)
     private BigDecimal precio;
@@ -32,8 +32,8 @@ public class SubscriptionPlan extends BaseEntity {
     @Column(name = "max_products", nullable = false)
     private int maxProducts;
 
-    @Column(name = "commission_rate", nullable = false)
-    private BigDecimal commissionRate;
+    @Column(name = "tasa_comision", nullable = false)
+    private BigDecimal tasaComision;
 
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "features", columnDefinition = "jsonb")
@@ -43,7 +43,7 @@ public class SubscriptionPlan extends BaseEntity {
     private boolean active = true;
 
     public Percentage getCommissionPercentage() {
-        return Percentage.of(commissionRate);
+        return Percentage.of(tasaComision);
     }
 
     public boolean hasFeature(String feature) {

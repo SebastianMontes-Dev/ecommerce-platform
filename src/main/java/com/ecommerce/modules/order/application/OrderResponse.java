@@ -16,13 +16,13 @@ import java.util.UUID;
 public class OrderResponse {
 
     private UUID id;
-    private String orderNumber;
-    private UUID customerId;
-    private String customerEmail;
-    private String customerName;
+    private String numeroOrden;
+    private UUID idCliente;
+    private String correoCliente;
+    private String nombreCliente;
     private BigDecimal subtotal;
-    private BigDecimal taxAmount;
-    private BigDecimal shippingAmount;
+    private BigDecimal montoImpuesto;
+    private BigDecimal montoEnvio;
     private BigDecimal total;
     private String currency;
     private String estado;

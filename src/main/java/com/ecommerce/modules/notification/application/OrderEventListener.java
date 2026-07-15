@@ -18,16 +18,16 @@ public class OrderEventListener {
     @Async
     @EventListener
     public void onOrderStatusChanged(OrderStatusChangedEvent event) {
-        log.info("Order {} estado changed: {} -> {}", event.getIdOrden(), event.getOldStatus(), event.getNewStatus());
+        log.info("Order {} estado changed: {} -> {}", event.getIdOrden(), event.getEstadoAnterior(), event.getNuevoEstado());
 
-        switch (event.getNewStatus()) {
+        switch (event.getNuevoEstado()) {
             case CONFIRMED -> emailNotificationService.sendOrderConfirmation(event.getIdOrden(), event.getIdTienda());
             case PAID -> emailNotificationService.sendPaymentReceived(event.getIdOrden(), event.getIdTienda());
             case SHIPPED -> emailNotificationService.sendOrderShipped(event.getIdOrden(), event.getIdTienda());
             case DELIVERED -> emailNotificationService.sendOrderDelivered(event.getIdOrden(), event.getIdTienda());
             case CANCELLED -> emailNotificationService.sendOrderCancelled(event.getIdOrden(), event.getIdTienda());
             case REFUNDED -> emailNotificationService.sendOrderRefunded(event.getIdOrden(), event.getIdTienda());
-            default -> log.debug("No notification configured for estado: {}", event.getNewStatus());
+            default -> log.debug("No notification configured for estado: {}", event.getNuevoEstado());
         }
     }
 }

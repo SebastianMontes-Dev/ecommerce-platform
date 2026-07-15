@@ -17,7 +17,7 @@ import org.springframework.context.annotation.Configuration;
                 description = "Documentación de la API para la Plataforma SaaS Multi-Tenant de E-Commerce",
                 version = "1.0",
                 contact = @Contact(
-                        name = "Soporte Técnico",
+                        nombre = "Soporte Técnico",
                         email = "soporte@ecommerce.com"
                 )
         ),
@@ -28,11 +28,11 @@ import org.springframework.context.annotation.Configuration;
                 )
         },
         security = {
-                @SecurityRequirement(name = "bearerAuth")
+                @SecurityRequirement(nombre = "bearerAuth")
         }
 )
 @SecurityScheme(
-        name = "bearerAuth",
+        nombre = "bearerAuth",
         description = "Autenticación por Token JWT. Por favor ingrese su token JWT abajo. No incluya el prefijo 'Bearer ', se añade automáticamente.",
         scheme = "bearer",
         type = SecuritySchemeType.HTTP,

@@ -11,5 +11,5 @@ public interface PaymentRepository extends BaseJpaRepository<Payment> {
 
     Optional<Payment> findByIdOrden(UUID idOrden);
 
-    Optional<Payment> findByExternalId(String externalId);
+    Optional<Payment> findByIdExterno(String idExterno);
 }

@@ -11,7 +11,7 @@ import java.math.BigDecimal;
 import java.util.UUID;
 
 @Entity
-@Table(name = "reviews", uniqueConstraints = @UniqueConstraint(columnNames = {"product_id", "customer_id", "order_id"}))
+@Table(name = "reviews", uniqueConstraints = @UniqueConstraint(columnNames = {"product_id", "id_cliente", "order_id"}))
 @Getter
 @Setter
 @NoArgsConstructor
@@ -20,7 +20,7 @@ public class Review extends TenantAwareEntity {
     @Column(name = "product_id", nullable = false)
     private UUID idProducto;
 
-    @Column(name = "customer_id", nullable = false)
+    @Column(name = "id_cliente", nullable = false)
     private UUID idCliente;
 
     @Column(name = "order_id", nullable = false)

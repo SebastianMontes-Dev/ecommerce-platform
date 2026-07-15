@@ -38,32 +38,32 @@ public class Product extends TenantAwareAggregateRoot {
 
     @Embedded
     @AttributeOverrides({
-            @AttributeOverride(name = "amount", column = @Column(name = "compare_at_amount", precision = 10, scale = 2)),
-            @AttributeOverride(name = "currency", column = @Column(name = "compare_at_currency", length = 3))
+            @AttributeOverride(name = "amount", column = @Column(name = "monto_comparacion", precision = 10, scale = 2)),
+            @AttributeOverride(name = "currency", column = @Column(name = "moneda_comparacion", length = 3))
     })
-    private Money compareAtPrice;
+    private Money precioComparacion;
 
     @Embedded
     @AttributeOverrides({
-            @AttributeOverride(name = "amount", column = @Column(name = "cost_amount", precision = 10, scale = 2)),
-            @AttributeOverride(name = "currency", column = @Column(name = "cost_currency", length = 3))
+            @AttributeOverride(name = "amount", column = @Column(name = "monto_costo", precision = 10, scale = 2)),
+            @AttributeOverride(name = "currency", column = @Column(name = "moneda_costo", length = 3))
     })
-    private Money costPrice;
+    private Money precioCosto;
 
     @Column(name = "sku")
     private String sku;
 
-    @Column(name = "barcode")
-    private String barcode;
+    @Column(name = "codigoBarras")
+    private String codigoBarras;
 
     @Column(name = "inventario")
     private int inventario = 0;
 
-    @Column(name = "inventory_track_enabled")
-    private boolean inventoryTrackEnabled = true;
+    @Column(name = "rastreo_inventario_habilitado")
+    private boolean rastreoInventarioHabilitado = true;
 
-    @Column(name = "allow_backorder")
-    private boolean allowBackorder = false;
+    @Column(name = "permitir_reserva")
+    private boolean permitirReserva = false;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "estado", nullable = false)
@@ -96,12 +96,12 @@ public class Product extends TenantAwareAggregateRoot {
 
     public boolean isAvailable() {
         return this.estado == ProductStatus.ACTIVE &&
-                (!this.inventoryTrackEnabled || this.inventario > 0 || this.allowBackorder);
+                (!this.rastreoInventarioHabilitado || this.inventario > 0 || this.permitirReserva);
     }
 
     public void decreaseInventory(int cantidad) {
-        if (this.inventoryTrackEnabled) {
-            if (this.inventario < cantidad && !this.allowBackorder) {
+        if (this.rastreoInventarioHabilitado) {
+            if (this.inventario < cantidad && !this.permitirReserva) {
                 throw new IllegalStateException("Inventario insuficiente para el producto: " + this.nombre);
             }
             this.inventario -= cantidad;
@@ -109,7 +109,7 @@ public class Product extends TenantAwareAggregateRoot {
     }
 
     public void increaseInventory(int cantidad) {
-        if (this.inventoryTrackEnabled) {
+        if (this.rastreoInventarioHabilitado) {
             this.inventario += cantidad;
         }
     }

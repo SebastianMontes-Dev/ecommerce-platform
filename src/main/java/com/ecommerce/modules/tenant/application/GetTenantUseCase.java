@@ -28,7 +28,7 @@ public class GetTenantUseCase {
             throw new EntityNotFoundException("Tenant not found - not authenticated");
         }
 
-        Tenant tenant = tenantRepository.findByOwnerId(userDetails.getUserId())
+        Tenant tenant = tenantRepository.findByIdPropietario(userDetails.getUserId())
                 .orElseThrow(() -> new EntityNotFoundException("Tenant not found for current user"));
         return mapToResponse(tenant);
     }
@@ -39,10 +39,10 @@ public class GetTenantUseCase {
                 .nombre(tenant.getNombre())
                 .slug(tenant.getSlug())
                 .descripcion(tenant.getDescripcion())
-                .logoUrl(tenant.getLogoUrl())
-                .bannerUrl(tenant.getBannerUrl())
+                .urlLogo(tenant.getUrlLogo())
+                .urlBanner(tenant.getUrlBanner())
                 .estado(tenant.getEstado().name())
-                .ownerId(tenant.getOwnerId())
+                .idPropietario(tenant.getIdPropietario())
                 .creadoEn(tenant.getCreadoEn())
                 .build();
     }

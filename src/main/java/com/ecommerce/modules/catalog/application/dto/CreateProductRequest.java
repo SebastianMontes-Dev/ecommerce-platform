@@ -32,20 +32,20 @@ public class CreateProductRequest {
     @Default
     private String currency = "USD";
 
-    private BigDecimal compareAtPrice;
+    private BigDecimal precioComparacion;
 
-    private BigDecimal costPrice;
+    private BigDecimal precioCosto;
 
     private String sku;
 
-    private String barcode;
+    private String codigoBarras;
 
     @Positive
     @Default
     private int inventario = 0;
 
     @Default
-    private boolean inventoryTrackEnabled = true;
+    private boolean rastreoInventarioHabilitado = true;
 
     private java.util.UUID idCategoria;
 }

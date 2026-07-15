@@ -21,7 +21,7 @@ public class CustomUserDetails implements UserDetails {
     public CustomUserDetails(User user) {
         this.userId = user.getId();
         this.correo = user.getCorreo();
-        this.contrasena = user.getPasswordHash();
+        this.contrasena = user.getHashContrasena();
         this.enabled = user.isEnabled();
         this.authorities = user.getRoles().stream()
                 .map(rol -> new SimpleGrantedAuthority("ROLE_" + rol.name()))

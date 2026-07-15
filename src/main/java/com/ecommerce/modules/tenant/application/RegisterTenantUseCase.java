@@ -24,7 +24,7 @@ public class RegisterTenantUseCase {
     public TenantResponse execute(RegisterTenantRequest request) {
         CustomUserDetails userDetails = getCurrentUser();
 
-        if (tenantRepository.existsByOwnerId(userDetails.getUserId())) {
+        if (tenantRepository.existsByIdPropietario(userDetails.getUserId())) {
             throw new BusinessRuleViolationException("You already have a store registered");
         }
 
@@ -41,14 +41,14 @@ public class RegisterTenantUseCase {
 
         tenant = tenantRepository.save(tenant);
 
-        SubscriptionPlan freePlan = planRepository.findByPlanTypeAndActiveTrue(SubscriptionPlanType.FREE)
+        SubscriptionPlan freePlan = planRepository.findByTipoPlanAndActiveTrue(SubscriptionPlanType.FREE)
                 .orElseThrow(() -> new IllegalStateException("Default FREE plan not found"));
 
         Subscription subscription = new Subscription();
         subscription.setIdTienda(tenant.getId());
-        subscription.setPlanId(freePlan.getId());
+        subscription.setIdPlan(freePlan.getId());
         subscription.setEstado("ACTIVE");
-        subscription.setStartDate(LocalDateTime.now());
+        subscription.setFechaInicio(LocalDateTime.now());
         subscriptionRepository.save(subscription);
 
         return mapToResponse(tenant);
@@ -60,10 +60,10 @@ public class RegisterTenantUseCase {
                 .nombre(tenant.getNombre())
                 .slug(tenant.getSlug())
                 .descripcion(tenant.getDescripcion())
-                .logoUrl(tenant.getLogoUrl())
-                .bannerUrl(tenant.getBannerUrl())
+                .urlLogo(tenant.getUrlLogo())
+                .urlBanner(tenant.getUrlBanner())
                 .estado(tenant.getEstado().name())
-                .ownerId(tenant.getOwnerId())
+                .idPropietario(tenant.getIdPropietario())
                 .creadoEn(tenant.getCreadoEn())
                 .build();
     }

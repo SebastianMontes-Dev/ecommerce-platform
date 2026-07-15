@@ -4,7 +4,7 @@ CREATE TABLE addresses (
     street VARCHAR(255) NOT NULL,
     city VARCHAR(100) NOT NULL,
     state VARCHAR(100),
-    zip_code VARCHAR(20),
+    codigo_postal VARCHAR(20),
     country VARCHAR(100) NOT NULL,
     additional_info VARCHAR(255),
     is_default BOOLEAN NOT NULL DEFAULT false,
@@ -17,10 +17,10 @@ CREATE TABLE addresses (
 CREATE TABLE orders (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
-    order_number VARCHAR(100) NOT NULL UNIQUE,
-    customer_id UUID NOT NULL REFERENCES users(id),
-    customer_email VARCHAR(255) NOT NULL,
-    customer_name VARCHAR(255),
+    numero_orden VARCHAR(100) NOT NULL UNIQUE,
+    id_cliente UUID NOT NULL REFERENCES users(id),
+    correo_cliente VARCHAR(255) NOT NULL,
+    nombre_cliente VARCHAR(255),
     shipping_street VARCHAR(255),
     shipping_city VARCHAR(100),
     shipping_state VARCHAR(100),
@@ -35,9 +35,9 @@ CREATE TABLE orders (
     billing_additional_info VARCHAR(255),
     subtotal_amount DECIMAL(10,2) NOT NULL,
     subtotal_currency VARCHAR(3) NOT NULL DEFAULT 'USD',
-    tax_amount DECIMAL(10,2) NOT NULL DEFAULT 0,
+    monto_impuesto DECIMAL(10,2) NOT NULL DEFAULT 0,
     tax_currency VARCHAR(3) NOT NULL DEFAULT 'USD',
-    shipping_amount DECIMAL(10,2) NOT NULL DEFAULT 0,
+    monto_envio DECIMAL(10,2) NOT NULL DEFAULT 0,
     shipping_currency VARCHAR(3) NOT NULL DEFAULT 'USD',
     total_amount DECIMAL(10,2) NOT NULL,
     total_currency VARCHAR(3) NOT NULL DEFAULT 'USD',
@@ -73,8 +73,8 @@ CREATE TABLE order_status_history (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     tenant_id UUID NOT NULL,
     order_id UUID NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
-    previous_status VARCHAR(20),
-    new_status VARCHAR(20) NOT NULL,
+    estado_previo VARCHAR(20),
+    nuevo_estado VARCHAR(20) NOT NULL,
     changed_by UUID,
     notes TEXT,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
@@ -84,8 +84,8 @@ CREATE TABLE order_status_history (
 
 CREATE INDEX idx_addresses_user ON addresses(user_id);
 CREATE INDEX idx_orders_tenant ON orders(tenant_id);
-CREATE INDEX idx_orders_customer ON orders(customer_id);
+CREATE INDEX idx_orders_customer ON orders(id_cliente);
 CREATE INDEX idx_orders_status ON orders(tenant_id, estado);
-CREATE INDEX idx_orders_number ON orders(order_number);
+CREATE INDEX idx_orders_number ON orders(numero_orden);
 CREATE INDEX idx_order_items_order ON order_items(order_id);
 CREATE INDEX idx_order_history_order ON order_status_history(order_id);

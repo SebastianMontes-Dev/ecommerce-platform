@@ -42,7 +42,7 @@ public class SearchService {
                         .bool(b -> b
                             .must(m -> m.term(t -> t.field("idTienda.keyword").value(idTienda.toString())))
                             .must(m -> m.multiMatch(mm -> mm
-                                .fields("nombre", "descripcion", "categoryName")
+                                .fields("nombre", "descripcion", "nombreCategoria")
                                 .query(query)
                                 .fuzziness("AUTO")
                             ))

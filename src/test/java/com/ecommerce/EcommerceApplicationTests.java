@@ -67,7 +67,7 @@ class EcommerceApplicationTests {
         RegisterRequest request = RegisterRequest.builder()
                 .correo(TEST_EMAIL)
                 .contrasena("secure123")
-                .confirmPassword("secure123")
+                .confirmarContrasena("secure123")
                 .nombre("Jane")
                 .apellido("Seller")
                 .build();
@@ -166,7 +166,7 @@ class EcommerceApplicationTests {
         RegisterRequest request = RegisterRequest.builder()
                 .correo("bad-" + System.currentTimeMillis() + "@test.com")
                 .contrasena("secure123")
-                .confirmPassword("different")
+                .confirmarContrasena("different")
                 .nombre("Bad")
                 .apellido("User")
                 .build();
@@ -184,7 +184,7 @@ class EcommerceApplicationTests {
         RegisterRequest request = RegisterRequest.builder()
                 .correo(TEST_EMAIL)
                 .contrasena("secure123")
-                .confirmPassword("secure123")
+                .confirmarContrasena("secure123")
                 .nombre("Duplicate")
                 .apellido("User")
                 .build();

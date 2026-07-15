@@ -5,7 +5,7 @@ CREATE TABLE categories (
     slug VARCHAR(255) NOT NULL,
     descripcion TEXT,
     image_url VARCHAR(500),
-    parent_id UUID REFERENCES categories(id),
+    id_padre UUID REFERENCES categories(id),
     active BOOLEAN NOT NULL DEFAULT true,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
@@ -23,15 +23,15 @@ CREATE TABLE products (
     descripcion TEXT,
     amount DECIMAL(10,2) NOT NULL,
     currency VARCHAR(3) NOT NULL DEFAULT 'USD',
-    compare_at_amount DECIMAL(10,2),
-    compare_at_currency VARCHAR(3),
-    cost_amount DECIMAL(10,2),
-    cost_currency VARCHAR(3),
+    monto_comparacion DECIMAL(10,2),
+    moneda_comparacion VARCHAR(3),
+    monto_costo DECIMAL(10,2),
+    moneda_costo VARCHAR(3),
     sku VARCHAR(100),
-    barcode VARCHAR(100),
+    codigoBarras VARCHAR(100),
     inventario INTEGER NOT NULL DEFAULT 0,
-    inventory_track_enabled BOOLEAN NOT NULL DEFAULT true,
-    allow_backorder BOOLEAN NOT NULL DEFAULT false,
+    rastreo_inventario_habilitado BOOLEAN NOT NULL DEFAULT true,
+    permitir_reserva BOOLEAN NOT NULL DEFAULT false,
     estado VARCHAR(20) NOT NULL DEFAULT 'DRAFT',
     category_id UUID REFERENCES categories(id),
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
@@ -72,7 +72,7 @@ CREATE TABLE product_images (
 );
 
 CREATE INDEX idx_categories_tenant ON categories(tenant_id);
-CREATE INDEX idx_categories_parent ON categories(parent_id);
+CREATE INDEX idx_categories_parent ON categories(id_padre);
 CREATE INDEX idx_products_tenant ON products(tenant_id);
 CREATE INDEX idx_products_slug ON products(tenant_id, slug);
 CREATE INDEX idx_products_category ON products(category_id);

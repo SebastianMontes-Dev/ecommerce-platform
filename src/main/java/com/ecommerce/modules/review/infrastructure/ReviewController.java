@@ -42,8 +42,7 @@ public class ReviewController {
         review.setIdTienda(TenantContext.getIdTienda());
         review.setIdProducto(idProducto);
         if (userDetails != null) {
-            review.setCustomerId(userDetails.getUserId());
-            review.setCustomerName(userDetails.getUsername());
+            review.setIdCliente(userDetails.getUserId());
         }
         review.setRating(Rating.of(request.getRating()));
         review.setTitulo(request.getTitulo());

@@ -23,7 +23,7 @@ public class RegisterRequest {
     private String contrasena;
 
     @Size(min = 8, message = "Password must be at least 8 characters")
-    private String confirmPassword;
+    private String confirmarContrasena;
 
     @NotBlank(message = "First nombre is required")
     private String nombre;

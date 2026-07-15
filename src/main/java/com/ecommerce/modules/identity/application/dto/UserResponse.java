@@ -19,7 +19,7 @@ public class UserResponse {
     private String correo;
     private String nombre;
     private String apellido;
-    private String fullName;
+    private String nombreCompleto;
     private boolean emailVerified;
     private boolean enabled;
     private Set<String> roles;

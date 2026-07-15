@@ -32,7 +32,7 @@ public class GetCurrentUserUseCase {
                 .correo(user.getCorreo())
                 .nombre(user.getNombre())
                 .apellido(user.getApellido())
-                .fullName(user.getFullName())
+                .nombreCompleto(user.getNombreCompleto())
                 .emailVerified(user.isEmailVerified())
                 .enabled(user.isEnabled())
                 .roles(user.getRoles().stream().map(Enum::name).collect(Collectors.toSet()))

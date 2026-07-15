@@ -22,5 +22,5 @@ public class CreateCategoryRequest {
 
     private String urlImagen;
 
-    private java.util.UUID parentId;
+    private java.util.UUID idPadre;
 }

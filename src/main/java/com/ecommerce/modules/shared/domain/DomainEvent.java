@@ -5,9 +5,9 @@ import java.util.UUID;
 
 public interface DomainEvent {
 
-    UUID getEventId();
+    UUID getIdEvento();
 
-    Instant getOccurredAt();
+    Instant getOcurrioEn();
 
-    String getEventType();
+    String getTipoEvento();
 }

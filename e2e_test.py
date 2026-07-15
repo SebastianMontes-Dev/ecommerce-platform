@@ -18,7 +18,7 @@ uid = str(uuid.uuid4())[:8]
 payload_register = {
     "correo": f"testuser_{uid}@example.com",
     "contrasena": "password123",
-    "confirmPassword": "password123",
+    "confirmarContrasena": "password123",
     "nombre": "Test",
     "apellido": "User"
 }
@@ -122,3 +122,5 @@ if product_id:
     fake_order_id = str(uuid.uuid4())
     res = requests.post(f"{BASE_URL}/payments/checkout/{fake_order_id}", headers=headers_with_tenant)
     print_result("Create Checkout", res)
+
+# This is a marker

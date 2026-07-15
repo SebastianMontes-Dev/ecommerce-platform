@@ -40,7 +40,7 @@ public class RateLimitInterceptor implements HandlerInterceptor {
 
         if (currentCount != null && currentCount > maxRequests) {
             log.warn("Rate limit exceeded for IP: {} on path: {}", clientIp, path);
-            response.setStatus(HttpStatus.TOO_MANY_REQUESTS.value());
+            response.setEstado(HttpStatus.TOO_MANY_REQUESTS.value());
             response.setContentType("application/problem+json");
             response.getWriter().write("""
                     {

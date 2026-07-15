@@ -23,7 +23,7 @@ public class RegisterUserUseCase {
     public UserResponse execute(RegisterRequest request) {
         List<String> violations = new java.util.ArrayList<>();
 
-        if (!request.getContrasena().equals(request.getConfirmPassword())) {
+        if (!request.getContrasena().equals(request.getConfirmarContrasena())) {
             violations.add("Las contraseñas no coinciden");
         }
 
@@ -54,7 +54,7 @@ public class RegisterUserUseCase {
                 .correo(user.getCorreo())
                 .nombre(user.getNombre())
                 .apellido(user.getApellido())
-                .fullName(user.getFullName())
+                .nombreCompleto(user.getNombreCompleto())
                 .emailVerified(user.isEmailVerified())
                 .enabled(user.isEnabled())
                 .roles(user.getRoles().stream().map(Enum::name).collect(Collectors.toSet()))
