@@ -1,12 +1,16 @@
 package com.ecommerce.modulos.ordenes.infrastructure;
 
 import com.ecommerce.modulos.ordenes.application.*;
+import com.ecommerce.modulos.ordenes.application.dto.SolicitudCheckout;
 import com.ecommerce.modulos.compartido.infrastructure.ContextoInquilino;
+import com.ecommerce.modulos.identidad.application.DetallesUsuarioPersonalizado;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
 
 import java.util.UUID;
 
@@ -17,6 +21,20 @@ import java.util.UUID;
 public class ControladorOrden {
 
     private final CasoUsoOrden casoUsoOrden;
+
+    @PostMapping("/checkout")
+    @Operation(summary = "Create an ordenes from the current user's cart")
+    public ResponseEntity<RespuestaOrden> createOrder(
+            @Valid @RequestBody SolicitudCheckout request,
+            @AuthenticationPrincipal DetallesUsuarioPersonalizado userDetails) {
+        
+        RespuestaOrden respuesta = casoUsoOrden.createOrderFromCart(
+                userDetails.getUserId(), 
+                ContextoInquilino.getIdTienda(), 
+                request);
+                
+        return ResponseEntity.status(201).body(respuesta);
+    }
 
     @GetMapping
     @Operation(summary = "List ordenes for current inquilino")

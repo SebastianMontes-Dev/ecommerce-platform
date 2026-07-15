@@ -18,7 +18,7 @@ public class HistorialEstadoOrden extends EntidadBase {
     @Column(name = "tenant_id", nullable = false)
     private UUID idTienda;
 
-    @Column(name = "order_id", nullable = false)
+    @Column(name = "order_id", insertable = false, updatable = false)
     private UUID idOrden;
 
     @Column(name = "estado_previo")
@@ -34,6 +34,6 @@ public class HistorialEstadoOrden extends EntidadBase {
     private String notes;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "order_id", insertable = false, updatable = false)
+    @JoinColumn(name = "order_id", nullable = false)
     private Orden ordenes;
 }

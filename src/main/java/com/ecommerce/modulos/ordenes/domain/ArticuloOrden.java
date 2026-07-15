@@ -20,7 +20,7 @@ public class ArticuloOrden extends EntidadBase {
     @Column(name = "tenant_id", nullable = false)
     private UUID idTienda;
 
-    @Column(name = "order_id", nullable = false)
+    @Column(name = "order_id", insertable = false, updatable = false)
     private UUID idOrden;
 
     @Column(name = "product_id", nullable = false)
@@ -56,6 +56,6 @@ public class ArticuloOrden extends EntidadBase {
     private String urlImagen;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "order_id", insertable = false, updatable = false)
+    @JoinColumn(name = "order_id", nullable = false)
     private Orden ordenes;
 }

@@ -44,6 +44,7 @@ public class ControladorResena {
         if (userDetails != null) {
             resenas.setIdCliente(userDetails.getUserId());
         }
+        resenas.setIdOrden(request.getIdOrden());
         resenas.setCalificacion(Calificacion.of(request.getCalificacion()));
         resenas.setTitulo(request.getTitulo());
         resenas.setComentario(request.getComentario());
@@ -53,6 +54,7 @@ public class ControladorResena {
 
     @lombok.Data
     static class CreateReviewRequest {
+        private UUID idOrden;
         private int calificacion;
         private String titulo;
         private String comentario;
