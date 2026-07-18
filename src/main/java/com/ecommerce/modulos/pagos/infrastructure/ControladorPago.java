@@ -13,6 +13,10 @@ import java.math.BigDecimal;
 import java.util.Map;
 import java.util.UUID;
 
+import com.ecommerce.modulos.pagos.application.CasoUsoProcesarPago;
+import com.ecommerce.modulos.identidad.application.DetallesUsuarioPersonalizado;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+
 @RestController
 @RequestMapping("/api/v1/pagos")
 @RequiredArgsConstructor
@@ -20,24 +24,20 @@ import java.util.UUID;
 public class ControladorPago {
 
     private final RepositorioPago repositorioPago;
+    private final CasoUsoProcesarPago casoUsoProcesarPago;
 
     @PostMapping("/checkout/{idOrden}")
     @Operation(summary = "Create a checkout session for an ordenes")
-    public ResponseEntity<Map<String, Object>> checkout(@PathVariable UUID idOrden) {
-        Pago pagos = new Pago();
-        pagos.setIdTienda(ContextoInquilino.getIdTienda());
-        pagos.setIdOrden(idOrden);
-        pagos.setAmount(new BigDecimal("0"));
-        pagos.setMoneda("USD");
-        pagos.setMetodoPago("STRIPE");
-        pagos.setEstado(EstadoPago.PENDING);
-        pagos.setIdExterno("simulated-checkout-" + UUID.randomUUID());
-        repositorioPago.save(pagos);
+    public ResponseEntity<Map<String, Object>> checkout(
+            @PathVariable UUID idOrden,
+            @AuthenticationPrincipal DetallesUsuarioPersonalizado userDetails) {
+        
+        if (userDetails == null) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED).build();
+        }
 
-        return ResponseEntity.ok(Map.of(
-                "paymentId", pagos.getId(),
-                "checkoutUrl", "https://checkout.stripe.com/pay/simulated"
-        ));
+        Map<String, Object> respuesta = casoUsoProcesarPago.ejecutar(idOrden, userDetails.getUserId());
+        return ResponseEntity.ok(respuesta);
     }
 
     @GetMapping("/{id}")

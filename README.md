@@ -116,4 +116,16 @@ python prueba_e2e.py
 
 ---
 
+## 🗺️ Roadmap y Estado Actual (WIP)
+
+El proyecto se encuentra en desarrollo activo. Las siguientes áreas están pendientes de implementación o refactorización:
+
+- [ ] **Pagos (Stripe):** Reemplazar el mock actual del checkout por la integración real con el SDK de Stripe (`Session.create()`) y corregir el contexto multi-inquilino en el webhook público.
+- [ ] **Reseñas:** Refactorizar el `ControladorResena` para mover la lógica a la capa de Aplicación (Casos de Uso), implementar validaciones de datos (Bean Validation) y verificar estrictamente que el usuario haya comprado y recibido la orden antes de calificar.
+- [ ] **Notificaciones:** Implementar `ServicioNotificacionCorreo` (ej. vía SendGrid/SMTP) y crear plantillas HTML en `templates/email/`.
+- [ ] **Testing:** Desarrollar la suite de pruebas unitarias y de integración (JUnit / Mockito) para respaldar las pruebas E2E actuales en Python.
+- [ ] **Estandarización de Código:** Estandarizar el nombrado de variables y métodos a inglés para mantener consistencia con los estándares de la industria y la arquitectura limpia.
+
+---
+
 > Desarrollado con ☕ y buenas prácticas de ingeniería de software.

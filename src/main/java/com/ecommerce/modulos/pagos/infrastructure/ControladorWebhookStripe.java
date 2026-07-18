@@ -97,13 +97,18 @@ public class ControladorWebhookStripe {
         String idReferenciaCliente = session.getClientReferenceId();
         if (idReferenciaCliente == null) return;
 
-        Pago pagos = repositorioPago.findByIdExterno(idReferenciaCliente)
+        Pago pagos = repositorioPago.findByIdExternoSinFiltro(idReferenciaCliente)
                 .orElseThrow(() -> new IllegalStateException("Pago no encontrado para la sesión de Stripe con idReferenciaCliente: " + idReferenciaCliente));
 
-        pagos.setIdExterno(session.getPaymentIntent());
-        pagos.complete();
-        repositorioPago.save(pagos);
-        log.info("Pago completado exitosamente para la orden: {}", pagos.getIdOrden());
+        com.ecommerce.modulos.compartido.infrastructure.ContextoInquilino.setIdTienda(pagos.getIdTienda());
+        try {
+            pagos.setIdExterno(session.getPaymentIntent());
+            pagos.complete();
+            repositorioPago.save(pagos);
+            log.info("Pago completado exitosamente para la orden: {}", pagos.getIdOrden());
+        } finally {
+            com.ecommerce.modulos.compartido.infrastructure.ContextoInquilino.clear();
+        }
     }
 
     private void handleCheckoutExpired(Event evento) {
@@ -116,10 +121,15 @@ public class ControladorWebhookStripe {
         String idReferenciaCliente = session.getClientReferenceId();
         if (idReferenciaCliente == null) return;
 
-        repositorioPago.findByIdExterno(idReferenciaCliente).ifPresent(pagos -> {
-            pagos.setEstado(EstadoPago.FAILED);
-            repositorioPago.save(pagos);
-            log.info("Pago expirado: {}", pagos.getId());
+        repositorioPago.findByIdExternoSinFiltro(idReferenciaCliente).ifPresent(pagos -> {
+            com.ecommerce.modulos.compartido.infrastructure.ContextoInquilino.setIdTienda(pagos.getIdTienda());
+            try {
+                pagos.setEstado(EstadoPago.FAILED);
+                repositorioPago.save(pagos);
+                log.info("Pago expirado: {}", pagos.getId());
+            } finally {
+                com.ecommerce.modulos.compartido.infrastructure.ContextoInquilino.clear();
+            }
         });
     }
 
@@ -130,10 +140,15 @@ public class ControladorWebhookStripe {
 
         if (intent == null) return;
 
-        repositorioPago.findByIdExterno(intent.getId()).ifPresent(pagos -> {
-            pagos.setEstado(EstadoPago.FAILED);
-            repositorioPago.save(pagos);
-            log.info("Pago fallido: {}", pagos.getId());
+        repositorioPago.findByIdExternoSinFiltro(intent.getId()).ifPresent(pagos -> {
+            com.ecommerce.modulos.compartido.infrastructure.ContextoInquilino.setIdTienda(pagos.getIdTienda());
+            try {
+                pagos.setEstado(EstadoPago.FAILED);
+                repositorioPago.save(pagos);
+                log.info("Pago fallido: {}", pagos.getId());
+            } finally {
+                com.ecommerce.modulos.compartido.infrastructure.ContextoInquilino.clear();
+            }
         });
     }
 }

@@ -13,18 +13,18 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @OpenAPIDefinition(
         info = @Info(
-                title = "API Empresarial de E-Commerce",
-                description = "Documentación de la API para la Plataforma SaaS Multi-Inquilino de E-Commerce",
+                title = "NexaSaaS E-Commerce API",
+                description = "Documentación de la API para NexaSaaS: Plataforma SaaS Multi-Inquilino de E-Commerce",
                 version = "1.0",
                 contact = @Contact(
                         name = "Soporte Técnico",
-                        email = "soporte@ecommerce.com"
+                        email = "soporte@nexasaas.com"
                 )
         ),
         servers = {
                 @Server(
                         description = "Entorno Local",
-                        url = "http://localhost:8080"
+                        url = "http://localhost:8081"
                 )
         },
         security = {
