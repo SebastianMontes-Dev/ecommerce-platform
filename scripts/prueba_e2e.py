@@ -109,18 +109,46 @@ if product_id:
     res = requests.get(f"{BASE_URL}/carrito", headers=headers_with_tenant)
     print_result("Get Cart", res)
 
-    # 8. Create Review
-    payload_review = {
-        "calificacion": 5,
-        "titulo": "Excellent product!",
-        "comentario": "Really loved it."
+    # 8. Create Order (Checkout)
+    payload_checkout = {
+        "direccionEnvio": {
+            "street": "123 Main St",
+            "city": "Test City",
+            "state": "Test State",
+            "codigoPostal": "12345",
+            "country": "Test Country",
+            "additionalInfo": "Leave at door"
+        },
+        "direccionFacturacion": {
+            "street": "123 Main St",
+            "city": "Test City",
+            "state": "Test State",
+            "codigoPostal": "12345",
+            "country": "Test Country",
+            "additionalInfo": "Same as shipping"
+        },
+        "notes": "Test order notes"
     }
-    res = requests.post(f"{BASE_URL}/productos/{product_id}/resenas", json=payload_review, headers=headers_with_tenant)
-    print_result("Create Review", res)
+    res = requests.post(f"{BASE_URL}/ordenes/checkout", json=payload_checkout, headers=headers_with_tenant)
+    print_result("Create Order (Checkout)", res)
+    try:
+        order_id = res.json().get('id')
+    except:
+        order_id = None
+        
+    if order_id:
+        # 9. Create Review
+        payload_review = {
+            "idOrden": order_id,
+            "calificacion": 5,
+            "titulo": "Excellent product!",
+            "comentario": "Really loved it."
+        }
+        res = requests.post(f"{BASE_URL}/productos/{product_id}/resenas", json=payload_review, headers=headers_with_tenant)
+        print_result("Create Review", res)
 
-    # 9. Create Checkout Session (with fake order id)
-    fake_order_id = str(uuid.uuid4())
-    res = requests.post(f"{BASE_URL}/pagos/checkout/{fake_order_id}", headers=headers_with_tenant)
-    print_result("Create Checkout", res)
+        # 10. Create Checkout Session (Payment)
+        res = requests.post(f"{BASE_URL}/pagos/checkout/{order_id}", headers=headers_with_tenant)
+        print_result("Create Payment Checkout", res)
 
 # This is a marker

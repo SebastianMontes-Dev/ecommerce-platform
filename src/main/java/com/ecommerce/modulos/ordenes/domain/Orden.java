@@ -95,6 +95,10 @@ public class Orden extends RaizAgregadaInquilino {
     @OrderBy("creadoEn ASC")
     private List<HistorialEstadoOrden> historialEstados = new ArrayList<>();
 
+    public void markAsCreated() {
+        registerEvent(new com.ecommerce.modulos.ordenes.domain.events.EventoOrdenCreada(this.getId(), this.getIdTienda(), this.getIdCliente(), this.getArticulos()));
+    }
+
     public void confirm() {
         changeStatus(EstadoOrden.CONFIRMED, null);
     }

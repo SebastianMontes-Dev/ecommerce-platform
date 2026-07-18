@@ -78,6 +78,7 @@ public class CasoUsoOrden {
         orden.setMontoEnvio(Dinero.of(shipping, currency));
         orden.setTotal(Dinero.of(subtotal.add(tax).add(shipping), currency));
 
+        orden.markAsCreated();
         orden = repositorioOrden.save(orden);
         eventPublisher.publish(orden.getDomainEvents());
         orden.clearDomainEvents();
