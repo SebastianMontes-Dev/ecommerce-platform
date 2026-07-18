@@ -49,7 +49,7 @@ public class CasoUsoOrden {
         
         orden.setDireccionEnvio(request.getDireccionEnvio());
         orden.setDireccionFacturacion(request.getDireccionFacturacion());
-        orden.setNotes(request.getNotes());
+        orden.setNotas(request.getNotas());
 
         BigDecimal subtotal = BigDecimal.ZERO;
         String currency = "USD";
@@ -128,13 +128,13 @@ public class CasoUsoOrden {
                 .idCliente(ordenes.getIdCliente())
                 .correoCliente(ordenes.getCorreoCliente())
                 .nombreCliente(ordenes.getNombreCliente())
-                .subtotal(ordenes.getSubtotal() != null ? ordenes.getSubtotal().getAmount() : null)
-                .montoImpuesto(ordenes.getMontoImpuesto() != null ? ordenes.getMontoImpuesto().getAmount() : null)
-                .montoEnvio(ordenes.getMontoEnvio() != null ? ordenes.getMontoEnvio().getAmount() : null)
-                .total(ordenes.getTotal() != null ? ordenes.getTotal().getAmount() : null)
+                .subtotal(ordenes.getSubtotal() != null ? ordenes.getSubtotal().getMonto() : null)
+                .montoImpuesto(ordenes.getMontoImpuesto() != null ? ordenes.getMontoImpuesto().getMonto() : null)
+                .montoEnvio(ordenes.getMontoEnvio() != null ? ordenes.getMontoEnvio().getMonto() : null)
+                .total(ordenes.getTotal() != null ? ordenes.getTotal().getMonto() : null)
                 .moneda(ordenes.getTotal() != null ? ordenes.getTotal().getMoneda() : "USD")
                 .estado(ordenes.getEstado().name())
-                .notes(ordenes.getNotes())
+                .notas(ordenes.getNotas())
                 .creadoEn(ordenes.getCreadoEn())
                 .actualizadoEn(ordenes.getActualizadoEn())
                 .build();

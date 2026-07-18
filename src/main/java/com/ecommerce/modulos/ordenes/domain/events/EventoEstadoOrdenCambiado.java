@@ -16,16 +16,16 @@ public class EventoEstadoOrdenCambiado implements EventoDominio {
     private final UUID idTienda;
     private final EstadoOrden estadoAnterior;
     private final EstadoOrden nuevoEstado;
-    private final String notes;
+    private final String notas;
 
-    public EventoEstadoOrdenCambiado(UUID idOrden, UUID idTienda, EstadoOrden estadoAnterior, EstadoOrden nuevoEstado, String notes) {
+    public EventoEstadoOrdenCambiado(UUID idOrden, UUID idTienda, EstadoOrden estadoAnterior, EstadoOrden nuevoEstado, String notas) {
         this.idEvento = UUID.randomUUID();
         this.ocurrioEn = Instant.now();
         this.idOrden = idOrden;
         this.idTienda = idTienda;
         this.estadoAnterior = estadoAnterior;
         this.nuevoEstado = nuevoEstado;
-        this.notes = notes;
+        this.notas = notas;
     }
 
     @Override

@@ -40,14 +40,14 @@ public class ArticuloOrden extends EntidadBase {
 
     @Embedded
     @AttributeOverrides({
-            @AttributeOverride(name = "amount", column = @Column(name = "unit_price_amount", precision = 10, scale = 2)),
+            @AttributeOverride(name = "monto", column = @Column(name = "monto_precio_unitario", precision = 10, scale = 2)),
             @AttributeOverride(name = "moneda", column = @Column(name = "unit_price_currency", length = 3))
     })
     private Dinero precioUnitario;
 
     @Embedded
     @AttributeOverrides({
-            @AttributeOverride(name = "amount", column = @Column(name = "subtotal_amount", precision = 10, scale = 2)),
+            @AttributeOverride(name = "monto", column = @Column(name = "monto_subtotal", precision = 10, scale = 2)),
             @AttributeOverride(name = "moneda", column = @Column(name = "subtotal_currency", length = 3))
     })
     private Dinero subtotal;

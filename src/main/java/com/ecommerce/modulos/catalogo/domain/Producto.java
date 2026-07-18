@@ -31,21 +31,21 @@ public class Producto extends RaizAgregadaInquilino {
 
     @Embedded
     @AttributeOverrides({
-            @AttributeOverride(name = "amount", column = @Column(name = "amount", precision = 10, scale = 2)),
+            @AttributeOverride(name = "monto", column = @Column(name = "monto", precision = 10, scale = 2)),
             @AttributeOverride(name = "moneda", column = @Column(name = "moneda", length = 3))
     })
     private Dinero precio;
 
     @Embedded
     @AttributeOverrides({
-            @AttributeOverride(name = "amount", column = @Column(name = "monto_comparacion", precision = 10, scale = 2)),
+            @AttributeOverride(name = "monto", column = @Column(name = "monto_comparacion", precision = 10, scale = 2)),
             @AttributeOverride(name = "moneda", column = @Column(name = "moneda_comparacion", length = 3))
     })
     private Dinero precioComparacion;
 
     @Embedded
     @AttributeOverrides({
-            @AttributeOverride(name = "amount", column = @Column(name = "monto_costo", precision = 10, scale = 2)),
+            @AttributeOverride(name = "monto", column = @Column(name = "monto_costo", precision = 10, scale = 2)),
             @AttributeOverride(name = "moneda", column = @Column(name = "moneda_costo", length = 3))
     })
     private Dinero precioCosto;

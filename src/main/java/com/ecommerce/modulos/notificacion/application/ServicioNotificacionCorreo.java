@@ -76,7 +76,7 @@ public class ServicioNotificacionCorreo {
             context.setVariable("messageBody", bodyMessage);
             context.setVariable("orderNumber", orden.getNumeroOrden());
             context.setVariable("customerName", orden.getNombreCliente() != null ? orden.getNombreCliente() : "Cliente");
-            context.setVariable("totalAmount", orden.getTotal().getAmount() + " " + orden.getTotal().getMoneda());
+            context.setVariable("totalAmount", orden.getTotal().getMonto() + " " + orden.getTotal().getMoneda());
 
             String process = templateEngine.process("email/plantilla-orden", context);
 

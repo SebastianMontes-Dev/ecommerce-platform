@@ -49,7 +49,7 @@ public class CasoUsoProcesarPago {
         com.stripe.Stripe.apiKey = stripeApiKey;
 
         try {
-            long totalCents = orden.getTotal().getAmount().multiply(new BigDecimal("100")).longValue();
+            long totalCents = orden.getTotal().getMonto().multiply(new BigDecimal("100")).longValue();
             String idReferencia = UUID.randomUUID().toString();
 
             SessionCreateParams params = SessionCreateParams.builder()
@@ -80,7 +80,7 @@ public class CasoUsoProcesarPago {
             Pago pago = new Pago();
             pago.setIdTienda(ContextoInquilino.getIdTienda());
             pago.setIdOrden(idOrden);
-            pago.setAmount(orden.getTotal().getAmount());
+            pago.setMonto(orden.getTotal().getMonto());
             pago.setMoneda(orden.getTotal().getMoneda());
             pago.setMetodoPago("STRIPE");
             pago.setEstado(EstadoPago.PENDING);

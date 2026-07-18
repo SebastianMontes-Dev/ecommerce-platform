@@ -30,8 +30,8 @@ public class HistorialEstadoOrden extends EntidadBase {
     @Column(name = "changed_by")
     private UUID changedBy;
 
-    @Column(name = "notes", columnDefinition = "TEXT")
-    private String notes;
+    @Column(name = "notas", columnDefinition = "TEXT")
+    private String notas;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id", nullable = false)

@@ -29,8 +29,8 @@ public class VarianteProducto extends EntidadInquilino {
     @Column(name = "sku")
     private String sku;
 
-    @Column(name = "amount")
-    private BigDecimal amount;
+    @Column(name = "monto")
+    private BigDecimal monto;
 
     @Column(name = "moneda")
     private String moneda = "USD";
@@ -47,8 +47,8 @@ public class VarianteProducto extends EntidadInquilino {
     private Producto producto;
 
     public Dinero getPrecio() {
-        if (amount != null && moneda != null) {
-            return Dinero.of(amount, moneda);
+        if (monto != null && moneda != null) {
+            return Dinero.of(monto, moneda);
         }
         return producto != null ? producto.getPrecio() : null;
     }

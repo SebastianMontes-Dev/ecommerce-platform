@@ -104,7 +104,7 @@ public class ServicioCarrito {
             throw new IllegalStateException("Producto does not belong to the specified inquilino");
         }
 
-        item.setPrecioUnitario(producto.getPrecio().getAmount());
+        item.setPrecioUnitario(producto.getPrecio().getMonto());
         item.setNombreProducto(producto.getNombre());
         item.setMoneda(producto.getPrecio().getMoneda());
     }

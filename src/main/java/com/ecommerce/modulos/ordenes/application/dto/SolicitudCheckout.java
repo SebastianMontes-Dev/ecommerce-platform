@@ -13,5 +13,5 @@ public class SolicitudCheckout {
     @NotNull
     private Direccion direccionFacturacion;
     
-    private String notes;
+    private String notas;
 }

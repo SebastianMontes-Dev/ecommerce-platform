@@ -26,7 +26,7 @@ public class RespuestaOrden {
     private BigDecimal total;
     private String moneda;
     private String estado;
-    private String notes;
+    private String notas;
     private LocalDateTime creadoEn;
     private LocalDateTime actualizadoEn;
 }

@@ -22,8 +22,8 @@ public class Pago extends EntidadInquilino {
     @Column(name = "order_id", nullable = false)
     private UUID idOrden;
 
-    @Column(name = "amount", precision = 10, scale = 2, nullable = false)
-    private BigDecimal amount;
+    @Column(name = "monto", precision = 10, scale = 2, nullable = false)
+    private BigDecimal monto;
 
     @Column(name = "moneda", length = 3, nullable = false)
     private String moneda = "USD";

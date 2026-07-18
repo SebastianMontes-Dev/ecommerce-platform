@@ -55,28 +55,28 @@ public class Orden extends RaizAgregadaInquilino {
 
     @Embedded
     @AttributeOverrides({
-            @AttributeOverride(name = "amount", column = @Column(name = "subtotal_amount", precision = 10, scale = 2)),
+            @AttributeOverride(name = "monto", column = @Column(name = "monto_subtotal", precision = 10, scale = 2)),
             @AttributeOverride(name = "moneda", column = @Column(name = "subtotal_currency", length = 3))
     })
     private Dinero subtotal;
 
     @Embedded
     @AttributeOverrides({
-            @AttributeOverride(name = "amount", column = @Column(name = "monto_impuesto", precision = 10, scale = 2)),
+            @AttributeOverride(name = "monto", column = @Column(name = "monto_impuesto", precision = 10, scale = 2)),
             @AttributeOverride(name = "moneda", column = @Column(name = "tax_currency", length = 3))
     })
     private Dinero montoImpuesto;
 
     @Embedded
     @AttributeOverrides({
-            @AttributeOverride(name = "amount", column = @Column(name = "monto_envio", precision = 10, scale = 2)),
+            @AttributeOverride(name = "monto", column = @Column(name = "monto_envio", precision = 10, scale = 2)),
             @AttributeOverride(name = "moneda", column = @Column(name = "shipping_currency", length = 3))
     })
     private Dinero montoEnvio;
 
     @Embedded
     @AttributeOverrides({
-            @AttributeOverride(name = "amount", column = @Column(name = "total_amount", precision = 10, scale = 2)),
+            @AttributeOverride(name = "monto", column = @Column(name = "monto_total", precision = 10, scale = 2)),
             @AttributeOverride(name = "moneda", column = @Column(name = "total_currency", length = 3))
     })
     private Dinero total;
@@ -85,8 +85,8 @@ public class Orden extends RaizAgregadaInquilino {
     @Column(name = "estado", nullable = false)
     private EstadoOrden estado = EstadoOrden.PENDING;
 
-    @Column(name = "notes", columnDefinition = "TEXT")
-    private String notes;
+    @Column(name = "notas", columnDefinition = "TEXT")
+    private String notas;
 
     @OneToMany(mappedBy = "ordenes", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ArticuloOrden> articulos = new ArrayList<>();
@@ -127,7 +127,7 @@ public class Orden extends RaizAgregadaInquilino {
         changeStatus(EstadoOrden.REFUNDED, reason);
     }
 
-    private void changeStatus(EstadoOrden nuevoEstado, String notes) {
+    private void changeStatus(EstadoOrden nuevoEstado, String notas) {
         validateTransition(nuevoEstado);
         EstadoOrden estadoAnterior = this.estado;
         this.estado = nuevoEstado;
@@ -137,12 +137,12 @@ public class Orden extends RaizAgregadaInquilino {
         history.setIdOrden(this.getId());
         history.setEstadoPrevio(estadoAnterior != null ? estadoAnterior.name() : null);
         history.setNuevoEstado(nuevoEstado.name());
-        history.setNotes(notes);
+        history.setNotas(notas);
         history.setOrdenes(this);
         this.historialEstados.add(history);
 
         if (this.getId() != null) {
-            registerEvent(new EventoEstadoOrdenCambiado(this.getId(), this.getIdTienda(), estadoAnterior, nuevoEstado, notes));
+            registerEvent(new EventoEstadoOrdenCambiado(this.getId(), this.getIdTienda(), estadoAnterior, nuevoEstado, notas));
         }
     }
 
