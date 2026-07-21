@@ -44,5 +44,11 @@ Este documento detalla el estado actual del proyecto, las deudas técnicas ident
     *   [ ] Escribir pruebas de integración (WebMvcTest) para los Controladores y filtros de seguridad (JWT, Tenant Filter).
 
 ## 🟣 Fase 4: Deuda Técnica y Refactorizaciones
-*   [ ] **Estandarización de Idioma (Español):** Por decisión arquitectónica, el idioma oficial del código fuente de este proyecto es el **Español**. Actualmente hay mezcla de español e inglés en la base de datos y algunas clases (ej. `amount` en lugar de `monto`, o `listReviews` en los controladores). La tarea pendiente es refactorizar estos pequeños fragmentos en inglés para que todo el código esté unificado al español de manera coherente y clara.
+*   [x] **Estandarización de Idioma (Español):** Por decisión arquitectónica, el idioma oficial del código fuente de este proyecto es el **Español**. Se han traducido términos como `amount` a `monto` y `notes` a `notas` en todo el proyecto.
 *   [ ] **Revisión de Endpoints:** Consolidar el diseño de API REST para asegurar consistencia en las respuestas y en la paginación.
+
+## 🚀 Fase 5: Características Enterprise (SaaS Avanzado)
+*   [ ] **Patrón Strategy para Pagos:** Desacoplar Stripe del caso de uso principal creando una interfaz genérica `ProcesadorPago`. Permitir que cada Inquilino configure su pasarela preferida (Stripe, PayPal, MercadoPago) dinámicamente.
+*   [ ] **CQRS con Elasticsearch:** Sincronizar los productos desde PostgreSQL hacia Elasticsearch mediante eventos de dominio. Modificar los endpoints de búsqueda y catálogo para leer exclusivamente de Elasticsearch (milisegundos) liberando la carga en Postgres.
+*   [ ] **Tolerancia a Fallos (Resilience4j):** Envolver las llamadas salientes (correos electrónicos, webhooks, pasarelas de pago) con *Circuit Breakers* y *Retries* para evitar fallos en cascada.
+*   [ ] **Aislamiento Híbrido de Base de Datos:** Explorar la implementación de `AbstractRoutingDataSource` para permitir *Database-per-Tenant* a clientes premium, manteniendo el filtrado por columna para clientes estándar.
