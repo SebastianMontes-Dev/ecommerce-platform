@@ -7,9 +7,12 @@ import com.ecommerce.modulos.compartido.infrastructure.ContextoInquilino;
 import com.ecommerce.modulos.ordenes.domain.EstadoOrden;
 import com.ecommerce.modulos.ordenes.domain.Orden;
 import com.ecommerce.modulos.ordenes.domain.RepositorioOrden;
+import com.ecommerce.modulos.pagos.domain.EstadoPago;
+import com.ecommerce.modulos.pagos.domain.FabricaProcesadorPago;
 import com.ecommerce.modulos.pagos.domain.Pago;
+import com.ecommerce.modulos.pagos.domain.ProcesadorPago;
 import com.ecommerce.modulos.pagos.domain.RepositorioPago;
-import com.stripe.exception.StripeException;
+import com.ecommerce.modulos.pagos.domain.ResultadoProcesamientoPago;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -17,7 +20,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import java.math.BigDecimal;
 import java.util.Map;
@@ -37,6 +39,12 @@ class CasoUsoProcesarPagoTest {
     @Mock
     private RepositorioOrden repositorioOrden;
 
+    @Mock
+    private FabricaProcesadorPago fabricaProcesadorPago;
+
+    @Mock
+    private ProcesadorPago procesadorPago;
+
     @InjectMocks
     private CasoUsoProcesarPago casoUsoProcesarPago;
 
@@ -52,8 +60,6 @@ class CasoUsoProcesarPagoTest {
         idTienda = UUID.randomUUID();
 
         ContextoInquilino.setIdTienda(idTienda);
-
-        ReflectionTestUtils.setField(casoUsoProcesarPago, "stripeApiKey", "sk_test_mock");
 
         ordenMoc = new Orden();
         ordenMoc.setNumeroOrden("ORD-12345");
@@ -97,6 +103,31 @@ class CasoUsoProcesarPagoTest {
         });
     }
 
-    // Nota: No testeamos la creación real de Stripe Session aquí porque hace una llamada de red a la API real de Stripe.
-    // En un entorno de producción, aislaríamos la lógica de Stripe en un "StripeGateway" o usaríamos mockito-inline para mockear métodos estáticos de Stripe.
+    @Test
+    void debeProcesarPagoCorrectamente() {
+        when(repositorioOrden.findById(idOrden)).thenReturn(Optional.of(ordenMoc));
+        when(fabricaProcesadorPago.obtenerProcesador(idTienda)).thenReturn(procesadorPago);
+        
+        ResultadoProcesamientoPago resultadoMock = new ResultadoProcesamientoPago("ext-123", "http://checkout.url");
+        when(procesadorPago.procesar(ordenMoc)).thenReturn(resultadoMock);
+        when(procesadorPago.obtenerIdentificador()).thenReturn("STRIPE");
+
+        doAnswer(invocation -> {
+            Pago pagoGuardado = invocation.getArgument(0);
+            pagoGuardado.setId(UUID.randomUUID());
+            return pagoGuardado;
+        }).when(repositorioPago).save(any(Pago.class));
+
+        Map<String, Object> resultado = casoUsoProcesarPago.ejecutar(idOrden, idUsuario);
+
+        assertNotNull(resultado);
+        assertEquals("http://checkout.url", resultado.get("checkoutUrl"));
+        assertNotNull(resultado.get("paymentId"));
+
+        verify(repositorioPago, times(1)).save(argThat(pago -> 
+            pago.getIdExterno().equals("ext-123") && 
+            pago.getMetodoPago().equals("STRIPE") &&
+            pago.getEstado() == EstadoPago.PENDING
+        ));
+    }
 }

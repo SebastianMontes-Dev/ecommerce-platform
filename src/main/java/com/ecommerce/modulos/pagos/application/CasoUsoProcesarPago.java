@@ -7,18 +7,16 @@ import com.ecommerce.modulos.ordenes.domain.EstadoOrden;
 import com.ecommerce.modulos.ordenes.domain.Orden;
 import com.ecommerce.modulos.ordenes.domain.RepositorioOrden;
 import com.ecommerce.modulos.pagos.domain.EstadoPago;
+import com.ecommerce.modulos.pagos.domain.FabricaProcesadorPago;
 import com.ecommerce.modulos.pagos.domain.Pago;
+import com.ecommerce.modulos.pagos.domain.ProcesadorPago;
 import com.ecommerce.modulos.pagos.domain.RepositorioPago;
-import com.stripe.exception.StripeException;
-import com.stripe.model.checkout.Session;
-import com.stripe.param.checkout.SessionCreateParams;
+import com.ecommerce.modulos.pagos.domain.ResultadoProcesamientoPago;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
 import java.util.Map;
 import java.util.UUID;
 
@@ -29,9 +27,7 @@ public class CasoUsoProcesarPago {
 
     private final RepositorioPago repositorioPago;
     private final RepositorioOrden repositorioOrden;
-
-    @Value("${app.stripe.api-key}")
-    private String stripeApiKey;
+    private final FabricaProcesadorPago fabricaProcesadorPago;
 
     @Transactional
     public Map<String, Object> ejecutar(UUID idOrden, UUID idUsuario) {
@@ -46,55 +42,26 @@ public class CasoUsoProcesarPago {
             throw new ExcepcionOperacionInvalida("Solo se pueden pagar órdenes en estado pendiente.");
         }
 
-        com.stripe.Stripe.apiKey = stripeApiKey;
+        // Obtener la pasarela de pago configurada para esta tienda (ej. Stripe, PayPal)
+        ProcesadorPago procesador = fabricaProcesadorPago.obtenerProcesador(ContextoInquilino.getIdTienda());
 
-        try {
-            long totalCents = orden.getTotal().getMonto().multiply(new BigDecimal("100")).longValue();
-            String idReferencia = UUID.randomUUID().toString();
+        // Ejecutar el pago de manera abstracta
+        ResultadoProcesamientoPago resultado = procesador.procesar(orden);
 
-            SessionCreateParams params = SessionCreateParams.builder()
-                    .setMode(SessionCreateParams.Mode.PAYMENT)
-                    .setSuccessUrl("http://localhost:3000/checkout/success?session_id={CHECKOUT_SESSION_ID}")
-                    .setCancelUrl("http://localhost:3000/checkout/cancel")
-                    .setClientReferenceId(idReferencia)
-                    .addLineItem(
-                            SessionCreateParams.LineItem.builder()
-                                    .setQuantity(1L)
-                                    .setPriceData(
-                                            SessionCreateParams.LineItem.PriceData.builder()
-                                                    .setCurrency(orden.getTotal().getMoneda().toLowerCase())
-                                                    .setUnitAmount(totalCents)
-                                                    .setProductData(
-                                                            SessionCreateParams.LineItem.PriceData.ProductData.builder()
-                                                                    .setName("Orden #" + orden.getNumeroOrden())
-                                                                    .build()
-                                                    )
-                                                    .build()
-                                    )
-                                    .build()
-                    )
-                    .build();
+        // Guardar el registro del pago en nuestra base de datos
+        Pago pago = new Pago();
+        pago.setIdTienda(ContextoInquilino.getIdTienda());
+        pago.setIdOrden(idOrden);
+        pago.setMonto(orden.getTotal().getMonto());
+        pago.setMoneda(orden.getTotal().getMoneda());
+        pago.setMetodoPago(procesador.obtenerIdentificador());
+        pago.setEstado(EstadoPago.PENDING);
+        pago.setIdExterno(resultado.idExterno());
+        repositorioPago.save(pago);
 
-            Session session = Session.create(params);
-
-            Pago pago = new Pago();
-            pago.setIdTienda(ContextoInquilino.getIdTienda());
-            pago.setIdOrden(idOrden);
-            pago.setMonto(orden.getTotal().getMonto());
-            pago.setMoneda(orden.getTotal().getMoneda());
-            pago.setMetodoPago("STRIPE");
-            pago.setEstado(EstadoPago.PENDING);
-            pago.setIdExterno(idReferencia);
-            repositorioPago.save(pago);
-
-            return Map.of(
-                    "paymentId", pago.getId(),
-                    "checkoutUrl", session.getUrl()
-            );
-
-        } catch (StripeException e) {
-            log.error("Error al crear sesión de pago en Stripe", e);
-            throw new ExcepcionOperacionInvalida("No se pudo iniciar el proceso de pago.");
-        }
+        return Map.of(
+                "paymentId", pago.getId(),
+                "checkoutUrl", resultado.checkoutUrl()
+        );
     }
 }
