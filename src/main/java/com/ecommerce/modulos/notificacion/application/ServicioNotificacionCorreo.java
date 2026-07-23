@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 
 import java.util.UUID;
 
@@ -25,6 +26,7 @@ public class ServicioNotificacionCorreo {
     private final TemplateEngine templateEngine;
 
     @Transactional(readOnly = true)
+    @CircuitBreaker(name = "correos", fallbackMethod = "fallbackCorreo")
     public void sendOrderConfirmation(UUID idOrden, UUID idTienda) {
         sendOrderEmail(idOrden, "Pedido Confirmado",
                 "Tu pedido ha sido confirmado y está siendo procesado.",
@@ -32,6 +34,7 @@ public class ServicioNotificacionCorreo {
     }
 
     @Transactional(readOnly = true)
+    @CircuitBreaker(name = "correos", fallbackMethod = "fallbackCorreo")
     public void sendPaymentReceived(UUID idOrden, UUID idTienda) {
         sendOrderEmail(idOrden, "Pago Recibido",
                 "Hemos recibido el pago de tu pedido. Estamos preparando tu envío.",
@@ -39,6 +42,7 @@ public class ServicioNotificacionCorreo {
     }
 
     @Transactional(readOnly = true)
+    @CircuitBreaker(name = "correos", fallbackMethod = "fallbackCorreo")
     public void sendOrderShipped(UUID idOrden, UUID idTienda) {
         sendOrderEmail(idOrden, "Pedido Enviado",
                 "Tu pedido ha sido enviado. Pronto lo recibirás en la dirección indicada.",
@@ -46,6 +50,7 @@ public class ServicioNotificacionCorreo {
     }
 
     @Transactional(readOnly = true)
+    @CircuitBreaker(name = "correos", fallbackMethod = "fallbackCorreo")
     public void sendOrderDelivered(UUID idOrden, UUID idTienda) {
         sendOrderEmail(idOrden, "Pedido Entregado",
                 "Tu pedido ha sido entregado exitosamente.",
@@ -53,6 +58,7 @@ public class ServicioNotificacionCorreo {
     }
 
     @Transactional(readOnly = true)
+    @CircuitBreaker(name = "correos", fallbackMethod = "fallbackCorreo")
     public void sendOrderCancelled(UUID idOrden, UUID idTienda) {
         sendOrderEmail(idOrden, "Pedido Cancelado",
                 "Tu pedido ha sido cancelado. Si tienes preguntas, por favor contáctanos.",
@@ -60,6 +66,7 @@ public class ServicioNotificacionCorreo {
     }
 
     @Transactional(readOnly = true)
+    @CircuitBreaker(name = "correos", fallbackMethod = "fallbackCorreo")
     public void sendOrderRefunded(UUID idOrden, UUID idTienda) {
         sendOrderEmail(idOrden, "Reembolso Procesado",
                 "El reembolso de tu pedido ha sido procesado. El monto será devuelto a tu método de pago original en los próximos días.",
@@ -92,6 +99,13 @@ public class ServicioNotificacionCorreo {
             log.info("Correo HTML enviado a {} para la orden {}: {}", orden.getCorreoCliente(), orden.getNumeroOrden(), subject);
         } catch (Exception e) {
             log.error("Fallo al enviar correo HTML para la orden {}: {}", idOrden, e.getMessage(), e);
+            throw new RuntimeException("Error en SMTP", e); // Relanzar para que el Circuit Breaker lo detecte
         }
+    }
+    
+    // Fallback genérico para correos
+    public void fallbackCorreo(UUID idOrden, UUID idTienda, Throwable t) {
+        log.warn("CIRCUIT BREAKER ABIERTO para correos. Fallback ejecutado para la orden: {}. El correo no se envió.", idOrden);
+        // Aquí podríamos guardar el correo en una tabla de "Correos Pendientes" para reintentar más tarde.
     }
 }

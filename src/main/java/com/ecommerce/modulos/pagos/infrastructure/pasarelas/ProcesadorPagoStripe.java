@@ -7,6 +7,7 @@ import com.ecommerce.modulos.pagos.domain.ResultadoProcesamientoPago;
 import com.stripe.exception.StripeException;
 import com.stripe.model.checkout.Session;
 import com.stripe.param.checkout.SessionCreateParams;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -27,6 +28,7 @@ public class ProcesadorPagoStripe implements ProcesadorPago {
     }
 
     @Override
+    @CircuitBreaker(name = "pagos", fallbackMethod = "fallbackProcesar")
     public ResultadoProcesamientoPago procesar(Orden orden) {
         com.stripe.Stripe.apiKey = stripeApiKey;
 
@@ -65,5 +67,11 @@ public class ProcesadorPagoStripe implements ProcesadorPago {
             log.error("Error al crear sesión de pago en Stripe", e);
             throw new ExcepcionOperacionInvalida("No se pudo iniciar el proceso de pago con Stripe.");
         }
+    }
+
+    // Método Fallback que se ejecuta si Stripe falla o el cortacircuitos está ABIERTO
+    public ResultadoProcesamientoPago fallbackProcesar(Orden orden, Throwable t) {
+        log.error("CIRCUIT BREAKER ABIERTO o Fallo en Stripe. Fallback ejecutado para la orden: {}. Motivo: {}", orden.getId(), t.getMessage());
+        throw new ExcepcionOperacionInvalida("El proveedor de pagos no está disponible temporalmente. Intente de nuevo más tarde.");
     }
 }

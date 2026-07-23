@@ -96,3 +96,22 @@ app:
   elasticsearch:
     host: ${ES_HOST:localhost}
     port: ${ES_PORT:9200}
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      pagos:
+        registerHealthIndicator: true
+        slidingWindowSize: 5
+        minimumNumberOfCalls: 3
+        permittedNumberOfCallsInHalfOpenState: 2
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        waitDurationInOpenState: 10s
+        failureRateThreshold: 50
+      correos:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        permittedNumberOfCallsInHalfOpenState: 3
+        waitDurationInOpenState: 15s
+        failureRateThreshold: 50
