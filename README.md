@@ -1,131 +1,91 @@
-# NexaSaaS: Cloud Multi-Tenant E-commerce API
+# NexaSaaS: Cloud Multi-Tenant E-commerce API ☁️🛒
 
-![Java](https://img.shields.io/badge/Java-21-orange?style=flat-square&logo=java)
-![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.4.1-green?style=flat-square&logo=spring-boot)
-![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16.0-blue?style=flat-square&logo=postgresql)
-![Redis](https://img.shields.io/badge/Redis-7.2-red?style=flat-square&logo=redis)
-![Docker](https://img.shields.io/badge/Docker-Enabled-blue?style=flat-square&logo=docker)
+<div align="center">
+  <img src="https://img.shields.io/badge/Java-21-orange?style=for-the-badge&logo=java" alt="Java 21" />
+  <img src="https://img.shields.io/badge/Spring_Boot-3.4.1-brightgreen?style=for-the-badge&logo=spring-boot" alt="Spring Boot" />
+  <img src="https://img.shields.io/badge/PostgreSQL-16.0-blue?style=for-the-badge&logo=postgresql" alt="PostgreSQL" />
+  <img src="https://img.shields.io/badge/Elasticsearch-8.18-yellow?style=for-the-badge&logo=elasticsearch" alt="Elasticsearch" />
+  <img src="https://img.shields.io/badge/Redis-7.2-red?style=for-the-badge&logo=redis" alt="Redis" />
+  <img src="https://img.shields.io/badge/Docker-Ready-2496ED?style=for-the-badge&logo=docker" alt="Docker" />
+</div>
 
-NexaSaaS es una API RESTful moderna, escalable y robusta, diseñada para soportar arquitecturas **Multi-Inquilino (Multi-Tenant)**. Permite a múltiples negocios o tiendas virtuales operar bajo la misma infraestructura, compartiendo recursos de hardware pero manteniendo sus datos completamente aislados de forma segura mediante filtrado a nivel de base de datos (Data Isolation).
+<br />
 
-Este proyecto sirve como el núcleo (Backend) de un modelo de negocio de **Software as a Service (SaaS)** para tiendas en línea.
+> **NexaSaaS** es una API RESTful moderna, escalable y robusta, diseñada para soportar arquitecturas **Multi-Inquilino (Multi-Tenant)** de nivel empresarial (Enterprise SaaS). Permite a múltiples negocios o tiendas virtuales operar bajo la misma infraestructura, manteniendo sus datos completamente aislados, seguros y optimizados para la nube.
 
 ---
 
-## 🚀 Características Principales
+## 🌟 Características Enterprise (SaaS Avanzado)
 
-*   **Arquitectura Multi-Inquilino Robusta:** Aislamiento de datos implementado mediante filtros de Hibernate (`@Filter`), asegurando que ningún inquilino (tienda) pueda acceder a datos de otro.
-*   **Gestión Completa de Identidad y Acceso (IAM):** Registro de usuarios, autenticación basada en JWT, y roles (Propietario de tienda, Cliente, Administrador Global).
-*   **Catálogo Avanzado:** Gestión jerárquica de categorías, control de inventario en tiempo real, SKUs y rastreo de stock por variante de producto.
-*   **Flujo de Compras (Checkout) Seguro:** Carrito de compras implementado de alto rendimiento con **Redis** y persistencia relacional en PostgreSQL para asegurar durabilidad e integridad en las órdenes de compra.
-*   **Sistema de Reseñas y Calificaciones:** Sólo clientes verificados pueden calificar productos tras confirmar la recepción de su orden.
-*   **Diseñado para Cloud:** Infraestructura completamente orquestada con Docker y contenedores para rápido despliegue (PostgreSQL, Redis, Servidor).
+- 🏢 **Arquitectura Multi-Inquilino Híbrida**: Aislamiento de datos por `Tenant`. Combina filtros a nivel de fila (`@Filter` de Hibernate) para clientes estándar y **Bases de Datos Dedicadas** (`AbstractRoutingDataSource`) para clientes Premium.
+- ⚡ **Búsquedas de Alto Rendimiento (CQRS)**: Sincronización asíncrona de inventario desde PostgreSQL hacia **Elasticsearch** mediante Eventos de Dominio, garantizando búsquedas de catálogo de texto completo en milisegundos.
+- 🛡️ **Tolerancia a Fallos y Resiliencia**: Cortacircuitos integrados (`Resilience4j`) para todas las integraciones de terceros (Pasarelas de Pago, Servidores SMTP). La aplicación sobrevive intacta a caídas masivas de servicios externos.
+- 💳 **Pagos Desacoplados (Strategy Pattern)**: Integración oficial con **Stripe** construida bajo el patrón Strategy, permitiendo inyectar nuevas pasarelas (PayPal, MercadoPago) en minutos.
+- 🔐 **Gestión Completa de Identidad (IAM)**: Autenticación por **JWT**, control de accesos basados en roles (RBAC) y encriptación de extremo a extremo.
 
 ---
 
 ## 🛠️ Stack Tecnológico
 
-*   **Lenguaje:** Java 21
-*   **Framework:** Spring Boot 3.4.1 (Spring Web, Spring Data JPA, Spring Security)
-*   **Base de Datos Relacional:** PostgreSQL 16 (con Hibernate ORM)
-*   **Caché y Almacenamiento en Memoria:** Redis 7.2 (Lettuce, Spring Data Redis)
-*   **Migración de Base de Datos:** Flyway
-*   **Seguridad:** JSON Web Tokens (JWT)
-*   **Documentación de API:** OpenAPI (Swagger UI) / SpringDoc
-*   **Orquestación:** Docker y Docker Compose
+| Capa | Tecnología |
+| :--- | :--- |
+| **Lenguaje Core** | Java 21 |
+| **Framework Base** | Spring Boot 3.4.1 (Web, Security, Data JPA, Actuator) |
+| **Bases de Datos** | PostgreSQL 16 (Escritura) / Elasticsearch 8.18 (Lectura) |
+| **Caché & Sesiones**| Redis 7.2 |
+| **Tolerancia a Fallos**| Resilience4j (Circuit Breakers) |
+| **Migraciones** | Flyway |
+| **Pruebas (Tests)** | JUnit 5, Mockito, Testcontainers |
+| **Infraestructura** | Docker & Docker Compose |
 
 ---
 
-## 📂 Estructura del Proyecto
+## 📂 Arquitectura de Dominio (DDD)
 
-El código fuente está estructurado siguiendo principios de **Domain-Driven Design (DDD)** adaptado a micro-módulos dentro de un monolito modular.
+El proyecto sigue un enfoque modular, dividiendo el negocio en micro-módulos dentro de un monolito limpio:
 
-```text
-src/main/java/com/ecommerce/
-│
-├── modulos/
-│   ├── compartido/       # (Core) Interfaces, Entidades Base, Excepciones Globales, Contexto Inquilino
-│   ├── identidad/        # (Auth) JWT, Controladores de Registro y Login, Repositorios de Usuario
-│   ├── inquilino/        # (Tenant) Administración de Tiendas, Registro de Subdominios
-│   ├── catalogo/         # (Catalog) Gestión de Categorías, Productos y Variantes
-│   ├── carrito/          # (Cart) Interacciones en Redis para los carritos activos
-│   ├── ordenes/          # (Orders) Casos de uso de Checkout, Generación de Órdenes y Totales
-│   ├── pagos/            # (Payments) Webhooks e integración con pasarelas (Stripe)
-│   └── resenas/          # (Reviews) Lógica para calificación de órdenes finalizadas
-│
-└── EcommercePlatformApplication.java
-```
+- 🛒 `carrito/` - Interacciones ultrarrápidas con Redis para carritos activos.
+- 📦 `catalogo/` - Gestión de productos y variantes (PostgreSQL).
+- 🔍 `busqueda/` - Búsqueda indexada de texto completo (Elasticsearch).
+- 🏢 `inquilino/` - Gestión de clientes B2B, planes y enrutamiento dinámico de bases de datos.
+- 💳 `pagos/` - Patrón Strategy, webhooks e integraciones con Stripe.
+- ✉️ `notificacion/` - Eventos de dominio asíncronos y envío de correos.
 
 ---
 
-## ⚙️ Requisitos Previos
+## 🚀 Despliegue Local Rápido
 
-Para correr este proyecto en tu entorno local necesitas:
-
-*   **Java 21 JDK** o superior.
-*   **Docker Desktop** (para levantar PostgreSQL y Redis).
-*   **Gradle** (aunque se incluye Gradle Wrapper).
-
----
-
-## 🏃🏻‍♂️ Cómo Iniciar (Getting Started)
-
-1. **Clonar el repositorio:**
+1. **Clonar repositorio**:
    ```bash
-   git clone https://github.com/tu-usuario/nexasaas-ecommerce.git
-   cd nexasaas-ecommerce
+   git clone https://github.com/SebastianMontes-Dev/ecommerce-platform.git
+   cd ecommerce-platform
    ```
 
-2. **Levantar la Infraestructura (Docker):**
-   Este comando descargará y levantará contenedores para Postgres (puerto `5433`) y Redis (puerto `6380`).
+2. **Levantar Infraestructura Base** (Postgres, Redis, Elasticsearch):
    ```bash
    docker-compose up -d
    ```
-   *Nota: Si estás usando Windows para desarrollar y Docker en WSL, asegúrate de configurar la variable de entorno `DOCKER_HOST` si tu terminal lo requiere, aunque usualmente Docker Desktop gestiona esto en automático.*
 
-3. **Ejecutar la Aplicación Spring Boot:**
+3. **Compilar y Ejecutar Pruebas (Opcional)**:
+   ```bash
+   ./gradlew build
+   ```
+
+4. **Iniciar la Aplicación Spring Boot**:
    ```bash
    ./gradlew bootRun
    ```
 
-4. **Acceder a la Documentación (Swagger):**
-   Una vez que la aplicación ha iniciado con éxito (tarda en promedio ~3 segundos), podrás explorar toda la API y hacer llamadas directas en:
-   👉 **`http://localhost:8081/swagger-ui.html`**
+5. **Ver Documentación Interactiva (Swagger UI)**:
+   Navega a [http://localhost:8081/swagger-ui.html](http://localhost:8081/swagger-ui.html) para explorar e invocar la API.
 
 ---
 
-## 🧪 Pruebas E2E Automatizadas
+## 🌐 Visita Nuestra Página Oficial
+Visita la documentación oficial y la página de presentación del proyecto (GitHub Pages) configurada en la carpeta `/docs`.
 
-Para validar que el flujo completo (desde la creación de una cuenta hasta el pago de una orden) funciona correctamente, he desarrollado un **script de pruebas End-to-End (E2E)** ubicado en la carpeta `scripts/`.
+<br/>
 
-Para ejecutarlo (requiere Python 3):
-```bash
-cd scripts
-python prueba_e2e.py
-```
-*Este script simulará un usuario real registrándose, creando su tienda SaaS, poblando el catálogo, agregando productos a su carrito y finalizando su primera compra, retornando código `HTTP 201 Created` en cada paso exitoso.*
-
----
-
-## 🛡️ Aspectos de Seguridad y Buenas Prácticas
-
-1. **Aislamiento a Nivel SQL (Row-Level Tenancy):** A cada solicitud HTTP autenticada se le asigna su `X-Inquilino-ID`. Hibernate intercepta y filtra automáticamente todos los SELECTs, UPDATEs y DELETEs sin que el desarrollador tenga que añadir manualmente `WHERE tenant_id=?` a cada método del repositorio.
-2. **Encriptación de Contraseñas:** Integrado con `BCryptPasswordEncoder`.
-3. **Manejo de Errores Global:** Implementación de `@ControllerAdvice` que formatea excepciones estandarizadas.
-4. **Separación de Responsabilidades:** Arquitectura hexagonal / Clean Architecture por capas (Application, Domain, Infrastructure).
-
----
-
-## 🗺️ Roadmap y Estado Actual (WIP)
-
-El proyecto se encuentra en desarrollo activo. Las siguientes áreas están pendientes de implementación o refactorización:
-
-- [ ] **Pagos (Stripe):** Reemplazar el mock actual del checkout por la integración real con el SDK de Stripe (`Session.create()`) y corregir el contexto multi-inquilino en el webhook público.
-- [ ] **Reseñas:** Refactorizar el `ControladorResena` para mover la lógica a la capa de Aplicación (Casos de Uso), implementar validaciones de datos (Bean Validation) y verificar estrictamente que el usuario haya comprado y recibido la orden antes de calificar.
-- [ ] **Notificaciones:** Implementar `ServicioNotificacionCorreo` (ej. vía SendGrid/SMTP) y crear plantillas HTML en `templates/email/`.
-- [ ] **Testing:** Desarrollar la suite de pruebas unitarias y de integración (JUnit / Mockito) para respaldar las pruebas E2E actuales en Python.
-- [ ] **Estandarización de Código:** Estandarizar el nombrado de variables y métodos a inglés para mantener consistencia con los estándares de la industria y la arquitectura limpia.
-
----
-
-> Desarrollado con ☕ y buenas prácticas de ingeniería de software.
+<div align="center">
+  <i>Desarrollado con pasión, principios SOLID y Clean Code.</i>
+</div>

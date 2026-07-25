@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NexaSaaS - Cloud Multi-Tenant E-commerce API</title>
+    <meta name="description" content="La infraestructura backend de clase mundial para tu próxima plataforma SaaS de E-commerce.">
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Outfit:wght@500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="blob-bg blob-1"></div>
+    <div class="blob-bg blob-2"></div>
+    
+    <nav class="navbar">
+        <div class="logo">
+            <span class="gradient-text">Nexa</span>SaaS
+        </div>
+        <div class="nav-links">
+            <a href="#features">Características</a>
+            <a href="#architecture">Arquitectura</a>
+            <a href="https://github.com/SebastianMontes-Dev/ecommerce-platform" target="_blank" class="btn btn-outline">Ver en GitHub</a>
+        </div>
+    </nav>
+
+    <header class="hero">
+        <div class="hero-content">
+            <div class="badge">Enterprise Ready 🚀</div>
+            <h1 class="title">La Infraestructura Definitiva para <span class="gradient-text">E-commerce B2B</span></h1>
+            <p class="subtitle">API RESTful escalable diseñada para arquitecturas Multi-Tenant. Aísla datos de clientes, asegura tolerancia a fallos y busca en milisegundos con Elasticsearch.</p>
+            <div class="hero-actions">
+                <a href="#features" class="btn btn-primary">Descubrir Funciones</a>
+                <a href="https://github.com/SebastianMontes-Dev/ecommerce-platform" target="_blank" class="btn btn-secondary">Clonar Repositorio</a>
+            </div>
+        </div>
+        <div class="hero-visual">
+            <div class="glass-card terminal-card">
+                <div class="terminal-header">
+                    <span class="dot red"></span>
+                    <span class="dot yellow"></span>
+                    <span class="dot green"></span>
+                </div>
+                <div class="terminal-body">
+                    <code><span class="token-comment">// Inicializando NexaSaaS...</span></code><br>
+                    <code>$ docker-compose up -d</code><br>
+                    <code><span class="token-success">✔</span> PostgreSQL Database Ready</code><br>
+                    <code><span class="token-success">✔</span> Redis Cache Ready</code><br>
+                    <code><span class="token-success">✔</span> Elasticsearch Ready</code><br>
+                    <code>$ ./gradlew bootRun</code><br>
+                    <code><span class="token-brand">INFO</span> Spring Boot Application Started in 3.45s</code><br>
+                    <code><span class="token-brand">INFO</span> Mapped {[/api/v1/busqueda]} to ControladorBusqueda</code>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <section id="features" class="features-section">
+        <h2 class="section-title">Construido para <span class="gradient-text">Escalar</span></h2>
+        
+        <div class="features-grid">
+            <div class="glass-card feature-card">
+                <div class="feature-icon">🏢</div>
+                <h3>Multi-Tenant Híbrido</h3>
+                <p>Combina bases de datos compartidas (Row-Level Security) para planes básicos, y bases de datos dedicadas mediante AbstractRoutingDataSource para clientes Premium.</p>
+            </div>
+            
+            <div class="glass-card feature-card">
+                <div class="feature-icon">⚡</div>
+                <h3>Búsquedas CQRS</h3>
+                <p>Integración en tiempo real con Elasticsearch a través de Eventos de Dominio. Consultas de texto completo complejas resueltas en milisegundos.</p>
+            </div>
+            
+            <div class="glass-card feature-card">
+                <div class="feature-icon">🛡️</div>
+                <h3>Tolerancia a Fallos</h3>
+                <p>Circuit Breakers gestionados por Resilience4j. La API sobrevive a caídas de pasarelas de pago o servidores SMTP sin agotar el pool de conexiones.</p>
+            </div>
+
+            <div class="glass-card feature-card">
+                <div class="feature-icon">💳</div>
+                <h3>Strategy Payments</h3>
+                <p>Desacople total de proveedores financieros. Cambia entre Stripe, PayPal o integraciones personalizadas en tiempo de ejecución de manera dinámica.</p>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="glass-card footer-card">
+            <h2>¿Listo para construir el futuro del comercio?</h2>
+            <a href="https://github.com/SebastianMontes-Dev/ecommerce-platform" class="btn btn-primary" target="_blank">Explorar el Código Fuente</a>
+            <p class="footer-credit">Desarrollado con ☕ y Clean Code.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Micro-interacción: Animación en scroll
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('.feature-card').forEach(card => {
+            observer.observe(card);
+        });
+    </script>
+</body>
+</html>
