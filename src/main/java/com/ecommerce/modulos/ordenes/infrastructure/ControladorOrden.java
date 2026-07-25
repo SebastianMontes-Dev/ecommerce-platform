@@ -38,7 +38,7 @@ public class ControladorOrden {
 
     @GetMapping
     @Operation(summary = "List ordenes for current inquilino")
-    public ResponseEntity<?> listOrders(
+    public ResponseEntity<com.ecommerce.modulos.compartido.infrastructure.RespuestaPaginada<RespuestaOrden>> listOrders(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
         return ResponseEntity.ok(casoUsoOrden.listOrdersByTenant(

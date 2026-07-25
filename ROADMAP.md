@@ -45,7 +45,7 @@ Este documento detalla el estado actual del proyecto, las deudas técnicas ident
 
 ## 🟣 Fase 4: Deuda Técnica y Refactorizaciones
 *   [x] **Estandarización de Idioma (Español):** Por decisión arquitectónica, el idioma oficial del código fuente de este proyecto es el **Español**. Se han traducido términos como `amount` a `monto` y `notes` a `notas` en todo el proyecto.
-*   [ ] **Revisión de Endpoints:** Consolidar el diseño de API REST para asegurar consistencia en las respuestas y en la paginación.
+*   [x] **Revisión de Endpoints:** Consolidar el diseño de API REST para asegurar consistencia en las respuestas y en la paginación.
 
 ## 🚀 Fase 5: Características Enterprise (SaaS Avanzado)
 *   [x] **Patrón Strategy para Pagos:** Desacoplar Stripe del caso de uso principal creando una interfaz genérica `ProcesadorPago`. Permitir que cada Inquilino configure su pasarela preferida (Stripe, PayPal, MercadoPago) dinámicamente.

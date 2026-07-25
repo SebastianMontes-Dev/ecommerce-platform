@@ -29,11 +29,12 @@ public class ControladorResena {
 
     @GetMapping("/resenas")
     @Operation(summary = "Listar reseñas de un producto")
-    public ResponseEntity<Page<Resena>> listarResenas(
+    public ResponseEntity<com.ecommerce.modulos.compartido.infrastructure.RespuestaPaginada<Resena>> listarResenas(
             @PathVariable UUID idProducto,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        return ResponseEntity.ok(repositorioResena.findAllByIdProductoAndActivoTrue(idProducto, PageRequest.of(page, size)));
+        Page<Resena> resenas = repositorioResena.findAllByIdProductoAndActivoTrue(idProducto, PageRequest.of(page, size));
+        return ResponseEntity.ok(com.ecommerce.modulos.compartido.infrastructure.RespuestaPaginada.from(resenas));
     }
 
     @PostMapping("/resenas")

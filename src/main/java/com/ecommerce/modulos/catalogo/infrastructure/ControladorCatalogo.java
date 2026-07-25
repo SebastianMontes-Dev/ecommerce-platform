@@ -52,7 +52,7 @@ public class ControladorCatalogo {
     @GetMapping("/productos")
     @Operation(summary = "Listar productos")
     @Cacheable(value = "productos", key = "T(com.ecommerce.modulos.compartido.infrastructure.ContextoInquilino).getIdTienda() + '_' + #page + '_' + #size")
-    public ResponseEntity<?> listProducts(
+    public ResponseEntity<com.ecommerce.modulos.compartido.infrastructure.RespuestaPaginada<RespuestaProducto>> listProducts(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
         return ResponseEntity.ok(casoUsoObtenerProducto.listProducts(
