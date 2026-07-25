@@ -57,4 +57,16 @@ public class ServicioBusqueda {
             return List.of();
         }
     }
+
+    public void deleteProduct(UUID idTienda, String idProducto) {
+        try {
+            elasticsearchClient.delete(d -> d
+                    .index(INDEX_NAME)
+                    .id(idProducto)
+            );
+            log.info("Deleted producto {} from Elasticsearch", idProducto);
+        } catch (Exception e) {
+            log.error("Failed to delete producto {}", idProducto, e);
+        }
+    }
 }

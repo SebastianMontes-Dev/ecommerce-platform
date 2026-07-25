@@ -121,7 +121,29 @@ public class Producto extends RaizAgregadaInquilino {
                 this.getNombre(),
                 this.getEnlaceCorto(),
                 this.getDescripcion(),
-                this.getEstado().name()
+                this.getEstado().name(),
+                this.getPrecio() != null ? this.getPrecio().getMonto() : BigDecimal.ZERO,
+                this.getCategoria() != null ? this.getCategoria().getNombre() : null
+        ));
+    }
+
+    public void markAsUpdated() {
+        registerEvent(new com.ecommerce.modulos.catalogo.domain.eventos.EventoProductoActualizado(
+                this.getId(),
+                this.getIdTienda(),
+                this.getNombre(),
+                this.getEnlaceCorto(),
+                this.getDescripcion(),
+                this.getEstado().name(),
+                this.getPrecio() != null ? this.getPrecio().getMonto() : BigDecimal.ZERO,
+                this.getCategoria() != null ? this.getCategoria().getNombre() : null
+        ));
+    }
+
+    public void markAsDeleted() {
+        registerEvent(new com.ecommerce.modulos.catalogo.domain.eventos.EventoProductoEliminado(
+                this.getId(),
+                this.getIdTienda()
         ));
     }
 }

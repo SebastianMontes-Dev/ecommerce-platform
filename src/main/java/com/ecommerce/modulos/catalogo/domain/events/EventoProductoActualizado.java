@@ -8,7 +8,7 @@ import java.time.Instant;
 import java.util.UUID;
 
 @Getter
-public class EventoProductoCreado implements EventoDominio {
+public class EventoProductoActualizado implements EventoDominio {
 
     private final UUID idEvento;
     private final Instant ocurrioEn;
@@ -21,7 +21,7 @@ public class EventoProductoCreado implements EventoDominio {
     private final BigDecimal precio;
     private final String nombreCategoria;
 
-    public EventoProductoCreado(UUID idProducto, UUID idTienda, String nombre, String enlaceCorto, String descripcion, String estado, BigDecimal precio, String nombreCategoria) {
+    public EventoProductoActualizado(UUID idProducto, UUID idTienda, String nombre, String enlaceCorto, String descripcion, String estado, BigDecimal precio, String nombreCategoria) {
         this.idEvento = UUID.randomUUID();
         this.ocurrioEn = Instant.now();
         this.idProducto = idProducto;
@@ -36,6 +36,6 @@ public class EventoProductoCreado implements EventoDominio {
 
     @Override
     public String getTipoEvento() {
-        return "PRODUCT_CREATED";
+        return "PRODUCT_UPDATED";
     }
 }

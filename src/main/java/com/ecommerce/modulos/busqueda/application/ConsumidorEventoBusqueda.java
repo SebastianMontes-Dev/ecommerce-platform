@@ -1,6 +1,8 @@
 package com.ecommerce.modulos.busqueda.application;
 
 import com.ecommerce.modulos.catalogo.domain.eventos.EventoProductoCreado;
+import com.ecommerce.modulos.catalogo.domain.eventos.EventoProductoActualizado;
+import com.ecommerce.modulos.catalogo.domain.eventos.EventoProductoEliminado;
 import com.ecommerce.modulos.busqueda.domain.DocumentoProducto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,14 +23,48 @@ public class ConsumidorEventoBusqueda {
     @EventListener
     public void onProductCreated(EventoProductoCreado evento) {
         log.info("Received EventoProductoCreado for producto: {}", evento.getIdProducto());
-        
+        indexarDocumento(
+                evento.getIdProducto().toString(),
+                evento.getIdTienda(),
+                evento.getNombre(),
+                evento.getEnlaceCorto(),
+                evento.getDescripcion(),
+                evento.getPrecio(),
+                evento.getNombreCategoria()
+        );
+    }
+
+    @Async
+    @EventListener
+    public void onProductUpdated(EventoProductoActualizado evento) {
+        log.info("Received EventoProductoActualizado for producto: {}", evento.getIdProducto());
+        indexarDocumento(
+                evento.getIdProducto().toString(),
+                evento.getIdTienda(),
+                evento.getNombre(),
+                evento.getEnlaceCorto(),
+                evento.getDescripcion(),
+                evento.getPrecio(),
+                evento.getNombreCategoria()
+        );
+    }
+
+    @Async
+    @EventListener
+    public void onProductDeleted(EventoProductoEliminado evento) {
+        log.info("Received EventoProductoEliminado for producto: {}", evento.getIdProducto());
+        servicioBusqueda.deleteProduct(evento.getIdTienda(), evento.getIdProducto().toString());
+    }
+
+    private void indexarDocumento(String id, java.util.UUID idTienda, String nombre, String enlaceCorto, String descripcion, BigDecimal precio, String nombreCategoria) {
         DocumentoProducto doc = new DocumentoProducto();
-        doc.setId(evento.getIdProducto().toString());
-        doc.setIdTienda(evento.getIdTienda());
-        doc.setNombre(evento.getNombre());
-        doc.setEnlaceCorto(evento.getEnlaceCorto());
-        doc.setDescripcion(evento.getDescripcion());
-        doc.setPrecio(BigDecimal.ZERO); // Normally comes from evento or API
+        doc.setId(id);
+        doc.setIdTienda(idTienda);
+        doc.setNombre(nombre);
+        doc.setEnlaceCorto(enlaceCorto);
+        doc.setDescripcion(descripcion);
+        doc.setPrecio(precio);
+        doc.setNombreCategoria(nombreCategoria);
         
         servicioBusqueda.indexProduct(doc);
     }
