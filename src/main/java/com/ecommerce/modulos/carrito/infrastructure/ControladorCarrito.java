@@ -16,6 +16,11 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 import java.util.UUID;
 
+import com.ecommerce.modulos.ordenes.application.CasoUsoGestionarCupon;
+import com.ecommerce.modulos.ordenes.domain.Cupon;
+import com.ecommerce.modulos.ordenes.domain.TipoDescuento;
+import java.math.BigDecimal;
+
 @RestController
 @RequestMapping("/api/v1/carrito")
 @RequiredArgsConstructor
@@ -23,6 +28,7 @@ import java.util.UUID;
 public class ControladorCarrito {
 
     private final ServicioCarrito servicioCarrito;
+    private final CasoUsoGestionarCupon casoUsoGestionarCupon;
 
     @GetMapping
     @Operation(summary = "Get current carrito")
@@ -87,5 +93,39 @@ public class ControladorCarrito {
 
         servicioCarrito.clearCart(userDetails.getUserId());
         return ResponseEntity.ok(Map.of("message", "Carrito cleared"));
+    }
+
+    @PostMapping("/cupones/{codigo}")
+    @Operation(summary = "Aplicar cupón al carrito")
+    public ResponseEntity<Carrito> aplicarCupon(
+            @PathVariable String codigo,
+            @AuthenticationPrincipal DetallesUsuarioPersonalizado userDetails,
+            HttpSession session) {
+            
+        Cupon cupon = casoUsoGestionarCupon.validarYObtenerCupon(ContextoInquilino.getIdTienda(), codigo);
+        
+        Carrito carrito = userDetails != null ? 
+            servicioCarrito.getOrCreateCart(userDetails.getUserId(), ContextoInquilino.getIdTienda()) : 
+            servicioCarrito.getOrCreateGuestCart(session.getId(), ContextoInquilino.getIdTienda());
+            
+        BigDecimal subtotal = carrito.getArticulos().stream()
+                .map(ArticuloCarrito::getSubtotal)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+                
+        BigDecimal descuento = BigDecimal.ZERO;
+        if (cupon.getTipo() == TipoDescuento.PORCENTAJE) {
+            descuento = subtotal.multiply(cupon.getValor()).divide(new BigDecimal("100"));
+        } else {
+            descuento = cupon.getValor();
+        }
+        
+        carrito = servicioCarrito.aplicarCupon(
+            userDetails != null ? userDetails.getUserId() : null, 
+            session.getId(), 
+            codigo, 
+            descuento
+        );
+        
+        return ResponseEntity.ok(carrito);
     }
 }

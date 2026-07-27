@@ -17,6 +17,9 @@ public interface RepositorioProducto extends RepositorioJpaBase<Producto> {
     @Query("SELECT p FROM Producto p LEFT JOIN FETCH p.images WHERE p.idTienda = :idTienda AND p.enlaceCorto = :enlaceCorto")
     Optional<Producto> findByIdTiendaAndEnlaceCortoWithImages(UUID idTienda, String enlaceCorto);
 
+    @Query("SELECT p FROM Producto p LEFT JOIN FETCH p.variants WHERE p.id = :id")
+    Optional<Producto> findByIdWithVariants(UUID id);
+
     Page<Producto> findAllByIdTienda(UUID idTienda, Pageable pageable);
 
     Page<Producto> findAllByIdTiendaAndEstado(UUID idTienda, EstadoProducto estado, Pageable pageable);

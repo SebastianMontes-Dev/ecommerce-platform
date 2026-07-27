@@ -81,6 +81,16 @@ public class Orden extends RaizAgregadaInquilino {
     })
     private Dinero total;
 
+    @Column(name = "codigo_cupon")
+    private String codigoCupon;
+
+    @Embedded
+    @AttributeOverrides({
+            @AttributeOverride(name = "monto", column = @Column(name = "monto_descuento", precision = 10, scale = 2)),
+            @AttributeOverride(name = "moneda", column = @Column(name = "descuento_currency", length = 3))
+    })
+    private Dinero montoDescuento;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "estado", nullable = false)
     private EstadoOrden estado = EstadoOrden.PENDING;

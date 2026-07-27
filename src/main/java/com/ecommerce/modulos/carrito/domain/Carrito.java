@@ -26,6 +26,11 @@ public class Carrito {
     @Builder.Default
     private List<ArticuloCarrito> articulos = new ArrayList<>();
 
+    private String codigoCupon;
+    
+    @Builder.Default
+    private BigDecimal montoDescuento = BigDecimal.ZERO;
+
     public void agregarArticulo(ArticuloCarrito newItem) {
         if (articulos.size() >= MAX_ITEMS) {
             throw new IllegalStateException("Carrito cannot have more than " + MAX_ITEMS + " articulos");
@@ -67,9 +72,12 @@ public class Carrito {
     }
 
     public BigDecimal getTotal() {
-        return articulos.stream()
+        BigDecimal subtotal = articulos.stream()
                 .map(ArticuloCarrito::getSubtotal)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
+        
+        BigDecimal totalFinal = subtotal.subtract(montoDescuento != null ? montoDescuento : BigDecimal.ZERO);
+        return totalFinal.compareTo(BigDecimal.ZERO) < 0 ? BigDecimal.ZERO : totalFinal;
     }
 
     public boolean isEmpty() {

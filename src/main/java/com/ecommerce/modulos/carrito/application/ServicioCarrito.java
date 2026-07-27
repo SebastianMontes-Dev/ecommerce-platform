@@ -86,6 +86,14 @@ public class ServicioCarrito {
         redisTemplate.delete(key);
     }
 
+    public Carrito aplicarCupon(UUID userId, String sessionId, String codigoCupon, java.math.BigDecimal montoDescuento) {
+        Carrito carrito = userId != null ? getOrCreateCart(userId, null) : getOrCreateGuestCart(sessionId, null);
+        carrito.setCodigoCupon(codigoCupon);
+        carrito.setMontoDescuento(montoDescuento);
+        saveCart(carrito);
+        return carrito;
+    }
+
     public void mergeGuestCartIntoUserCart(String sessionId, UUID userId, UUID idTienda) {
         Carrito carritoInvitado = loadCart(SESSION_KEY_PREFIX + sessionId);
         if (carritoInvitado == null || carritoInvitado.isEmpty()) return;
@@ -97,16 +105,28 @@ public class ServicioCarrito {
     }
 
     private void validateCartItem(ArticuloCarrito item) {
-        Producto producto = repositorioProducto.findById(item.getIdProducto())
+        Producto producto = repositorioProducto.findByIdWithVariants(item.getIdProducto())
                 .orElseThrow(() -> new ExcepcionEntidadNoEncontrada("Producto", item.getIdProducto()));
 
         if (!producto.getIdTienda().equals(item.getIdTienda())) {
             throw new IllegalStateException("Producto does not belong to the specified inquilino");
         }
 
-        item.setPrecioUnitario(producto.getPrecio().getMonto());
-        item.setNombreProducto(producto.getNombre());
-        item.setMoneda(producto.getPrecio().getMoneda());
+        if (item.getVariantId() != null) {
+            com.ecommerce.modulos.catalogo.domain.VarianteProducto variante = producto.getVariants().stream()
+                    .filter(v -> v.getId().equals(item.getVariantId()))
+                    .findFirst()
+                    .orElseThrow(() -> new ExcepcionEntidadNoEncontrada("VarianteProducto", item.getVariantId()));
+
+            item.setPrecioUnitario(variante.getPrecio().getMonto());
+            item.setVariantName(variante.getNombre());
+            item.setNombreProducto(producto.getNombre());
+            item.setMoneda(variante.getPrecio().getMoneda());
+        } else {
+            item.setPrecioUnitario(producto.getPrecio().getMonto());
+            item.setNombreProducto(producto.getNombre());
+            item.setMoneda(producto.getPrecio().getMoneda());
+        }
     }
 
     private Carrito loadCart(String key) {

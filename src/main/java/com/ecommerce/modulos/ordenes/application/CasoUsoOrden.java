@@ -28,6 +28,7 @@ public class CasoUsoOrden {
     private final ServicioCarrito servicioCarrito;
     private final RepositorioUsuario repositorioUsuario;
     private final PublicadorEventoDominio eventPublisher;
+    private final RepositorioCupon repositorioCupon;
 
     @Transactional
     public RespuestaOrden createOrderFromCart(UUID idCliente, UUID idTienda, SolicitudCheckout request) {
@@ -59,6 +60,8 @@ public class CasoUsoOrden {
             articuloOrden.setIdTienda(idTienda);
             articuloOrden.setIdProducto(item.getIdProducto());
             articuloOrden.setNombreProducto(item.getNombreProducto());
+            articuloOrden.setVariantId(item.getVariantId());
+            articuloOrden.setVariantName(item.getVariantName());
             articuloOrden.setCantidad(item.getCantidad());
             articuloOrden.setPrecioUnitario(Dinero.of(item.getPrecioUnitario(), item.getMoneda()));
             articuloOrden.setSubtotal(Dinero.of(item.getSubtotal(), item.getMoneda()));
@@ -71,12 +74,30 @@ public class CasoUsoOrden {
         }
 
         orden.setSubtotal(Dinero.of(subtotal, currency));
+
+        BigDecimal descuento = BigDecimal.ZERO;
+        if (carrito.getCodigoCupon() != null) {
+            Cupon cupon = repositorioCupon.findByIdTiendaAndCodigo(idTienda, carrito.getCodigoCupon())
+                    .orElse(null);
+            
+            if (cupon != null && cupon.esValido()) {
+                descuento = carrito.getMontoDescuento() != null ? carrito.getMontoDescuento() : BigDecimal.ZERO;
+                orden.setCodigoCupon(cupon.getCodigo());
+                orden.setMontoDescuento(Dinero.of(descuento, currency));
+                
+                cupon.registrarUso();
+                repositorioCupon.save(cupon);
+            }
+        }
+        
         // Simple logic for tax and shipping
-        BigDecimal tax = subtotal.multiply(new BigDecimal("0.10"));
+        BigDecimal subtotalConDescuento = subtotal.subtract(descuento).max(BigDecimal.ZERO);
+        BigDecimal tax = subtotalConDescuento.multiply(new BigDecimal("0.10"));
         BigDecimal shipping = new BigDecimal("10.00");
+        
         orden.setMontoImpuesto(Dinero.of(tax, currency));
         orden.setMontoEnvio(Dinero.of(shipping, currency));
-        orden.setTotal(Dinero.of(subtotal.add(tax).add(shipping), currency));
+        orden.setTotal(Dinero.of(subtotalConDescuento.add(tax).add(shipping), currency));
 
         orden.markAsCreated();
         orden = repositorioOrden.save(orden);

@@ -55,6 +55,21 @@ public class CasoUsoCrearProducto {
             producto.setIdCategoria(request.getIdCategoria());
         }
 
+        if (request.getVariants() != null && !request.getVariants().isEmpty()) {
+            for (SolicitudVariante reqVar : request.getVariants()) {
+                VarianteProducto variante = new VarianteProducto();
+                variante.setIdTienda(idTienda);
+                variante.setNombre(reqVar.getNombre());
+                variante.setSku(reqVar.getSku());
+                variante.setMonto(reqVar.getMonto());
+                variante.setMoneda(reqVar.getMoneda());
+                variante.setInventario(reqVar.getInventario());
+                variante.setAttributes(reqVar.getAttributes());
+                variante.setProducto(producto);
+                producto.getVariants().add(variante);
+            }
+        }
+
         producto = repositorioProducto.save(producto);
 
         producto.markAsCreated();

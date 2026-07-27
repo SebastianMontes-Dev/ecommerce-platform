@@ -48,4 +48,6 @@ public class SolicitudCrearProducto {
     private boolean rastreoInventarioHabilitado = true;
 
     private java.util.UUID idCategoria;
+
+    private java.util.List<SolicitudVariante> variants;
 }
