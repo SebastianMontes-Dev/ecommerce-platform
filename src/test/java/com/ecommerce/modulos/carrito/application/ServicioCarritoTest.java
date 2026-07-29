@@ -79,7 +79,7 @@ class ServicioCarritoTest {
     void debeAgregarArticuloYValidarConBaseDeDatos() {
         when(redisTemplate.opsForValue()).thenReturn(valueOperations);
         when(valueOperations.get("carrito:" + userId)).thenReturn(null);
-        when(repositorioProducto.findById(idProducto)).thenReturn(Optional.of(productoMoc));
+        when(repositorioProducto.findByIdWithVariants(idProducto)).thenReturn(Optional.of(productoMoc));
 
         Carrito carrito = servicioCarrito.agregarArticulo(userId, idTienda, item);
 
@@ -95,7 +95,7 @@ class ServicioCarritoTest {
     void debeLanzarExcepcionAlAgregarProductoInexistente() {
         when(redisTemplate.opsForValue()).thenReturn(valueOperations);
         when(valueOperations.get("carrito:" + userId)).thenReturn(null);
-        when(repositorioProducto.findById(idProducto)).thenReturn(Optional.empty());
+        when(repositorioProducto.findByIdWithVariants(idProducto)).thenReturn(Optional.empty());
 
         assertThrows(ExcepcionEntidadNoEncontrada.class, () -> {
             servicioCarrito.agregarArticulo(userId, idTienda, item);
@@ -110,7 +110,7 @@ class ServicioCarritoTest {
         when(valueOperations.get("carrito:" + userId)).thenReturn(null);
         
         productoMoc.setIdTienda(UUID.randomUUID()); // Otra tienda
-        when(repositorioProducto.findById(idProducto)).thenReturn(Optional.of(productoMoc));
+        when(repositorioProducto.findByIdWithVariants(idProducto)).thenReturn(Optional.of(productoMoc));
 
         assertThrows(IllegalStateException.class, () -> {
             servicioCarrito.agregarArticulo(userId, idTienda, item);

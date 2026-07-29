@@ -20,6 +20,10 @@ public interface RepositorioProducto extends RepositorioJpaBase<Producto> {
     @Query("SELECT p FROM Producto p LEFT JOIN FETCH p.variants WHERE p.id = :id")
     Optional<Producto> findByIdWithVariants(UUID id);
 
+    @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT p FROM Producto p WHERE p.id = :id")
+    Optional<Producto> findByIdForUpdate(UUID id);
+
     Page<Producto> findAllByIdTienda(UUID idTienda, Pageable pageable);
 
     Page<Producto> findAllByIdTiendaAndEstado(UUID idTienda, EstadoProducto estado, Pageable pageable);

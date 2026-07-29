@@ -30,6 +30,8 @@ public class ControladorWebhookStripe {
 
     private final RepositorioPago repositorioPago;
     private final RepositorioEventoProcesado repositorioEventoProcesado;
+    private final com.ecommerce.modulos.ordenes.domain.RepositorioOrden repositorioOrden;
+    private final com.ecommerce.modulos.logistica.application.CasoUsoLogistica casoUsoLogistica;
 
     @Value("${app.stripe.webhook-secret}")
     private String webhookSecret;
@@ -105,6 +107,16 @@ public class ControladorWebhookStripe {
             pagos.setIdExterno(session.getPaymentIntent());
             pagos.complete();
             repositorioPago.save(pagos);
+            
+            // Actualizar Orden
+            com.ecommerce.modulos.ordenes.domain.Orden orden = repositorioOrden.findById(pagos.getIdOrden())
+                    .orElseThrow(() -> new IllegalStateException("Orden no encontrada"));
+            orden.markAsPaid();
+            repositorioOrden.save(orden);
+            
+            // Preparar envío
+            casoUsoLogistica.prepararEnvio(pagos.getIdTienda(), orden.getId());
+            
             log.info("Pago completado exitosamente para la orden: {}", pagos.getIdOrden());
         } finally {
             com.ecommerce.modulos.compartido.infrastructure.ContextoInquilino.clear();

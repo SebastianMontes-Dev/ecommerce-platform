@@ -52,3 +52,8 @@ Este documento detalla el estado actual del proyecto, las deudas técnicas ident
 *   [x] **CQRS con Elasticsearch:** Sincronizar los productos desde PostgreSQL hacia Elasticsearch mediante eventos de dominio. Modificar los endpoints de búsqueda y catálogo para leer exclusivamente de Elasticsearch (milisegundos) liberando la carga en Postgres.
 *   [x] **Tolerancia a Fallos (Resilience4j):** Envolver las llamadas salientes (correos electrónicos, webhooks, pasarelas de pago) con *Circuit Breakers* y *Retries* para evitar fallos en cascada.
 *   [x] **Aislamiento Híbrido de Base de Datos:** Explorar la implementación de `AbstractRoutingDataSource` para permitir *Database-per-Tenant* a clientes premium, manteniendo el filtrado por columna para clientes estándar.
+
+## 💎 Fase 6: Lógica Comercial Avanzada (Completada)
+*   [x] **Variantes de Producto:** Gestión anidada de atributos (Talla, Color) con manejo independiente de precio e inventario durante el carrito y checkout.
+*   [x] **Sistema de Cupones y Promociones:** Códigos de descuento por porcentaje o monto fijo, con control de usos y fechas de expiración. Integración matemática perfecta con el total de órdenes y cobro de impuestos.
+*   [x] **Dashboard Analítico (Reporting):** Endpoints impulsados por `JdbcTemplate` para consultar de forma ultra-rápida (SQL Nativo) métricas clave como ingresos totales, gráfica semanal, y los 5 productos más vendidos, permitiendo pintar dashboards para dueños de tiendas sin latencia.
