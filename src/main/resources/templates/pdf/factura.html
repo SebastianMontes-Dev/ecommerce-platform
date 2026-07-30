@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Factura Electrónica</title>
+    <style>
+        body { font-family: sans-serif; margin: 20px; }
+        .header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px; }
+        .details { margin-bottom: 20px; }
+        .table { width: 100%; border-collapse: collapse; }
+        .table th, .table td { border: 1px solid #000; padding: 8px; text-align: left; }
+        .total { font-weight: bold; font-size: 1.2em; text-align: right; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Factura Electrónica</h1>
+        <p>Orden #<span th:text="${orden.numeroOrden}"></span></p>
+    </div>
+    <div class="details">
+        <p><strong>Cliente:</strong> <span th:text="${orden.nombreCliente}"></span></p>
+        <p><strong>Correo:</strong> <span th:text="${orden.correoCliente}"></span></p>
+    </div>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Producto</th>
+                <th>Cantidad</th>
+                <th>Precio Unitario</th>
+                <th>Subtotal</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="articulo : ${orden.articulos}">
+                <td th:text="${articulo.nombreProducto}"></td>
+                <td th:text="${articulo.cantidad}"></td>
+                <td th:text="${articulo.precioUnitario.monto + ' ' + articulo.precioUnitario.moneda}"></td>
+                <td th:text="${articulo.subtotal.monto + ' ' + articulo.subtotal.moneda}"></td>
+            </tr>
+        </tbody>
+    </table>
+    <div class="total">
+        <p>Subtotal: <span th:text="${orden.subtotal.monto + ' ' + orden.subtotal.moneda}"></span></p>
+        <p th:if="${orden.montoDescuento != null and orden.montoDescuento.monto > 0}">Descuento: <span th:text="${orden.montoDescuento.monto + ' ' + orden.montoDescuento.moneda}"></span></p>
+        <p>Impuesto: <span th:text="${orden.montoImpuesto.monto + ' ' + orden.montoImpuesto.moneda}"></span></p>
+        <p>Envío: <span th:text="${orden.montoEnvio.monto + ' ' + orden.montoEnvio.moneda}"></span></p>
+        <p>Total: <span th:text="${orden.total.monto + ' ' + orden.total.moneda}"></span></p>
+    </div>
+</body>
+</html>

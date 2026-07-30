@@ -24,6 +24,8 @@ public class ServicioNotificacionCorreo {
     private final JavaMailSender mailSender;
     private final RepositorioOrden repositorioOrden;
     private final TemplateEngine templateEngine;
+    private final com.ecommerce.modulos.pagos.application.ServicioFacturaPdf servicioFacturaPdf;
+
 
     @Transactional(readOnly = true)
     @CircuitBreaker(name = "correos", fallbackMethod = "fallbackCorreo")
@@ -36,9 +38,43 @@ public class ServicioNotificacionCorreo {
     @Transactional(readOnly = true)
     @CircuitBreaker(name = "correos", fallbackMethod = "fallbackCorreo")
     public void sendPaymentReceived(UUID idOrden, UUID idTienda) {
-        sendOrderEmail(idOrden, "Pago Recibido",
-                "Hemos recibido el pago de tu pedido. Estamos preparando tu envío.",
-                "¡Gracias por tu pago!");
+        try {
+            Orden orden = repositorioOrden.findById(idOrden)
+                    .orElseThrow(() -> new ExcepcionEntidadNoEncontrada("Orden", idOrden));
+
+            byte[] pdfBytes = servicioFacturaPdf.generarPdf(orden);
+            
+            sendOrderEmailWithAttachment(orden, "Pago Recibido",
+                    "Hemos recibido el pago de tu pedido. Adjunto encontrarás la factura.",
+                    "¡Gracias por tu pago!", "factura_" + orden.getNumeroOrden() + ".pdf", pdfBytes, "application/pdf");
+        } catch (Exception e) {
+            log.error("Fallo al enviar correo con factura para la orden {}: {}", idOrden, e.getMessage(), e);
+            throw new RuntimeException("Error en SMTP o Generacion PDF", e);
+        }
+    }
+    
+    private void sendOrderEmailWithAttachment(Orden orden, String subject, String bodyMessage, String headline, String attachmentName, byte[] attachmentData, String contentType) throws Exception {
+        Context context = new Context();
+        context.setVariable("headline", headline);
+        context.setVariable("messageBody", bodyMessage);
+        context.setVariable("orderNumber", orden.getNumeroOrden());
+        context.setVariable("customerName", orden.getNombreCliente() != null ? orden.getNombreCliente() : "Cliente");
+        context.setVariable("totalAmount", orden.getTotal().getMonto() + " " + orden.getTotal().getMoneda());
+
+        String process = templateEngine.process("email/plantilla-orden", context);
+
+        MimeMessage mimeMessage = mailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+        
+        helper.setTo(orden.getCorreoCliente());
+        helper.setSubject(subject + " - #" + orden.getNumeroOrden());
+        helper.setText(process, true);
+        helper.setFrom("noreply@nexasaas.com");
+        
+        helper.addAttachment(attachmentName, new org.springframework.core.io.ByteArrayResource(attachmentData), contentType);
+
+        mailSender.send(mimeMessage);
+        log.info("Correo HTML con adjunto enviado a {} para la orden {}: {}", orden.getCorreoCliente(), orden.getNumeroOrden(), subject);
     }
 
     @Transactional(readOnly = true)

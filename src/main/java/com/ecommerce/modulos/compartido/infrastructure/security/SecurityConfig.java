@@ -29,6 +29,8 @@ import java.util.List;
 public class SecurityConfig {
 
     private final FiltroAutenticacionJwt filtroAutenticacionJwt;
+    private final CustomOAuth2UserService customOAuth2UserService;
+    private final FiltroRateLimit filtroRateLimit;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -51,6 +53,12 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/v1/inquilinos/{enlaceCorto}").permitAll()
                         .anyRequest().authenticated()
                 )
+                .oauth2Login(oauth2 -> oauth2
+                        .userInfoEndpoint(userInfo -> userInfo
+                                .userService(customOAuth2UserService)
+                        )
+                )
+                .addFilterBefore(filtroRateLimit, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(filtroAutenticacionJwt, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
