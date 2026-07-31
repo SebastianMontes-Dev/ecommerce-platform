@@ -1,0 +1,43 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ "master", "main" ]
+  pull_request:
+    branches: [ "master", "main" ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    
+    services:
+      # Aunque Testcontainers levanta sus propios contenedores, 
+      # a veces es útil tener servicios base en el runner de GitHub
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+
+    steps:
+    - name: Checkout del código
+      uses: actions/checkout@v4
+
+    - name: Configurar JDK 21
+      uses: actions/setup-java@v4
+      with:
+        java-version: '21'
+        distribution: 'temurin'
+        cache: gradle
+
+    - name: Otorgar permisos de ejecución a Gradle
+      run: chmod +x gradlew
+
+    - name: Construir y correr pruebas
+      # Testcontainers necesita Docker, que ya viene incluido y funcionando en 'ubuntu-latest'
+      run: ./gradlew build
+      
+    - name: Construir Imagen Docker (Opcional)
+      if: github.event_name == 'push'
+      run: |
+        docker build -t ecommerce-api:latest -f Dockerfile .
+        # Aquí se agregaría: docker push username/ecommerce-api:latest si se tuvieran las credenciales
