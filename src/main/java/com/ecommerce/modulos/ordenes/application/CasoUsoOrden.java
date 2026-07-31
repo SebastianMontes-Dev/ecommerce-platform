@@ -29,6 +29,7 @@ public class CasoUsoOrden {
     private final RepositorioUsuario repositorioUsuario;
     private final PublicadorEventoDominio eventPublisher;
     private final RepositorioCupon repositorioCupon;
+    private final com.ecommerce.modulos.compartido.infrastructure.websocket.ServicioNotificacionTiempoReal servicioNotificacionTiempoReal;
 
     @Transactional
     public RespuestaOrden createOrderFromCart(UUID idCliente, UUID idTienda, SolicitudCheckout request) {
@@ -106,7 +107,10 @@ public class CasoUsoOrden {
 
         servicioCarrito.clearCart(idCliente);
 
-        return mapToResponse(orden);
+        RespuestaOrden respuesta = mapToResponse(orden);
+        servicioNotificacionTiempoReal.notificarNuevaOrden(idTienda, respuesta);
+        
+        return respuesta;
     }
 
     @Transactional(readOnly = true)

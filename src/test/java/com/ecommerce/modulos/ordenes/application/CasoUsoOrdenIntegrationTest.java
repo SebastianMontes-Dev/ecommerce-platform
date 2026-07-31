@@ -55,6 +55,9 @@ public class CasoUsoOrdenIntegrationTest {
     @MockBean
     private RepositorioUsuario repositorioUsuario;
 
+    @MockBean
+    private com.ecommerce.modulos.compartido.infrastructure.websocket.ServicioNotificacionTiempoReal servicioNotificacionTiempoReal;
+
     private UUID idCliente;
     private UUID idTienda;
 

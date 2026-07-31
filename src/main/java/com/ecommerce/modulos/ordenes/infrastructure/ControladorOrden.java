@@ -21,6 +21,7 @@ import java.util.UUID;
 public class ControladorOrden {
 
     private final CasoUsoOrden casoUsoOrden;
+    private final ServicioReporteOrdenes servicioReporteOrdenes;
 
     @PostMapping("/checkout")
     @Operation(summary = "Create an ordenes from the current user's cart")
@@ -56,5 +57,14 @@ public class ControladorOrden {
     @Operation(summary = "Cancel an ordenes")
     public ResponseEntity<RespuestaOrden> cancelOrder(@PathVariable UUID id, @RequestParam(defaultValue = "") String reason) {
         return ResponseEntity.ok(casoUsoOrden.cancelOrder(id, ContextoInquilino.getIdTienda(), reason));
+    }
+
+    @GetMapping(value = "/reporte/excel", produces = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+    @Operation(summary = "Generate Excel report of orders")
+    public ResponseEntity<byte[]> generateExcelReport() {
+        byte[] report = servicioReporteOrdenes.generarReporteExcel(ContextoInquilino.getIdTienda());
+        return ResponseEntity.ok()
+                .header("Content-Disposition", "attachment; filename=\"reporte_ordenes.xlsx\"")
+                .body(report);
     }
 }

@@ -145,6 +145,14 @@ services:
     networks:
       - ecommerce-net
 
+  zipkin:
+    image: openzipkin/zipkin:latest
+    container_name: ecommerce-zipkin
+    ports:
+      - "9411:9411"
+    networks:
+      - ecommerce-net
+
 volumes:
   postgres_data:
   redis_data:

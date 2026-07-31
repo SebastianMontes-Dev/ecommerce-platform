@@ -15,5 +15,7 @@ public interface RepositorioOrden extends RepositorioJpaBase<Orden> {
 
     Page<Orden> findAllByIdTienda(UUID idTienda, Pageable pageable);
 
+    java.util.List<Orden> findAllByIdTienda(UUID idTienda);
+
     Page<Orden> findAllByIdCliente(UUID idCliente, Pageable pageable);
 }

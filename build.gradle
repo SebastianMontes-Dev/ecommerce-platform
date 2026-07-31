@@ -56,6 +56,16 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
     implementation 'com.bucket4j:bucket4j-core:8.10.1'
     implementation 'org.xhtmlrenderer:flying-saucer-pdf-openpdf:9.4.0'
+    
+    // WebSockets (Tiempo Real)
+    implementation 'org.springframework.boot:spring-boot-starter-websocket'
+    
+    // Observabilidad y Trazabilidad (Zipkin + Micrometer Tracing)
+    implementation 'io.micrometer:micrometer-tracing-bridge-brave'
+    implementation 'io.zipkin.reporter2:zipkin-reporter-brave'
+    
+    // Motor de Reportes y Datos (Excel / Apache POI)
+    implementation 'org.apache.poi:poi-ooxml:5.2.5'
 
     implementation 'io.jsonwebtoken:jjwt-api:0.12.6'
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.6'
