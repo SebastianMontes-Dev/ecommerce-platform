@@ -18,12 +18,16 @@
 ## 🌟 Características Enterprise (SaaS Avanzado)
 
 - 🏢 **Arquitectura Multi-Inquilino Híbrida**: Aislamiento de datos por `Tenant`. Combina filtros a nivel de fila (`@Filter` de Hibernate) para clientes estándar y **Bases de Datos Dedicadas** (`AbstractRoutingDataSource`) para clientes Premium.
-- ⚡ **Búsquedas de Alto Rendimiento (CQRS)**: Sincronización asíncrona de inventario desde PostgreSQL hacia **Elasticsearch** mediante Eventos de Dominio, garantizando búsquedas de catálogo de texto completo en milisegundos.
-- 🛍️ **Lógica Comercial Potente**: Motor de **Cupones de Descuento** (fijo/porcentaje) y soporte total para **Variantes de Producto** (tallas, colores, stock independiente).
-- 📊 **Dashboard Analítico Nativo**: Reportes de ventas ultra-optimizados usando `JdbcTemplate` para agregar millones de datos en tiempo real (Ingresos, Top Productos).
-- 🛡️ **Tolerancia a Fallos y Resiliencia**: Cortacircuitos integrados (`Resilience4j`) para todas las integraciones de terceros (Pasarelas de Pago, Servidores SMTP). La aplicación sobrevive intacta a caídas masivas de servicios externos.
-- 💳 **Pagos Desacoplados (Strategy Pattern)**: Integración oficial con **Stripe** construida bajo el patrón Strategy, permitiendo inyectar nuevas pasarelas (PayPal, MercadoPago) en minutos.
-- 🔐 **Gestión Completa de Identidad (IAM)**: Autenticación por **JWT**, control de accesos basados en roles (RBAC) y encriptación de extremo a extremo.
+- ⚡ **Búsquedas de Alto Rendimiento (CQRS)**: Sincronización asíncrona de inventario hacia **Elasticsearch** garantizando búsquedas en milisegundos.
+- 🤖 **Asistente Virtual de IA**: Endpoint integrado con OpenAI (ChatGPT) para actuar como vendedor virtual en cada tienda.
+- 📦 **Motor de Logística y Envíos**: Tracking de paquetes, estados de envío y proveedores integrados a las órdenes.
+- 🛍️ **Lógica Comercial Potente**: Cupones de Descuento, Variantes de Producto (tallas, colores), Bloqueo Pesimista (Anti-Sobreventas).
+- 📊 **Reportes y Observabilidad**: Reportes en Excel (Apache POI), Dashboards analíticos, Trazabilidad con Zipkin, y Métricas con Prometheus/Grafana.
+- 🛡️ **Seguridad Anti-DDoS y Resiliencia**: Cortacircuitos (`Resilience4j`) y Rate Limiting mediante Bucket4j. 
+- 💳 **Pagos, Facturas y Reembolsos**: Integración oficial con **Stripe** para pagos y reembolsos, junto con Facturación Electrónica automática en PDF.
+- 🔐 **Autenticación Completa**: Login Social (OAuth2 con Google), JWT, control de accesos basados en roles (RBAC).
+- ⚡ **Tiempo Real**: WebSockets (STOMP) para notificaciones en vivo a los inquilinos.
+- ☁️ **Almacenamiento Cloud**: Subida de imágenes de productos y archivos hacia buckets en MinIO / AWS S3.
 
 ---
 
