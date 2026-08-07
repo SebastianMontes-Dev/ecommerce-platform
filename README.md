@@ -26,7 +26,8 @@
 - 🛡️ **Seguridad Anti-DDoS y Resiliencia**: Cortacircuitos (`Resilience4j`) y Rate Limiting mediante Bucket4j. 
 - 💳 **Pagos, Facturas y Reembolsos**: Integración oficial con **Stripe** para pagos y reembolsos, junto con Facturación Electrónica automática en PDF.
 - 🔐 **Autenticación Completa**: Login Social (OAuth2 con Google), JWT, control de accesos basados en roles (RBAC).
-- ⚡ **Tiempo Real**: WebSockets (STOMP) para notificaciones en vivo a los inquilinos.
+- ⚡ **Tiempo Real y Eventos**: WebSockets (STOMP) para notificaciones en vivo y un motor de **Outbound Webhooks** con cifrado HMAC-SHA256 para conectarse a plataformas B2B.
+- 🕸️ **Capa API Dual**: Endpoints REST tradicionales combinados con una potente capa **GraphQL** nativa para optimizar las cargas de aplicaciones móviles.
 - ☁️ **Almacenamiento Cloud**: Subida de imágenes de productos y archivos hacia buckets en MinIO / AWS S3.
 
 ---
