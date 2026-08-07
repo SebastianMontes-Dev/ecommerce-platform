@@ -1,0 +1,18 @@
+type Producto {
+    id: ID!
+    idTienda: ID!
+    nombre: String!
+    enlaceCorto: String!
+    descripcion: String
+    precio: Float
+    moneda: String
+    inventario: Int!
+    rastreoInventarioHabilitado: Boolean!
+    estado: String!
+    idCategoria: ID
+    nombreCategoria: String
+}
+
+type Query {
+    obtenerProductoPorId(id: ID!): Producto
+}
