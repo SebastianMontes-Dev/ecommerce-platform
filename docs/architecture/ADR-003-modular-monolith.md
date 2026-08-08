@@ -1,31 +1,31 @@
 # ADR-003: Arquitectura de Monolito Modular
 
-## Status
-Accepted
+## Estado
+Aceptado
 
-## Context
-El sistema tiene múltiples bounded contexts (Identity, Tenant, Catalog, Order, Payment, etc.) que deben ser independientes pero desplegarse juntos inicialmente.
+## Contexto
+El sistema tiene múltiples contextos delimitados (Identity, Tenant, Catalog, Order, Payment, etc.) que deben ser independientes pero desplegarse juntos inicialmente.
 
-## Decision
-Usar **monolito modular con separación por paquetes** siguiendo Clean Architecture.
+## Decisión
+Usar **monolito modular con separación por paquetes** siguiendo la Arquitectura Limpia (Clean Architecture).
 
 ## Estructura de cada módulo
 ```
 module/
-├── domain/          # Entidades, Value Objects, Repositorios (interfaces)
-├── application/     # Use Cases, DTOs, Puertos
-└── infrastructure/  # Controllers, JPA Repos, Clientes externos
+├── domain/          # Entidades, Objetos de Valor, Repositorios (interfaces)
+├── application/     # Casos de Uso, DTOs, Puertos
+└── infrastructure/  # Controladores, Repositorios JPA, Clientes externos
 ```
 
 ## Reglas
-1. Un módulo solo depende del `shared kernel` y de otros módulos a través de interfaces
+1. Un módulo solo depende del núcleo compartido (`shared kernel`) y de otros módulos a través de interfaces
 2. `domain` no depende de `infrastructure` ni de `application`
 3. `application` depende de `domain`
 4. `infrastructure` depende de `application` y `domain`
 5. Comunicación entre módulos: eventos de dominio (Spring Events → RabbitMQ)
 
-## Consequences
+## Consecuencias
 - Módulos bien definidos, fácil migración a microservicios
-- Shared kernel evita duplicación de código base (VOs, excepciones)
+- El núcleo compartido evita la duplicación de código base (Objetos de Valor, excepciones)
 - Sin dependencias circulares
-- Testing aislado por módulo
+- Pruebas aisladas por módulo
