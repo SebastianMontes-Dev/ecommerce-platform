@@ -118,15 +118,55 @@ class CasoUsoOrdenTest {
         UUID idOrden = UUID.randomUUID();
         UUID idTiendaDueña = UUID.randomUUID();
         UUID idTiendaAtacante = UUID.randomUUID();
+        UUID idClienteDueño = UUID.randomUUID();
 
         Orden orden = new Orden();
         orden.setIdTienda(idTiendaDueña);
+        orden.setIdCliente(idClienteDueño);
         when(repositorioOrden.findById(idOrden)).thenReturn(Optional.of(orden));
 
         assertThrows(ExcepcionEntidadNoEncontrada.class, () -> {
-            casoUsoOrden.cancelOrder(idOrden, idTiendaAtacante, "spoofed");
+            casoUsoOrden.cancelOrder(idOrden, idTiendaAtacante, idClienteDueño, "spoofed");
         });
 
         verify(repositorioOrden, never()).save(any());
+    }
+
+    @Test
+    void cancelOrderLanzaExcepcionSiLaOrdenEsDeOtroCliente() {
+        UUID idOrden = UUID.randomUUID();
+        UUID idTienda = UUID.randomUUID();
+        UUID idClienteDueño = UUID.randomUUID();
+        UUID idClienteAtacante = UUID.randomUUID();
+
+        Orden orden = new Orden();
+        orden.setIdTienda(idTienda);
+        orden.setIdCliente(idClienteDueño);
+        when(repositorioOrden.findById(idOrden)).thenReturn(Optional.of(orden));
+
+        assertThrows(ExcepcionEntidadNoEncontrada.class, () -> {
+            casoUsoOrden.cancelOrder(idOrden, idTienda, idClienteAtacante, "spoofed");
+        });
+
+        verify(repositorioOrden, never()).save(any());
+    }
+
+    @Test
+    void cancelOrderCancelaCuandoTiendaYClienteCoinciden() {
+        UUID idOrden = UUID.randomUUID();
+        UUID idTienda = UUID.randomUUID();
+        UUID idCliente = UUID.randomUUID();
+
+        Orden orden = new Orden();
+        orden.setIdTienda(idTienda);
+        orden.setIdCliente(idCliente);
+        when(repositorioOrden.findById(idOrden)).thenReturn(Optional.of(orden));
+        when(repositorioOrden.save(any(Orden.class))).thenAnswer(i -> i.getArguments()[0]);
+
+        RespuestaOrden respuesta = casoUsoOrden.cancelOrder(idOrden, idTienda, idCliente, "arrepentimiento");
+
+        assertNotNull(respuesta);
+        verify(repositorioOrden).save(any(Orden.class));
+        verify(eventPublisher).publish(any(List.class));
     }
 }

@@ -55,8 +55,11 @@ public class ControladorOrden {
 
     @PostMapping("/{id}/cancel")
     @Operation(summary = "Cancel an ordenes")
-    public ResponseEntity<RespuestaOrden> cancelOrder(@PathVariable UUID id, @RequestParam(defaultValue = "") String reason) {
-        return ResponseEntity.ok(casoUsoOrden.cancelOrder(id, ContextoInquilino.getIdTienda(), reason));
+    public ResponseEntity<RespuestaOrden> cancelOrder(
+            @PathVariable UUID id,
+            @RequestParam(defaultValue = "") String reason,
+            @AuthenticationPrincipal DetallesUsuarioPersonalizado userDetails) {
+        return ResponseEntity.ok(casoUsoOrden.cancelOrder(id, ContextoInquilino.getIdTienda(), userDetails.getUserId(), reason));
     }
 
     @GetMapping(value = "/reporte/excel", produces = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
