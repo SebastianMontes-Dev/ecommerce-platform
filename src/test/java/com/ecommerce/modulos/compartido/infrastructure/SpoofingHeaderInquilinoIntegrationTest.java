@@ -35,6 +35,11 @@ class SpoofingHeaderInquilinoIntegrationTest {
         registry.add("spring.datasource.username", postgres::getUsername);
         registry.add("spring.datasource.password", postgres::getPassword);
         registry.add("spring.jpa.hibernate.ddl-auto", () -> "update");
+        // SecurityConfig calls .oauth2Login(...) unconditionally, which needs a
+        // ClientRegistrationRepository bean to exist to build the filter chain at all —
+        // placeholder values only, the OAuth2 login flow itself isn't exercised here.
+        registry.add("spring.security.oauth2.client.registration.google.client-id", () -> "test-client-id");
+        registry.add("spring.security.oauth2.client.registration.google.client-secret", () -> "test-client-secret");
     }
 
     @Autowired
