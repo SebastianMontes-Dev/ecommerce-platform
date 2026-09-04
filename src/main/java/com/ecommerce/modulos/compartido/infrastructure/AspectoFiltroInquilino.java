@@ -6,6 +6,7 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import org.hibernate.Session;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.util.UUID;
 
@@ -25,7 +26,13 @@ public class AspectoFiltroInquilino {
     @Before("execution(* com.ecommerce.modulos.compartido.infrastructure.RepositorioJpaBase+.*(..))")
     public void activarFiltroInquilino() {
         UUID idTienda = ContextoInquilino.getIdTienda();
-        if (idTienda == null) {
+        // Con spring.jpa.open-in-view=false no hay persistence context de request.
+        // Fuera de una transacción activa, entityManager.unwrap(Session.class) puede
+        // devolver una Session temporal ya cerrada (o distinta a la que realmente usará
+        // el repositorio), así que solo activamos el filtro cuando hay una transacción
+        // Spring real en curso — el filtrado manual por idTienda en cada repositorio
+        // sigue siendo la defensa primaria; este aspecto es el respaldo transaccional.
+        if (idTienda == null || !TransactionSynchronizationManager.isActualTransactionActive()) {
             return;
         }
         Session session = entityManager.unwrap(Session.class);

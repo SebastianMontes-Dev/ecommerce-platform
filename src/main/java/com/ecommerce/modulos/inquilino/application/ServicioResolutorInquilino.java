@@ -20,7 +20,7 @@ public class ServicioResolutorInquilino {
 
     private final RepositorioInquilino repositorioInquilino;
 
-    @Cacheable(cacheNames = "tenant-por-propietario", key = "#idUsuario", unless = "#result == null || !#result.isPresent()")
+    @Cacheable(cacheNames = "tenant-por-propietario", key = "#idUsuario", unless = "#result == null")
     public Optional<UUID> resolverTiendaPropia(UUID idUsuario) {
         return repositorioInquilino.findByIdPropietario(idUsuario).map(Inquilino::getId);
     }
