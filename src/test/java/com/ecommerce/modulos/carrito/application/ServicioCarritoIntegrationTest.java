@@ -13,6 +13,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
@@ -31,10 +32,21 @@ public class ServicioCarritoIntegrationTest {
     public static GenericContainer<?> redis = new GenericContainer<>("redis:6-alpine")
             .withExposedPorts(6379);
 
+    // @SpringBootTest(classes = AplicacionEcommerce.class) loads the full application
+    // context, which needs a real DataSource for Flyway/JPA — this test only provisioned
+    // Redis, so it fell back to the statically-configured (dev) datasource URL and failed
+    // to connect in any environment without that exact Postgres instance running.
+    @Container
+    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:15-alpine");
+
     @DynamicPropertySource
     static void redisProperties(DynamicPropertyRegistry registry) {
         registry.add("spring.data.redis.host", redis::getHost);
         registry.add("spring.data.redis.port", redis::getFirstMappedPort);
+        registry.add("spring.datasource.url", postgres::getJdbcUrl);
+        registry.add("spring.datasource.username", postgres::getUsername);
+        registry.add("spring.datasource.password", postgres::getPassword);
+        registry.add("spring.jpa.hibernate.ddl-auto", () -> "update");
     }
 
     @Autowired

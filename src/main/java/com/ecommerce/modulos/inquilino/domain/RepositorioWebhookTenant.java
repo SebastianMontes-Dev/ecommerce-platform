@@ -1,8 +1,15 @@
 package com.ecommerce.modulos.inquilino.domain;
 
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
+
 import java.util.List;
 import java.util.UUID;
 
-public interface RepositorioWebhookTenant {
-    List<WebhookTenant> buscarPorIdTiendaYEvento(UUID idTienda, String evento);
+@Repository
+public interface RepositorioWebhookTenant extends JpaRepository<WebhookTenant, UUID> {
+    @Query("SELECT w FROM WebhookTenant w WHERE w.idTienda = :idTienda AND w.evento = :evento")
+    List<WebhookTenant> buscarPorIdTiendaYEvento(@Param("idTienda") UUID idTienda, @Param("evento") String evento);
 }
