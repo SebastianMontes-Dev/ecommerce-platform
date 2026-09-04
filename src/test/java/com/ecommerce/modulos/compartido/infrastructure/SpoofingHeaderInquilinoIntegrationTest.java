@@ -21,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@SpringBootTest
+@SpringBootTest(classes = com.ecommerce.bootstrap.AplicacionEcommerce.class)
 @AutoConfigureMockMvc
 @Testcontainers
 class SpoofingHeaderInquilinoIntegrationTest {

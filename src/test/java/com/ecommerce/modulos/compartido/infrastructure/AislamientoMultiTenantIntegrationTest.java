@@ -21,7 +21,7 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@SpringBootTest
+@SpringBootTest(classes = com.ecommerce.bootstrap.AplicacionEcommerce.class)
 @Testcontainers
 @Transactional
 class AislamientoMultiTenantIntegrationTest {

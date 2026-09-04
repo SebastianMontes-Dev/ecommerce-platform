@@ -27,7 +27,7 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
-@SpringBootTest
+@SpringBootTest(classes = com.ecommerce.bootstrap.AplicacionEcommerce.class)
 @Testcontainers
 @Transactional
 public class CasoUsoOrdenIntegrationTest {
