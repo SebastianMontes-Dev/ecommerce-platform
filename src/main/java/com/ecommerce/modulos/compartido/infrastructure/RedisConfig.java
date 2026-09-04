@@ -46,8 +46,11 @@ public class RedisConfig {
                 .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(serializer))
                 .disableCachingNullValues();
 
+        RedisCacheConfiguration tenantOwnershipConfig = config.entryTtl(Duration.ofMinutes(2));
+
         return RedisCacheManager.builder(connectionFactory)
                 .cacheDefaults(config)
+                .withCacheConfiguration("tenant-por-propietario", tenantOwnershipConfig)
                 .build();
     }
 }
