@@ -28,9 +28,9 @@ public class ControladorCatalogo {
 
     @PostMapping("/categorias")
     @Operation(summary = "Crear una categoría")
-    @CacheEvict(value = "categorias", key = "T(com.ecommerce.modulos.compartido.infrastructure.ContextoInquilino).getIdTienda()")
+    @CacheEvict(value = "categorias", key = "T(com.ecommerce.modulos.compartido.infrastructure.ContextoInquilino).getIdTiendaPropia()")
     public ResponseEntity<RespuestaCategoria> createCategory(@Valid @RequestBody SolicitudCrearCategoria request) {
-        RespuestaCategoria response = casoUsoCrearCategoria.execute(request, ContextoInquilino.getIdTienda());
+        RespuestaCategoria response = casoUsoCrearCategoria.execute(request, ContextoInquilino.getIdTiendaPropia());
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
@@ -45,7 +45,7 @@ public class ControladorCatalogo {
     @Operation(summary = "Crear un producto")
     @CacheEvict(value = {"productos", "product_details"}, allEntries = true) // Limpiar todo el caché de productos por ahora
     public ResponseEntity<RespuestaProducto> createProduct(@Valid @RequestBody SolicitudCrearProducto request) {
-        RespuestaProducto response = casoUsoCrearProducto.execute(request, ContextoInquilino.getIdTienda());
+        RespuestaProducto response = casoUsoCrearProducto.execute(request, ContextoInquilino.getIdTiendaPropia());
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 

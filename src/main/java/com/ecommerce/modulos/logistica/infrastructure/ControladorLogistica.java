@@ -35,7 +35,7 @@ public class ControladorLogistica {
             @RequestParam String ubicacion,
             @RequestParam String descripcion) {
         
-        Envio envio = casoUsoLogistica.actualizarEstado(ContextoInquilino.getIdTienda(), numeroGuia, estado, ubicacion, descripcion);
+        Envio envio = casoUsoLogistica.actualizarEstado(ContextoInquilino.getIdTiendaPropia(), numeroGuia, estado, ubicacion, descripcion);
         return ResponseEntity.ok(envio);
     }
 }

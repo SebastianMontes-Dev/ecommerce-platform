@@ -30,7 +30,7 @@ public class ControladorProducto {
     @Operation(summary = "Subir una imagen para un producto")
     @Transactional
     public ResponseEntity<String> uploadImage(@PathVariable UUID id, @RequestParam("file") MultipartFile file) {
-        UUID idTienda = ContextoInquilino.getIdTienda();
+        UUID idTienda = ContextoInquilino.getIdTiendaPropia();
 
         Producto producto = repositorioProducto.findByIdForUpdate(id)
                 .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
