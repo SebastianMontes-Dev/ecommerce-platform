@@ -112,4 +112,21 @@ class CasoUsoOrdenTest {
             casoUsoOrden.createOrderFromCart(idCliente, idTienda, request);
         });
     }
+
+    @Test
+    void cancelOrderLanzaExcepcionSiLaOrdenEsDeOtraTienda() {
+        UUID idOrden = UUID.randomUUID();
+        UUID idTiendaDueña = UUID.randomUUID();
+        UUID idTiendaAtacante = UUID.randomUUID();
+
+        Orden orden = new Orden();
+        orden.setIdTienda(idTiendaDueña);
+        when(repositorioOrden.findById(idOrden)).thenReturn(Optional.of(orden));
+
+        assertThrows(ExcepcionEntidadNoEncontrada.class, () -> {
+            casoUsoOrden.cancelOrder(idOrden, idTiendaAtacante, "spoofed");
+        });
+
+        verify(repositorioOrden, never()).save(any());
+    }
 }
