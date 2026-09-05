@@ -2,6 +2,8 @@ package com.ecommerce.modulos.inquilino.application;
 
 import com.ecommerce.modulos.inquilino.domain.RepositorioWebhookTenant;
 import com.ecommerce.modulos.inquilino.domain.WebhookTenant;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -18,6 +20,10 @@ import java.util.Formatter;
 @Service
 public class ServicioEmisorWebhook {
 
+    private static final Logger log = LoggerFactory.getLogger(ServicioEmisorWebhook.class);
+    private static final int MAX_INTENTOS = 3;
+    private static final long ESPERA_ENTRE_INTENTOS_MS = 500;
+
     private final RepositorioWebhookTenant repositorioWebhookTenant;
     private final RestTemplate restTemplate;
 
@@ -28,25 +34,48 @@ public class ServicioEmisorWebhook {
 
     public void emitirEvento(UUID idTienda, String evento, String payloadJson) {
         List<WebhookTenant> webhooks = repositorioWebhookTenant.buscarPorIdTiendaYEvento(idTienda, evento);
-        
+
         for (WebhookTenant webhook : webhooks) {
             enviarWebhook(webhook, payloadJson);
         }
     }
 
     private void enviarWebhook(WebhookTenant webhook, String payloadJson) {
+        String signature;
         try {
-            String signature = calcularHMAC(payloadJson, webhook.getSecret());
-
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-            headers.set("X-NexaSaaS-Signature", signature);
-
-            HttpEntity<String> request = new HttpEntity<>(payloadJson, headers);
-            restTemplate.postForObject(webhook.getUrlDestino(), request, String.class);
+            signature = calcularHMAC(payloadJson, webhook.getSecret());
         } catch (Exception e) {
-            // Logear error de envío
-            System.err.println("Error al enviar webhook a " + webhook.getUrlDestino() + ": " + e.getMessage());
+            log.error("No se pudo calcular la firma HMAC para el webhook a {}: {}", webhook.getUrlDestino(), e.getMessage(), e);
+            return;
+        }
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.set("X-NexaSaaS-Signature", signature);
+        HttpEntity<String> request = new HttpEntity<>(payloadJson, headers);
+
+        for (int intento = 1; intento <= MAX_INTENTOS; intento++) {
+            try {
+                restTemplate.postForObject(webhook.getUrlDestino(), request, String.class);
+                return;
+            } catch (Exception e) {
+                if (intento == MAX_INTENTOS) {
+                    log.error("Webhook a {} fallo tras {} intentos, se descarta: {}",
+                            webhook.getUrlDestino(), MAX_INTENTOS, e.getMessage(), e);
+                    return;
+                }
+                log.warn("Intento {}/{} fallido enviando webhook a {}: {} - reintentando",
+                        intento, MAX_INTENTOS, webhook.getUrlDestino(), e.getMessage());
+                esperarAntesDeReintentar();
+            }
+        }
+    }
+
+    private void esperarAntesDeReintentar() {
+        try {
+            Thread.sleep(ESPERA_ENTRE_INTENTOS_MS);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
         }
     }
 
