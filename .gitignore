@@ -44,3 +44,6 @@ docker/volumes/
 
 # Test reports
 reports/
+
+# Claude Code tooling
+.codegraph/
