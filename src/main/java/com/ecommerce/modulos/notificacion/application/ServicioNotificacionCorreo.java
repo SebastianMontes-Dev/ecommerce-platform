@@ -38,12 +38,12 @@ public class ServicioNotificacionCorreo {
     @Transactional(readOnly = true)
     @CircuitBreaker(name = "correos", fallbackMethod = "fallbackCorreo")
     public void sendPaymentReceived(UUID idOrden, UUID idTienda) {
-        try {
-            Orden orden = repositorioOrden.findById(idOrden)
-                    .orElseThrow(() -> new ExcepcionEntidadNoEncontrada("Orden", idOrden));
+        Orden orden = repositorioOrden.findById(idOrden)
+                .orElseThrow(() -> new ExcepcionEntidadNoEncontrada("Orden", idOrden));
 
+        try {
             byte[] pdfBytes = servicioFacturaPdf.generarPdf(orden);
-            
+
             sendOrderEmailWithAttachment(orden, "Pago Recibido",
                     "Hemos recibido el pago de tu pedido. Adjunto encontrarás la factura.",
                     "¡Gracias por tu pago!", "factura_" + orden.getNumeroOrden() + ".pdf", pdfBytes, "application/pdf");
@@ -110,10 +110,10 @@ public class ServicioNotificacionCorreo {
     }
 
     private void sendOrderEmail(UUID idOrden, String subject, String bodyMessage, String headline) {
-        try {
-            Orden orden = repositorioOrden.findById(idOrden)
-                    .orElseThrow(() -> new ExcepcionEntidadNoEncontrada("Orden", idOrden));
+        Orden orden = repositorioOrden.findById(idOrden)
+                .orElseThrow(() -> new ExcepcionEntidadNoEncontrada("Orden", idOrden));
 
+        try {
             Context context = new Context();
             context.setVariable("headline", headline);
             context.setVariable("messageBody", bodyMessage);

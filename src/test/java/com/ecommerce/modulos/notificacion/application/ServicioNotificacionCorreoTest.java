@@ -103,16 +103,16 @@ class ServicioNotificacionCorreoTest {
     }
 
     @Test
-    void debeLanzarRuntimeExceptionConCausaOriginalSiOrdenNoExiste() {
+    void debePropagarExcepcionEntidadNoEncontradaSinEnvolverSiOrdenNoExiste() {
         when(repositorioOrden.findById(idOrden)).thenReturn(Optional.empty());
 
-        RuntimeException excepcion = assertThrows(RuntimeException.class,
+        // La excepción de dominio (orden no encontrada) se propaga tal cual, sin envolverse
+        // en el RuntimeException genérico de fallas de SMTP - el llamador (y el circuit breaker,
+        // vía resilience4j.circuitbreaker.instances.correos.ignoreExceptions) puede distinguirla
+        // de una falla real de infraestructura.
+        assertThrows(ExcepcionEntidadNoEncontrada.class,
                 () -> servicioNotificacionCorreo.sendOrderConfirmation(idOrden, idTienda));
 
-        // La excepción de dominio (orden no encontrada) queda envuelta como RuntimeException genérica:
-        // el llamador no puede distinguirla de una falla real de SMTP salvo mirando la causa.
-        assertEquals("Error en SMTP", excepcion.getMessage());
-        assertInstanceOf(ExcepcionEntidadNoEncontrada.class, excepcion.getCause());
         verifyNoInteractions(mailSender);
     }
 

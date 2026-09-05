@@ -121,3 +121,5 @@ resilience4j:
         permittedNumberOfCallsInHalfOpenState: 3
         waitDurationInOpenState: 15s
         failureRateThreshold: 50
+        ignoreExceptions:
+          - com.ecommerce.modulos.compartido.domain.ExcepcionEntidadNoEncontrada
