@@ -10,9 +10,11 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
+import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.utility.DockerImageName;
 
 import java.util.Map;
 import java.util.UUID;
@@ -29,12 +31,22 @@ class SpoofingHeaderInquilinoIntegrationTest {
     @Container
     static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:15-alpine");
 
+    // FiltroInquilino resuelve la tienda propia en CADA request autenticado vía
+    // ServicioResolutorInquilino, que es @Cacheable contra Redis - sin este container
+    // esa llamada revienta con RedisConnectionFailureException y el request nunca
+    // llega al controller (500 en vez del 201/403 que el test espera).
+    @Container
+    static GenericContainer<?> redis = new GenericContainer<>(DockerImageName.parse("redis:7-alpine"))
+            .withExposedPorts(6379);
+
     @DynamicPropertySource
     static void configureProperties(DynamicPropertyRegistry registry) {
         registry.add("spring.datasource.url", postgres::getJdbcUrl);
         registry.add("spring.datasource.username", postgres::getUsername);
         registry.add("spring.datasource.password", postgres::getPassword);
         registry.add("spring.jpa.hibernate.ddl-auto", () -> "update");
+        registry.add("spring.data.redis.host", redis::getHost);
+        registry.add("spring.data.redis.port", redis::getFirstMappedPort);
         // SecurityConfig calls .oauth2Login(...) unconditionally, which needs a
         // ClientRegistrationRepository bean to exist to build the filter chain at all —
         // placeholder values only, the OAuth2 login flow itself isn't exercised here.

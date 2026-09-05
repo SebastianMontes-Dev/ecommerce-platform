@@ -84,7 +84,7 @@ class EcommerceApplicationTests {
                 .build();
 
         ResponseEntity<RespuestaUsuario> response = restTemplate.postForEntity(
-                "/api/v1/auth/register", request, RespuestaUsuario.class);
+                "/api/v1/auth/registro", request, RespuestaUsuario.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
         assertThat(response.getBody()).isNotNull();
@@ -183,7 +183,7 @@ class EcommerceApplicationTests {
                 .build();
 
         ResponseEntity<Map> response = restTemplate.postForEntity(
-                "/api/v1/auth/register", request, Map.class);
+                "/api/v1/auth/registro", request, Map.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
     }
@@ -201,7 +201,7 @@ class EcommerceApplicationTests {
                 .build();
 
         ResponseEntity<Map> response = restTemplate.postForEntity(
-                "/api/v1/auth/register", request, Map.class);
+                "/api/v1/auth/registro", request, Map.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
     }

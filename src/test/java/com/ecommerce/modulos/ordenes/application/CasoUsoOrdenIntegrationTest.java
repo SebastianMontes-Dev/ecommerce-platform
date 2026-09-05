@@ -127,6 +127,7 @@ public class CasoUsoOrdenIntegrationTest {
         Optional<Orden> ordenGuardada = repositorioOrden.findById(respuesta.getId());
         assertTrue(ordenGuardada.isPresent());
         assertEquals(idCliente, ordenGuardada.get().getIdCliente());
-        assertEquals(new BigDecimal("50.00"), ordenGuardada.get().getTotal().getMonto());
+        // subtotal 50.00 + 10% impuesto (5.00) + envío fijo (10.00), ver CasoUsoOrden.createOrderFromCart
+        assertEquals(new BigDecimal("65.00"), ordenGuardada.get().getTotal().getMonto());
     }
 }
