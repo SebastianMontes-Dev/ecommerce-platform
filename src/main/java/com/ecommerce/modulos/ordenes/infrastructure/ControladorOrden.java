@@ -43,7 +43,7 @@ public class ControladorOrden {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
         return ResponseEntity.ok(casoUsoOrden.listOrdersByTenant(
-                ContextoInquilino.getIdTienda(),
+                ContextoInquilino.getIdTiendaPropia(),
                 org.springframework.data.domain.PageRequest.of(page, size)));
     }
 
@@ -55,14 +55,17 @@ public class ControladorOrden {
 
     @PostMapping("/{id}/cancel")
     @Operation(summary = "Cancel an ordenes")
-    public ResponseEntity<RespuestaOrden> cancelOrder(@PathVariable UUID id, @RequestParam(defaultValue = "") String reason) {
-        return ResponseEntity.ok(casoUsoOrden.cancelOrder(id, ContextoInquilino.getIdTienda(), reason));
+    public ResponseEntity<RespuestaOrden> cancelOrder(
+            @PathVariable UUID id,
+            @RequestParam(defaultValue = "") String reason,
+            @AuthenticationPrincipal DetallesUsuarioPersonalizado userDetails) {
+        return ResponseEntity.ok(casoUsoOrden.cancelOrder(id, ContextoInquilino.getIdTienda(), userDetails.getUserId(), reason));
     }
 
     @GetMapping(value = "/reporte/excel", produces = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
     @Operation(summary = "Generate Excel report of orders")
     public ResponseEntity<byte[]> generateExcelReport() {
-        byte[] report = servicioReporteOrdenes.generarReporteExcel(ContextoInquilino.getIdTienda());
+        byte[] report = servicioReporteOrdenes.generarReporteExcel(ContextoInquilino.getIdTiendaPropia());
         return ResponseEntity.ok()
                 .header("Content-Disposition", "attachment; filename=\"reporte_ordenes.xlsx\"")
                 .body(report);

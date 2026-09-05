@@ -42,6 +42,17 @@ class EcommerceApplicationTests {
     static GenericContainer<?> rabbitmq = new GenericContainer<>(DockerImageName.parse("rabbitmq:3-management-alpine"))
             .withExposedPorts(5672);
 
+    static {
+        // @Testcontainers normally starts @Container static fields in beforeAll, but
+        // @DynamicPropertySource is evaluated by Spring's own extension and the relative
+        // order between the two JUnit5 extensions isn't guaranteed. Starting explicitly
+        // here (idempotent - Testcontainers no-ops a second start()) guarantees the
+        // containers are up before configureProperties() reads their mapped ports below.
+        postgres.start();
+        redis.start();
+        rabbitmq.start();
+    }
+
     @DynamicPropertySource
     static void configureProperties(DynamicPropertyRegistry registry) {
         registry.add("spring.datasource.url", postgres::getJdbcUrl);
@@ -73,7 +84,7 @@ class EcommerceApplicationTests {
                 .build();
 
         ResponseEntity<RespuestaUsuario> response = restTemplate.postForEntity(
-                "/api/v1/auth/register", request, RespuestaUsuario.class);
+                "/api/v1/auth/registro", request, RespuestaUsuario.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
         assertThat(response.getBody()).isNotNull();
@@ -172,7 +183,7 @@ class EcommerceApplicationTests {
                 .build();
 
         ResponseEntity<Map> response = restTemplate.postForEntity(
-                "/api/v1/auth/register", request, Map.class);
+                "/api/v1/auth/registro", request, Map.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
     }
@@ -190,7 +201,7 @@ class EcommerceApplicationTests {
                 .build();
 
         ResponseEntity<Map> response = restTemplate.postForEntity(
-                "/api/v1/auth/register", request, Map.class);
+                "/api/v1/auth/registro", request, Map.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
     }

@@ -22,7 +22,7 @@ public class ControladorAnaliticas {
     @GetMapping("/dashboard")
     @Operation(summary = "Obtener resumen de analíticas del Dashboard")
     public ResponseEntity<ResumenDashboard> obtenerDashboard() {
-        ResumenDashboard resumen = casoUsoAnaliticas.obtenerResumen(ContextoInquilino.getIdTienda());
+        ResumenDashboard resumen = casoUsoAnaliticas.obtenerResumen(ContextoInquilino.getIdTiendaPropia());
         return ResponseEntity.ok(resumen);
     }
 }

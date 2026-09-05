@@ -27,7 +27,7 @@ public class ControladorCupon {
     @PostMapping
     @Operation(summary = "Crear un nuevo cupón de descuento")
     public ResponseEntity<Cupon> crearCupon(@Valid @RequestBody SolicitudCrearCupon request) {
-        Cupon cupon = casoUsoGestionarCupon.crearCupon(ContextoInquilino.getIdTienda(), request);
+        Cupon cupon = casoUsoGestionarCupon.crearCupon(ContextoInquilino.getIdTiendaPropia(), request);
         return ResponseEntity.status(HttpStatus.CREATED).body(cupon);
     }
 
@@ -37,14 +37,14 @@ public class ControladorCupon {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
         return ResponseEntity.ok(casoUsoGestionarCupon.listarCupones(
-                ContextoInquilino.getIdTienda(),
+                ContextoInquilino.getIdTiendaPropia(),
                 PageRequest.of(page, size)));
     }
 
     @PatchMapping("/{idCupon}/estado")
     @Operation(summary = "Activar o desactivar un cupón")
     public ResponseEntity<Void> alternarEstado(@PathVariable UUID idCupon) {
-        casoUsoGestionarCupon.alternarEstadoCupon(ContextoInquilino.getIdTienda(), idCupon);
+        casoUsoGestionarCupon.alternarEstadoCupon(ContextoInquilino.getIdTiendaPropia(), idCupon);
         return ResponseEntity.noContent().build();
     }
 }

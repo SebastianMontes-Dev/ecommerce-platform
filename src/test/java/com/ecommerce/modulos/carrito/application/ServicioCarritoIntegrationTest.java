@@ -13,6 +13,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
@@ -23,7 +24,7 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
-@SpringBootTest
+@SpringBootTest(classes = com.ecommerce.bootstrap.AplicacionEcommerce.class)
 @Testcontainers
 public class ServicioCarritoIntegrationTest {
 
@@ -31,10 +32,26 @@ public class ServicioCarritoIntegrationTest {
     public static GenericContainer<?> redis = new GenericContainer<>("redis:6-alpine")
             .withExposedPorts(6379);
 
+    // @SpringBootTest(classes = AplicacionEcommerce.class) loads the full application
+    // context, which needs a real DataSource for Flyway/JPA — this test only provisioned
+    // Redis, so it fell back to the statically-configured (dev) datasource URL and failed
+    // to connect in any environment without that exact Postgres instance running.
+    @Container
+    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:15-alpine");
+
     @DynamicPropertySource
     static void redisProperties(DynamicPropertyRegistry registry) {
         registry.add("spring.data.redis.host", redis::getHost);
         registry.add("spring.data.redis.port", redis::getFirstMappedPort);
+        registry.add("spring.datasource.url", postgres::getJdbcUrl);
+        registry.add("spring.datasource.username", postgres::getUsername);
+        registry.add("spring.datasource.password", postgres::getPassword);
+        registry.add("spring.jpa.hibernate.ddl-auto", () -> "update");
+        // SecurityConfig calls .oauth2Login(...) unconditionally, which needs a
+        // ClientRegistrationRepository bean to exist to build the filter chain at all —
+        // placeholder values only, the OAuth2 login flow itself isn't exercised here.
+        registry.add("spring.security.oauth2.client.registration.google.client-id", () -> "test-client-id");
+        registry.add("spring.security.oauth2.client.registration.google.client-secret", () -> "test-client-secret");
     }
 
     @Autowired

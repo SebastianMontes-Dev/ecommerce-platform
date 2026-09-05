@@ -136,9 +136,15 @@ public class CasoUsoOrden {
     }
 
     @Transactional
-    public RespuestaOrden cancelOrder(UUID idOrden, UUID idTienda, String reason) {
+    public RespuestaOrden cancelOrder(UUID idOrden, UUID idTienda, UUID idCliente, String reason) {
         Orden ordenes = repositorioOrden.findById(idOrden)
                 .orElseThrow(() -> new ExcepcionEntidadNoEncontrada("Orden", idOrden));
+        if (!ordenes.getIdTienda().equals(idTienda)) {
+            throw new ExcepcionEntidadNoEncontrada("Orden", idOrden);
+        }
+        if (!ordenes.getIdCliente().equals(idCliente)) {
+            throw new ExcepcionEntidadNoEncontrada("Orden", idOrden);
+        }
         ordenes.cancel(reason);
         ordenes = repositorioOrden.save(ordenes);
         eventPublisher.publish(ordenes.getDomainEvents());
