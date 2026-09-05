@@ -73,7 +73,8 @@ class SpoofingHeaderInquilinoIntegrationTest {
         Map<String, Object> nuevoProducto = Map.of(
                 "nombre", "Producto atacante",
                 "enlaceCorto", "producto-atacante",
-                "precio", 10.00
+                "precio", 10.00,
+                "inventario", 10
         );
 
         String respuestaCreacion = mockMvc.perform(post("/api/v1/catalogo/productos")
