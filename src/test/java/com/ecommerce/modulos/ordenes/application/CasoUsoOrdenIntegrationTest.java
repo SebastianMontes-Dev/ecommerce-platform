@@ -3,6 +3,10 @@ package com.ecommerce.modulos.ordenes.application;
 import com.ecommerce.modulos.carrito.application.ServicioCarrito;
 import com.ecommerce.modulos.carrito.domain.ArticuloCarrito;
 import com.ecommerce.modulos.carrito.domain.Carrito;
+import com.ecommerce.modulos.catalogo.domain.EstadoProducto;
+import com.ecommerce.modulos.catalogo.domain.Producto;
+import com.ecommerce.modulos.catalogo.domain.RepositorioProducto;
+import com.ecommerce.modulos.compartido.domain.Dinero;
 import com.ecommerce.modulos.identidad.domain.RepositorioUsuario;
 import com.ecommerce.modulos.identidad.domain.Usuario;
 import com.ecommerce.modulos.ordenes.application.dto.SolicitudCheckout;
@@ -25,6 +29,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @SpringBootTest(classes = com.ecommerce.bootstrap.AplicacionEcommerce.class)
@@ -61,6 +66,9 @@ public class CasoUsoOrdenIntegrationTest {
     private RepositorioUsuario repositorioUsuario;
 
     @MockBean
+    private RepositorioProducto repositorioProducto;
+
+    @MockBean
     private com.ecommerce.modulos.compartido.infrastructure.websocket.ServicioNotificacionTiempoReal servicioNotificacionTiempoReal;
 
     private UUID idCliente;
@@ -81,16 +89,30 @@ public class CasoUsoOrdenIntegrationTest {
         usuario.setApellido("Test");
         when(repositorioUsuario.findById(idCliente)).thenReturn(Optional.of(usuario));
 
+        UUID idProducto = UUID.randomUUID();
         Carrito carrito = new Carrito();
         ArticuloCarrito articulo = new ArticuloCarrito();
-        articulo.setIdProducto(UUID.randomUUID());
+        articulo.setIdProducto(idProducto);
         articulo.setCantidad(2);
         articulo.setPrecioUnitario(new BigDecimal("25.00"));
         articulo.setMoneda("USD");
         articulo.setNombreProducto("Producto BD");
         carrito.agregarArticulo(articulo);
-        
+
         when(servicioCarrito.getOrCreateCart(idCliente, idTienda)).thenReturn(carrito);
+
+        // ManejadorEventosOrden reduce inventario de forma sincrona al crear la orden
+        // (@EventListener sobre EventoOrdenCreada) - necesita encontrar el producto.
+        Producto producto = new Producto();
+        producto.setId(idProducto);
+        producto.setIdTienda(idTienda);
+        producto.setNombre("Producto BD");
+        producto.setEnlaceCorto("producto-bd");
+        producto.setPrecio(Dinero.of(new BigDecimal("25.00"), "USD"));
+        producto.setInventario(100);
+        producto.setEstado(EstadoProducto.ACTIVE);
+        when(repositorioProducto.findById(idProducto)).thenReturn(Optional.of(producto));
+        when(repositorioProducto.save(any(Producto.class))).thenAnswer(i -> i.getArguments()[0]);
 
         SolicitudCheckout request = new SolicitudCheckout();
         request.setDireccionEnvio(com.ecommerce.modulos.compartido.domain.Direccion.of("123 Test St", "City", "State", "00000", "US"));

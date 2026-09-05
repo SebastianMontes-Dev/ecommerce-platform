@@ -4,6 +4,10 @@ import com.ecommerce.modulos.catalogo.domain.EstadoProducto;
 import com.ecommerce.modulos.catalogo.domain.Producto;
 import com.ecommerce.modulos.catalogo.domain.RepositorioProducto;
 import com.ecommerce.modulos.compartido.domain.Dinero;
+import com.ecommerce.modulos.identidad.domain.RepositorioUsuario;
+import com.ecommerce.modulos.identidad.domain.Usuario;
+import com.ecommerce.modulos.inquilino.domain.Inquilino;
+import com.ecommerce.modulos.inquilino.domain.RepositorioInquilino;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,6 +49,12 @@ class AislamientoMultiTenantIntegrationTest {
     @Autowired
     private RepositorioProducto repositorioProducto;
 
+    @Autowired
+    private RepositorioInquilino repositorioInquilino;
+
+    @Autowired
+    private RepositorioUsuario repositorioUsuario;
+
     @AfterEach
     void limpiar() {
         ContextoInquilino.clear();
@@ -52,8 +62,10 @@ class AislamientoMultiTenantIntegrationTest {
 
     @Test
     void findAllSoloDevuelveProductosDelTenantActivoAunqueNoSeFiltrePorIdTiendaExplicitamente() {
-        UUID idTiendaA = UUID.randomUUID();
-        UUID idTiendaB = UUID.randomUUID();
+        // productos.tenant_id -> inquilinos(id) -> usuarios(id) son foreign keys reales
+        // (ver V3/V4 migrations), asi que hacen falta filas reales, no UUIDs sueltos.
+        UUID idTiendaA = crearInquilinoConPropietario("propietario-a@test.com", "tienda-a").getId();
+        UUID idTiendaB = crearInquilinoConPropietario("propietario-b@test.com", "tienda-b").getId();
 
         repositorioProducto.save(crearProducto(idTiendaA, "producto-tienda-a"));
         repositorioProducto.save(crearProducto(idTiendaB, "producto-tienda-b"));
@@ -64,6 +76,14 @@ class AislamientoMultiTenantIntegrationTest {
 
         assertEquals(1, visiblesParaA.size());
         assertEquals(idTiendaA, visiblesParaA.get(0).getIdTienda());
+    }
+
+    private Inquilino crearInquilinoConPropietario(String correo, String enlaceCorto) {
+        Usuario propietario = new Usuario(correo, "hash-no-usado-en-este-test", "Test", "Propietario");
+        propietario = repositorioUsuario.save(propietario);
+
+        Inquilino inquilino = new Inquilino("Tienda de prueba", enlaceCorto, propietario.getId());
+        return repositorioInquilino.save(inquilino);
     }
 
     private Producto crearProducto(UUID idTienda, String enlaceCorto) {
