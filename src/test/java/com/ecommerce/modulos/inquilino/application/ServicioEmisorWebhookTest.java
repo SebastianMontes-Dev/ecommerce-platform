@@ -36,11 +36,17 @@ class ServicioEmisorWebhookTest {
     private RepositorioWebhookTenant repositorioWebhookTenant;
     @Mock
     private RestTemplate restTemplate;
+    @Mock
+    private ValidadorUrlWebhook validadorUrlWebhook;
 
     @InjectMocks
     private ServicioEmisorWebhook servicioEmisorWebhook;
 
     private final UUID idTienda = UUID.randomUUID();
+
+    private void asumirTodasLasUrlsSeguras() {
+        when(validadorUrlWebhook.esSegura(anyString())).thenReturn(true);
+    }
 
     @SuppressWarnings("unchecked")
     private HttpEntity<String> capturarPeticionEnviada() {
@@ -52,6 +58,7 @@ class ServicioEmisorWebhookTest {
     @Test
     void debeEnviarWebhookConFirmaHmacCuandoHayUnaSuscripcionRegistradaParaElEvento() {
         // Arrange
+        asumirTodasLasUrlsSeguras();
         WebhookTenant webhook = new WebhookTenant(idTienda, "https://cliente.com/webhook", "orden.creada", "secreto-123");
         when(repositorioWebhookTenant.buscarPorIdTiendaYEvento(idTienda, "orden.creada"))
                 .thenReturn(List.of(webhook));
@@ -70,6 +77,7 @@ class ServicioEmisorWebhookTest {
     @Test
     void debeGenerarFirmasDistintasParaPayloadsDistintosConElMismoSecret() {
         // Arrange
+        asumirTodasLasUrlsSeguras();
         WebhookTenant webhook = new WebhookTenant(idTienda, "https://cliente.com/webhook", "orden.creada", "secreto-123");
         when(repositorioWebhookTenant.buscarPorIdTiendaYEvento(idTienda, "orden.creada"))
                 .thenReturn(List.of(webhook));
@@ -89,6 +97,7 @@ class ServicioEmisorWebhookTest {
     @Test
     void debeGenerarLaMismaFirmaParaElMismoPayloadYSecretSiempre() {
         // Arrange
+        asumirTodasLasUrlsSeguras();
         WebhookTenant webhook = new WebhookTenant(idTienda, "https://cliente.com/webhook", "orden.creada", "secreto-123");
         when(repositorioWebhookTenant.buscarPorIdTiendaYEvento(idTienda, "orden.creada"))
                 .thenReturn(List.of(webhook));
@@ -108,6 +117,7 @@ class ServicioEmisorWebhookTest {
     @Test
     void debeEnviarATodosLosWebhooksRegistradosCuandoHayMasDeUnoParaElMismoEvento() {
         // Arrange
+        asumirTodasLasUrlsSeguras();
         WebhookTenant webhook1 = new WebhookTenant(idTienda, "https://cliente1.com/webhook", "orden.creada", "secreto-1");
         WebhookTenant webhook2 = new WebhookTenant(idTienda, "https://cliente2.com/webhook", "orden.creada", "secreto-2");
         when(repositorioWebhookTenant.buscarPorIdTiendaYEvento(idTienda, "orden.creada"))
@@ -136,8 +146,24 @@ class ServicioEmisorWebhookTest {
     }
 
     @Test
+    void noDebeEnviarElWebhookCuandoElValidadorRechazaLaUrlDeDestino() {
+        // Arrange
+        WebhookTenant webhook = new WebhookTenant(idTienda, "http://169.254.169.254/latest/meta-data/", "orden.creada", "secreto-123");
+        when(repositorioWebhookTenant.buscarPorIdTiendaYEvento(idTienda, "orden.creada"))
+                .thenReturn(List.of(webhook));
+        when(validadorUrlWebhook.esSegura("http://169.254.169.254/latest/meta-data/")).thenReturn(false);
+
+        // Act
+        servicioEmisorWebhook.emitirEvento(idTienda, "orden.creada", "{\"id\":1}");
+
+        // Assert
+        verifyNoInteractions(restTemplate);
+    }
+
+    @Test
     void debeContinuarSinLanzarExcepcionCuandoElEnvioHttpFalla() {
         // Arrange
+        asumirTodasLasUrlsSeguras();
         WebhookTenant webhookFalla = new WebhookTenant(idTienda, "https://caido.com/webhook", "orden.creada", "secreto-1");
         WebhookTenant webhookOk = new WebhookTenant(idTienda, "https://ok.com/webhook", "orden.creada", "secreto-2");
         when(repositorioWebhookTenant.buscarPorIdTiendaYEvento(idTienda, "orden.creada"))
