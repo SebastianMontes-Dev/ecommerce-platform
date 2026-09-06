@@ -15,7 +15,6 @@ import com.ecommerce.modulos.pagos.domain.ResultadoProcesamientoPago;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Map;
 import java.util.UUID;
@@ -29,7 +28,13 @@ public class CasoUsoProcesarPago {
     private final RepositorioOrden repositorioOrden;
     private final FabricaProcesadorPago fabricaProcesadorPago;
 
-    @Transactional
+    /**
+     * Deliberadamente NO @Transactional: procesador.procesar(orden) es una llamada HTTP
+     * externa (Stripe u otra pasarela). Envolverla en una transaccion de DB mantendria
+     * una conexion del pool retenida durante todo el round-trip de red, y de todos modos
+     * no daria atomicidad real (Stripe no participa de un rollback de nuestra DB). Cada
+     * repositorio de Spring Data ya corre en su propia transaccion corta por metodo.
+     */
     public Map<String, Object> ejecutar(UUID idOrden, UUID idUsuario) {
         Orden orden = repositorioOrden.findById(idOrden)
                 .orElseThrow(() -> new ExcepcionEntidadNoEncontrada("Orden", idOrden));
