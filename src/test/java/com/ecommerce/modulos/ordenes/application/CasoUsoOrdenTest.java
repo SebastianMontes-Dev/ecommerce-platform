@@ -114,6 +114,57 @@ class CasoUsoOrdenTest {
     }
 
     @Test
+    void getOrderLanzaExcepcionSiLaOrdenEsDeOtraTienda() {
+        UUID idOrden = UUID.randomUUID();
+        UUID idTiendaDueña = UUID.randomUUID();
+        UUID idTiendaAtacante = UUID.randomUUID();
+        UUID idClienteDueño = UUID.randomUUID();
+
+        Orden orden = new Orden();
+        orden.setIdTienda(idTiendaDueña);
+        orden.setIdCliente(idClienteDueño);
+        when(repositorioOrden.findById(idOrden)).thenReturn(Optional.of(orden));
+
+        assertThrows(ExcepcionEntidadNoEncontrada.class, () -> {
+            casoUsoOrden.getOrder(idOrden, idTiendaAtacante, idClienteDueño);
+        });
+    }
+
+    @Test
+    void getOrderLanzaExcepcionSiLaOrdenEsDeOtroCliente() {
+        UUID idOrden = UUID.randomUUID();
+        UUID idTienda = UUID.randomUUID();
+        UUID idClienteDueño = UUID.randomUUID();
+        UUID idClienteAtacante = UUID.randomUUID();
+
+        Orden orden = new Orden();
+        orden.setIdTienda(idTienda);
+        orden.setIdCliente(idClienteDueño);
+        when(repositorioOrden.findById(idOrden)).thenReturn(Optional.of(orden));
+
+        assertThrows(ExcepcionEntidadNoEncontrada.class, () -> {
+            casoUsoOrden.getOrder(idOrden, idTienda, idClienteAtacante);
+        });
+    }
+
+    @Test
+    void getOrderDevuelveLaOrdenCuandoTiendaYClienteCoinciden() {
+        UUID idOrden = UUID.randomUUID();
+        UUID idTienda = UUID.randomUUID();
+        UUID idCliente = UUID.randomUUID();
+
+        Orden orden = new Orden();
+        orden.setIdTienda(idTienda);
+        orden.setIdCliente(idCliente);
+        when(repositorioOrden.findById(idOrden)).thenReturn(Optional.of(orden));
+
+        RespuestaOrden respuesta = casoUsoOrden.getOrder(idOrden, idTienda, idCliente);
+
+        assertNotNull(respuesta);
+        assertEquals(idCliente, respuesta.getIdCliente());
+    }
+
+    @Test
     void cancelOrderLanzaExcepcionSiLaOrdenEsDeOtraTienda() {
         UUID idOrden = UUID.randomUUID();
         UUID idTiendaDueña = UUID.randomUUID();

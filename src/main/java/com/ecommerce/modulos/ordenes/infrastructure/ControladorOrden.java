@@ -49,8 +49,10 @@ public class ControladorOrden {
 
     @GetMapping("/{id}")
     @Operation(summary = "Get ordenes by ID")
-    public ResponseEntity<RespuestaOrden> getOrder(@PathVariable UUID id) {
-        return ResponseEntity.ok(casoUsoOrden.getOrder(id, ContextoInquilino.getIdTienda()));
+    public ResponseEntity<RespuestaOrden> getOrder(
+            @PathVariable UUID id,
+            @AuthenticationPrincipal DetallesUsuarioPersonalizado userDetails) {
+        return ResponseEntity.ok(casoUsoOrden.getOrder(id, ContextoInquilino.getIdTienda(), userDetails.getUserId()));
     }
 
     @PostMapping("/{id}/cancel")
