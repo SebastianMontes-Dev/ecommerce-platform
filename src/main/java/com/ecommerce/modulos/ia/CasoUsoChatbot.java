@@ -18,8 +18,8 @@ public class CasoUsoChatbot {
 
     private final RestTemplate restTemplate;
 
-    public CasoUsoChatbot() {
-        this.restTemplate = new RestTemplate();
+    public CasoUsoChatbot(RestTemplate restTemplate) {
+        this.restTemplate = restTemplate;
     }
 
     public String procesarChat(String prompt, String tenantId) {
