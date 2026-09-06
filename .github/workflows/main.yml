@@ -34,6 +34,8 @@ jobs:
 
     - name: Construir y correr pruebas
       # Testcontainers necesita Docker, que ya viene incluido y funcionando en 'ubuntu-latest'
+      env:
+        JWT_SECRET: ci-only-test-secret-key-never-used-in-production-minimum-256-bits-long
       run: ./gradlew build
       
     - name: Construir Imagen Docker (Opcional)

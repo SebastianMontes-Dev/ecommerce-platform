@@ -46,11 +46,12 @@ public class SecurityConfig {
                                 "/swagger-ui/**",
                                 "/swagger-ui.html",
                                 "/api-docs/**",
-                                "/actuator/**"
+                                "/actuator/health/**"
                         ).permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/catalogo/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/busqueda/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/inquilinos/{enlaceCorto}").permitAll()
+                        .requestMatchers("/actuator/**").hasRole("PLATFORM_ADMIN")
                         .anyRequest().authenticated()
                 )
                 .oauth2Login(oauth2 -> oauth2

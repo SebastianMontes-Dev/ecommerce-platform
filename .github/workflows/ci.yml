@@ -30,6 +30,8 @@ jobs:
       run: ./gradlew build -x test
       
     - name: Run Integration Tests with Testcontainers
+      env:
+        JWT_SECRET: ci-only-test-secret-key-never-used-in-production-minimum-256-bits-long
       run: ./gradlew test
       
     - name: Publish Test Report

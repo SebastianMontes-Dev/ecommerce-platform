@@ -70,7 +70,8 @@ management:
         include: health,info,metrics,prometheus
   endpoint:
     health:
-      show-details: always
+      show-details: when-authorized
+      roles: PLATFORM_ADMIN
   tracing:
     sampling:
       probability: 1.0
@@ -88,7 +89,7 @@ springdoc:
 
 app:
   jwt:
-    secret: ${JWT_SECRET:this-is-a-very-long-secret-key-that-should-be-changed-in-production-minimum-256-bits}
+    secret: ${JWT_SECRET}
     access-token-expiration: ${JWT_ACCESS_EXPIRATION:900000}
     refresh-token-expiration: ${JWT_REFRESH_EXPIRATION:604800000}
   minio:

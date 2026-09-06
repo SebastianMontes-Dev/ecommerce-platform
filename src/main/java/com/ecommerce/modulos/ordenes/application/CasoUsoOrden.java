@@ -114,10 +114,13 @@ public class CasoUsoOrden {
     }
 
     @Transactional(readOnly = true)
-    public RespuestaOrden getOrder(UUID idOrden, UUID idTienda) {
+    public RespuestaOrden getOrder(UUID idOrden, UUID idTienda, UUID idCliente) {
         Orden ordenes = repositorioOrden.findById(idOrden)
                 .orElseThrow(() -> new ExcepcionEntidadNoEncontrada("Orden", idOrden));
         if (!ordenes.getIdTienda().equals(idTienda)) {
+            throw new ExcepcionEntidadNoEncontrada("Orden", idOrden);
+        }
+        if (!ordenes.getIdCliente().equals(idCliente)) {
             throw new ExcepcionEntidadNoEncontrada("Orden", idOrden);
         }
         return mapToResponse(ordenes);

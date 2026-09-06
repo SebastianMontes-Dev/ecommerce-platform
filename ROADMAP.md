@@ -19,6 +19,7 @@ En esta fase, nos centramos en perfeccionar las características actuales, mejor
   - Mejorar el tiempo de respuesta de la sincronización de inventario con Elasticsearch.
   - Implementar estrategias de caché más agresivas con Redis para catálogos altamente consultados.
 - [ ] **Auditoría de Seguridad**:
+  - [x] Aislamiento multi-tenant: cerrado el spoofing del header `X-Inquilino-ID` y activado el filtro `@Filter` de Hibernate como defensa de fondo (ver [`docs/superpowers/plans/completados/2026-09-04-aislamiento-multi-tenant.md`](docs/superpowers/plans/completados/2026-09-04-aislamiento-multi-tenant.md)).
   - Pruebas de penetración y revisión de vulnerabilidades en la integración de OAuth2 y JWT.
   - Ajuste fino de reglas en Bucket4j para limitar el abuso de la API.
 - [ ] **Mejoras en el Panel de Administración (Backoffice)**:
