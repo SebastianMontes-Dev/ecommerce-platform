@@ -3,6 +3,9 @@ package com.ecommerce.modulos.inquilino.application;
 import com.ecommerce.modulos.identidad.application.DetallesUsuarioPersonalizado;
 import com.ecommerce.modulos.compartido.domain.ExcepcionViolacionReglaNegocio;
 import com.ecommerce.modulos.compartido.domain.ExcepcionEntidadNoEncontrada;
+import com.ecommerce.modulos.identidad.domain.RepositorioUsuario;
+import com.ecommerce.modulos.identidad.domain.RolUsuario;
+import com.ecommerce.modulos.identidad.domain.Usuario;
 import com.ecommerce.modulos.inquilino.application.dto.*;
 import com.ecommerce.modulos.inquilino.domain.*;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +22,7 @@ public class CasoUsoRegistrarInquilino {
     private final RepositorioInquilino repositorioInquilino;
     private final RepositorioPlanSuscripcion planRepository;
     private final RepositorioSuscripcion repositorioSuscripcion;
+    private final RepositorioUsuario repositorioUsuario;
 
     @Transactional
     public RespuestaInquilino execute(SolicitudRegistrarInquilino request) {
@@ -40,6 +44,11 @@ public class CasoUsoRegistrarInquilino {
         inquilino.setDescripcion(request.getDescripcion());
 
         inquilino = repositorioInquilino.save(inquilino);
+
+        Usuario propietario = repositorioUsuario.findById(userDetails.getUserId())
+                .orElseThrow(() -> new ExcepcionEntidadNoEncontrada("Usuario", userDetails.getUserId()));
+        propietario.addRole(RolUsuario.SELLER);
+        repositorioUsuario.save(propietario);
 
         PlanSuscripcion freePlan = planRepository.findByTipoPlanAndActiveTrue(TipoPlanSuscripcion.FREE)
                 .orElseThrow(() -> new IllegalStateException("Default FREE plan not found"));

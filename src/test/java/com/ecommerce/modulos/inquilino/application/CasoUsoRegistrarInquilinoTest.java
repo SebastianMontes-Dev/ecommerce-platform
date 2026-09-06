@@ -2,6 +2,8 @@ package com.ecommerce.modulos.inquilino.application;
 
 import com.ecommerce.modulos.compartido.domain.ExcepcionViolacionReglaNegocio;
 import com.ecommerce.modulos.identidad.application.DetallesUsuarioPersonalizado;
+import com.ecommerce.modulos.identidad.domain.RepositorioUsuario;
+import com.ecommerce.modulos.identidad.domain.RolUsuario;
 import com.ecommerce.modulos.identidad.domain.Usuario;
 import com.ecommerce.modulos.inquilino.application.dto.RespuestaInquilino;
 import com.ecommerce.modulos.inquilino.application.dto.SolicitudRegistrarInquilino;
@@ -29,6 +31,7 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -44,12 +47,15 @@ class CasoUsoRegistrarInquilinoTest {
     private RepositorioPlanSuscripcion planRepository;
     @Mock
     private RepositorioSuscripcion repositorioSuscripcion;
+    @Mock
+    private RepositorioUsuario repositorioUsuario;
 
     @InjectMocks
     private CasoUsoRegistrarInquilino casoUsoRegistrarInquilino;
 
     private UUID idPropietario;
     private SolicitudRegistrarInquilino request;
+    private Usuario usuarioAutenticado;
 
     @BeforeEach
     void setUp() {
@@ -68,9 +74,9 @@ class CasoUsoRegistrarInquilinoTest {
     }
 
     private void autenticarComo(UUID idUsuario) {
-        Usuario usuario = new Usuario("dueño@test.com", "hash", "Juan", "Perez");
-        usuario.setId(idUsuario);
-        DetallesUsuarioPersonalizado userDetails = new DetallesUsuarioPersonalizado(usuario);
+        usuarioAutenticado = new Usuario("dueño@test.com", "hash", "Juan", "Perez");
+        usuarioAutenticado.setId(idUsuario);
+        DetallesUsuarioPersonalizado userDetails = new DetallesUsuarioPersonalizado(usuarioAutenticado);
         SecurityContextHolder.getContext().setAuthentication(
                 new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities()));
     }
@@ -81,6 +87,8 @@ class CasoUsoRegistrarInquilinoTest {
         when(repositorioInquilino.existsByIdPropietario(idPropietario)).thenReturn(false);
         when(repositorioInquilino.existsByEnlaceCorto("mi-tienda")).thenReturn(false);
         when(repositorioInquilino.save(any(Inquilino.class))).thenAnswer(invocacion -> invocacion.getArgument(0));
+        when(repositorioUsuario.findById(idPropietario)).thenReturn(Optional.of(usuarioAutenticado));
+        when(repositorioUsuario.save(any(Usuario.class))).thenAnswer(invocacion -> invocacion.getArgument(0));
 
         PlanSuscripcion planFree = new PlanSuscripcion();
         planFree.setId(UUID.randomUUID());
@@ -102,6 +110,28 @@ class CasoUsoRegistrarInquilinoTest {
         assertEquals(planFree.getId(), suscripcionGuardada.getIdPlan());
         assertEquals("ACTIVE", suscripcionGuardada.getEstado());
         assertNotNull(suscripcionGuardada.getFechaInicio());
+    }
+
+    @Test
+    void debeAsignarRolSellerAlPropietarioAlRegistrarSuPrimeraTienda() {
+        // Arrange
+        when(repositorioInquilino.existsByIdPropietario(idPropietario)).thenReturn(false);
+        when(repositorioInquilino.existsByEnlaceCorto("mi-tienda")).thenReturn(false);
+        when(repositorioInquilino.save(any(Inquilino.class))).thenAnswer(invocacion -> invocacion.getArgument(0));
+        when(repositorioUsuario.findById(idPropietario)).thenReturn(Optional.of(usuarioAutenticado));
+        when(repositorioUsuario.save(any(Usuario.class))).thenAnswer(invocacion -> invocacion.getArgument(0));
+
+        PlanSuscripcion planFree = new PlanSuscripcion();
+        planFree.setId(UUID.randomUUID());
+        planFree.setTipoPlan(TipoPlanSuscripcion.FREE);
+        when(planRepository.findByTipoPlanAndActiveTrue(TipoPlanSuscripcion.FREE)).thenReturn(Optional.of(planFree));
+
+        // Act
+        casoUsoRegistrarInquilino.execute(request);
+
+        // Assert
+        assertTrue(usuarioAutenticado.hasRole(RolUsuario.SELLER));
+        verify(repositorioUsuario).save(usuarioAutenticado);
     }
 
     @Test
@@ -152,6 +182,7 @@ class CasoUsoRegistrarInquilinoTest {
         when(repositorioInquilino.existsByIdPropietario(idPropietario)).thenReturn(false);
         when(repositorioInquilino.existsByEnlaceCorto("mi-tienda")).thenReturn(false);
         when(repositorioInquilino.save(any(Inquilino.class))).thenAnswer(invocacion -> invocacion.getArgument(0));
+        when(repositorioUsuario.findById(idPropietario)).thenReturn(Optional.of(usuarioAutenticado));
         when(planRepository.findByTipoPlanAndActiveTrue(TipoPlanSuscripcion.FREE)).thenReturn(Optional.empty());
 
         // Act & Assert
