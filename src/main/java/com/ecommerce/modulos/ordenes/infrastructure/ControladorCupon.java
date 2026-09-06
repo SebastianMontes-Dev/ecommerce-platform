@@ -12,12 +12,14 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/cupones")
+@PreAuthorize("hasRole('SELLER')")
 @RequiredArgsConstructor
 @Tag(name = "Cupones", description = "Gestión de cupones y descuentos para Inquilinos")
 public class ControladorCupon {

@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,6 +29,7 @@ public class ControladorProducto {
 
     @PostMapping("/{id}/imagenes")
     @Operation(summary = "Subir una imagen para un producto")
+    @PreAuthorize("hasRole('SELLER')")
     @Transactional
     public ResponseEntity<String> uploadImage(@PathVariable UUID id, @RequestParam("file") MultipartFile file) {
         UUID idTienda = ContextoInquilino.getIdTiendaPropia();
