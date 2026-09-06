@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
@@ -39,6 +40,7 @@ public class ControladorOrden {
 
     @GetMapping
     @Operation(summary = "List ordenes for current inquilino")
+    @PreAuthorize("hasRole('SELLER')")
     public ResponseEntity<com.ecommerce.modulos.compartido.infrastructure.RespuestaPaginada<RespuestaOrden>> listOrders(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
@@ -66,6 +68,7 @@ public class ControladorOrden {
 
     @GetMapping(value = "/reporte/excel", produces = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
     @Operation(summary = "Generate Excel report of orders")
+    @PreAuthorize("hasRole('SELLER')")
     public ResponseEntity<byte[]> generateExcelReport() {
         byte[] report = servicioReporteOrdenes.generarReporteExcel(ContextoInquilino.getIdTiendaPropia());
         return ResponseEntity.ok()

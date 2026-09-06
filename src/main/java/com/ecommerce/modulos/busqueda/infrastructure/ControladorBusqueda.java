@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import com.ecommerce.modulos.busqueda.application.ServicioBusqueda;
@@ -56,6 +57,7 @@ public class ControladorBusqueda {
 
     @PostMapping("/reindex")
     @Operation(summary = "Reindexar todos los productos (Administrador)")
+    @PreAuthorize("hasRole('PLATFORM_ADMIN')")
     public ResponseEntity<Map<String, String>> reindex() {
         log.info("Reindexación iniciada para el inquilino: {}", ContextoInquilino.getIdTienda());
         return ResponseEntity.accepted().body(Map.of("message", "Reindexación programada"));

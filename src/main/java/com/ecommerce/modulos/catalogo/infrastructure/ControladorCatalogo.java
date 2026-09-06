@@ -11,6 +11,7 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -28,6 +29,7 @@ public class ControladorCatalogo {
 
     @PostMapping("/categorias")
     @Operation(summary = "Crear una categoría")
+    @PreAuthorize("hasRole('SELLER')")
     @CacheEvict(value = "categorias", key = "T(com.ecommerce.modulos.compartido.infrastructure.ContextoInquilino).getIdTiendaPropia()")
     public ResponseEntity<RespuestaCategoria> createCategory(@Valid @RequestBody SolicitudCrearCategoria request) {
         RespuestaCategoria response = casoUsoCrearCategoria.execute(request, ContextoInquilino.getIdTiendaPropia());
@@ -43,6 +45,7 @@ public class ControladorCatalogo {
 
     @PostMapping("/productos")
     @Operation(summary = "Crear un producto")
+    @PreAuthorize("hasRole('SELLER')")
     @CacheEvict(value = {"productos", "product_details"}, allEntries = true) // Limpiar todo el caché de productos por ahora
     public ResponseEntity<RespuestaProducto> createProduct(@Valid @RequestBody SolicitudCrearProducto request) {
         RespuestaProducto response = casoUsoCrearProducto.execute(request, ContextoInquilino.getIdTiendaPropia());
