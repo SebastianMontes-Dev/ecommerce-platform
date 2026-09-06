@@ -20,7 +20,7 @@ public class ServicioAlmacenamientoArchivo {
 
     public String uploadFile(MultipartFile file, String path) {
         try {
-            String objectName = path + "/" + UUID.randomUUID() + "-" + file.getOriginalFilename();
+            String objectName = path + "/" + ValidadorArchivoImagen.validarYGenerarNombreSeguro(file, UUID.randomUUID());
             InputStream inputStream = file.getInputStream();
 
             boolean bucketExists = minioClient.bucketExists(

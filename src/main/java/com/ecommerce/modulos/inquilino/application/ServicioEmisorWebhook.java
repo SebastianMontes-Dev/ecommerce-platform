@@ -26,10 +26,13 @@ public class ServicioEmisorWebhook {
 
     private final RepositorioWebhookTenant repositorioWebhookTenant;
     private final RestTemplate restTemplate;
+    private final ValidadorUrlWebhook validadorUrlWebhook;
 
-    public ServicioEmisorWebhook(RepositorioWebhookTenant repositorioWebhookTenant, RestTemplate restTemplate) {
+    public ServicioEmisorWebhook(RepositorioWebhookTenant repositorioWebhookTenant, RestTemplate restTemplate,
+                                  ValidadorUrlWebhook validadorUrlWebhook) {
         this.repositorioWebhookTenant = repositorioWebhookTenant;
         this.restTemplate = restTemplate;
+        this.validadorUrlWebhook = validadorUrlWebhook;
     }
 
     public void emitirEvento(UUID idTienda, String evento, String payloadJson) {
@@ -41,6 +44,12 @@ public class ServicioEmisorWebhook {
     }
 
     private void enviarWebhook(WebhookTenant webhook, String payloadJson) {
+        if (!validadorUrlWebhook.esSegura(webhook.getUrlDestino())) {
+            log.error("Webhook a {} rechazado: la URL de destino no es publica (SSRF), se descarta sin enviar",
+                    webhook.getUrlDestino());
+            return;
+        }
+
         String signature;
         try {
             signature = calcularHMAC(payloadJson, webhook.getSecret());
