@@ -21,7 +21,7 @@ public class ServicioAlmacenamientoCloud {
 
     public String uploadImage(MultipartFile file) {
         try {
-            String objectName = UUID.randomUUID() + "-" + file.getOriginalFilename();
+            String objectName = ValidadorArchivoImagen.validarYGenerarNombreSeguro(file, UUID.randomUUID());
             InputStream inputStream = file.getInputStream();
 
             boolean bucketExists = minioClient.bucketExists(
