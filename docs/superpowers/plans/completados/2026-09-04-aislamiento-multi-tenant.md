@@ -1,5 +1,7 @@
 # Aislamiento Multi-Tenant — Plan de Remediación
 
+> **Completado y mergeado.** Las 10 tareas de este plan (más una ola de fixes de la revisión final) se implementaron en la rama `worktree-aislamiento-multi-tenant` y se mergearon a `master` en el PR #1 (`fd95fb3`). Archivado aquí como referencia histórica — no requiere más acción.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Cerrar la vulnerabilidad crítica de aislamiento multi-tenant: hoy el `idTienda` de cada request sale de un header controlado por el cliente (`X-Inquilino-ID`) sin validarlo contra el usuario autenticado, y el filtro `@Filter` de Hibernate que debería ser la defensa de fondo nunca se activa. Cualquier usuario autenticado puede leer/escribir datos de otro tenant.
