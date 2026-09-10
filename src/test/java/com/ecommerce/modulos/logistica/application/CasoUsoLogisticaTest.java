@@ -1,6 +1,7 @@
 package com.ecommerce.modulos.logistica.application;
 
 import com.ecommerce.modulos.compartido.domain.ExcepcionEntidadNoEncontrada;
+import com.ecommerce.modulos.logistica.application.dto.RespuestaEnvio;
 import com.ecommerce.modulos.logistica.domain.Envio;
 import com.ecommerce.modulos.logistica.domain.EstadoEnvio;
 import com.ecommerce.modulos.logistica.domain.RepositorioEnvio;
@@ -41,45 +42,38 @@ class CasoUsoLogisticaTest {
     void debePrepararEnvioConEstadoPreparandoYProveedorDhl() {
         when(repositorioEnvio.save(any(Envio.class))).thenAnswer(i -> i.getArguments()[0]);
 
-        Envio envio = casoUsoLogistica.prepararEnvio(idTienda, idOrden);
+        casoUsoLogistica.prepararEnvio(idTienda, idOrden);
 
-        assertNotNull(envio);
+        ArgumentCaptor<Envio> captor = ArgumentCaptor.forClass(Envio.class);
+        verify(repositorioEnvio).save(captor.capture());
+        Envio envio = captor.getValue();
         assertEquals(idTienda, envio.getIdTienda());
         assertEquals(idOrden, envio.getIdOrden());
         assertEquals(EstadoEnvio.PREPARANDO, envio.getEstado());
         assertEquals("DHL_EXPRESS", envio.getProveedor());
         assertTrue(envio.getNumeroGuia().startsWith("TRK-"));
+        assertEquals(1, envio.getHistorial().size());
     }
 
     @Test
-    void debeGuardarEnvioAlPrepararlo() {
-        when(repositorioEnvio.save(any(Envio.class))).thenAnswer(i -> i.getArguments()[0]);
-
-        casoUsoLogistica.prepararEnvio(idTienda, idOrden);
-
-        ArgumentCaptor<Envio> captor = ArgumentCaptor.forClass(Envio.class);
-        verify(repositorioEnvio).save(captor.capture());
-        assertEquals(idTienda, captor.getValue().getIdTienda());
-        assertEquals(1, captor.getValue().getHistorial().size());
-    }
-
-    @Test
-    void debeActualizarEstadoSiEnvioExiste() {
+    void debeActualizarEstadoYDevolverElDto() {
         String numeroGuia = "TRK-ABC1234567";
         Envio envio = new Envio();
         envio.setIdTienda(idTienda);
+        envio.setIdOrden(idOrden);
         envio.setNumeroGuia(numeroGuia);
 
         when(repositorioEnvio.findByIdTiendaAndNumeroGuia(idTienda, numeroGuia)).thenReturn(Optional.of(envio));
         when(repositorioEnvio.save(any(Envio.class))).thenAnswer(i -> i.getArguments()[0]);
 
-        Envio resultado = casoUsoLogistica.actualizarEstado(
+        RespuestaEnvio resultado = casoUsoLogistica.actualizarEstado(
                 idTienda, numeroGuia, EstadoEnvio.EN_TRANSITO, "Bogotá", "Salió del centro de distribución");
 
-        assertEquals(EstadoEnvio.EN_TRANSITO, resultado.getEstado());
-        assertEquals(1, resultado.getHistorial().size());
-        assertEquals("Bogotá", resultado.getHistorial().get(0).getUbicacion());
-        assertEquals("Salió del centro de distribución", resultado.getHistorial().get(0).getDescripcion());
+        assertEquals("EN_TRANSITO", resultado.estado());
+        assertEquals(numeroGuia, resultado.numeroGuia());
+        assertEquals(1, resultado.historial().size());
+        assertEquals("Bogotá", resultado.historial().get(0).ubicacion());
+        assertEquals("Salió del centro de distribución", resultado.historial().get(0).descripcion());
         verify(repositorioEnvio).save(envio);
     }
 
@@ -95,17 +89,21 @@ class CasoUsoLogisticaTest {
     }
 
     @Test
-    void debeRastrearEnvioSiExiste() {
+    void debeRastrearEnvioYDevolverElDto() {
         String numeroGuia = "TRK-ABC1234567";
         Envio envio = new Envio();
         envio.setIdTienda(idTienda);
+        envio.setIdOrden(idOrden);
         envio.setNumeroGuia(numeroGuia);
+        envio.setProveedor("DHL_EXPRESS");
 
         when(repositorioEnvio.findByIdTiendaAndNumeroGuia(idTienda, numeroGuia)).thenReturn(Optional.of(envio));
 
-        Envio resultado = casoUsoLogistica.rastrearEnvio(idTienda, numeroGuia);
+        RespuestaEnvio resultado = casoUsoLogistica.rastrearEnvio(idTienda, numeroGuia);
 
-        assertSame(envio, resultado);
+        assertEquals(numeroGuia, resultado.numeroGuia());
+        assertEquals(idOrden, resultado.idOrden());
+        assertEquals("DHL_EXPRESS", resultado.proveedor());
     }
 
     @Test
