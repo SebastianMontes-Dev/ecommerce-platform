@@ -10,10 +10,10 @@ El sistema necesita autenticar usuarios (vendedores, compradores, administradore
 Usar **JWT (JSON Web Tokens) sin estado** con token de acceso (15 min) + token de actualización (7 días).
 
 ## Flujo
-1. `POST /api/v1/auth/register` → Crea el usuario, retorna el perfil
+1. `POST /api/v1/auth/registro` → Crea el usuario, retorna el perfil
 2. `POST /api/v1/auth/login` → Retorna `accessToken` + `refreshToken`
 3. Cada petición incluye `Authorization: Bearer <accessToken>`
-4. `POST /api/v1/auth/refresh` → Nuevo token de acceso con token de actualización rotado
+4. `POST /api/v1/auth/actualizar` → Nuevo token de acceso con token de actualización rotado
 
 ## Detalles
 - Algoritmo: HMAC-SHA256 con clave secreta configurable
@@ -25,4 +25,6 @@ Usar **JWT (JSON Web Tokens) sin estado** con token de acceso (15 min) + token d
 - Sin estado → escala horizontalmente sin sesiones adherentes
 - Token de acceso corto (15 min) limita la ventana de ataque
 - Token de actualización rotado previene el reuso malicioso
-- Sin OAuth2 externo en el MVP (se puede agregar después)
+- Login social con Google (OAuth2) añadido en `SecurityConfig`; la emisión de un JWT propio
+  tras el callback social todavía no está resuelta en el flujo stateless (falta un
+  `AuthenticationSuccessHandler`) — pendiente en el roadmap.

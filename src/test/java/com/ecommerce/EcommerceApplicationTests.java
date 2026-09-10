@@ -29,7 +29,7 @@ import org.springframework.test.context.DynamicPropertySource;
 class EcommerceApplicationTests {
 
     @Container
-    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:15-alpine")
+    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:16-alpine")
             .withDatabaseName("ecommerce_test")
             .withUsername("ecommerce")
             .withPassword("ecommerce123");
