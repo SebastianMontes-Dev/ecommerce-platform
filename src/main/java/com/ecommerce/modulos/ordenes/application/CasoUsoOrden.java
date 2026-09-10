@@ -16,6 +16,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.math.BigDecimal;
 import java.util.UUID;
@@ -102,15 +104,39 @@ public class CasoUsoOrden {
 
         orden.markAsCreated();
         orden = repositorioOrden.save(orden);
+        // Publica EventoOrdenCreada: ManejadorEventosOrden reserva el inventario aquí,
+        // en esta misma transacción. Si no hay stock, lanza y todo hace rollback.
         eventPublisher.publish(orden.getDomainEvents());
         orden.clearDomainEvents();
 
-        servicioCarrito.clearCart(idCliente, idTienda);
-
         RespuestaOrden respuesta = mapToResponse(orden);
-        servicioNotificacionTiempoReal.notificarNuevaOrden(idTienda, respuesta);
-        
+
+        // Efectos que NO deben ocurrir si la transacción hace rollback: vaciar el carrito
+        // en Redis dejaría al cliente sin carrito para una orden inexistente, y la
+        // notificación en vivo anunciaría una orden fantasma.
+        ejecutarTrasCommit(() -> {
+            servicioCarrito.clearCart(idCliente, idTienda);
+            servicioNotificacionTiempoReal.notificarNuevaOrden(idTienda, respuesta);
+        });
+
         return respuesta;
+    }
+
+    /**
+     * Ejecuta {@code accion} después de que la transacción actual haga commit. Si no hay
+     * transacción activa (p. ej. en tests unitarios), la ejecuta de inmediato.
+     */
+    private void ejecutarTrasCommit(Runnable accion) {
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    accion.run();
+                }
+            });
+        } else {
+            accion.run();
+        }
     }
 
     @Transactional(readOnly = true)

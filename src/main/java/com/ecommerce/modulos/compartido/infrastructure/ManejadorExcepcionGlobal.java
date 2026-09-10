@@ -54,6 +54,16 @@ public class ManejadorExcepcionGlobal {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(problem);
     }
 
+    @ExceptionHandler(ExcepcionStockInsuficiente.class)
+    public ResponseEntity<ProblemDetail> handleInsufficientStock(ExcepcionStockInsuficiente ex, HttpServletRequest request) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
+        problem.setTitle("Insufficient Stock");
+        problem.setType(URI.create("https://api.ecommerce.com/errors/insufficient-stock"));
+        problem.setProperty("timestamp", Instant.now());
+        problem.setProperty("path", request.getRequestURI());
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(problem);
+    }
+
     @ExceptionHandler(ExcepcionOperacionInvalida.class)
     public ResponseEntity<ProblemDetail> handleInvalidOperation(ExcepcionOperacionInvalida ex, HttpServletRequest request) {
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());

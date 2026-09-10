@@ -26,7 +26,7 @@ public class EventoOrdenCreada implements EventoDominio {
         this.idTienda = idTienda;
         this.idCliente = idCliente;
         this.items = articulos.stream()
-                .map(a -> new ItemInfo(a.getIdProducto(), a.getCantidad()))
+                .map(a -> new ItemInfo(a.getIdProducto(), a.getVariantId(), a.getCantidad()))
                 .collect(Collectors.toList());
     }
 
@@ -38,10 +38,12 @@ public class EventoOrdenCreada implements EventoDominio {
     @Getter
     public static class ItemInfo {
         private final UUID idProducto;
+        private final UUID variantId;
         private final int cantidad;
 
-        public ItemInfo(UUID idProducto, int cantidad) {
+        public ItemInfo(UUID idProducto, UUID variantId, int cantidad) {
             this.idProducto = idProducto;
+            this.variantId = variantId;
             this.cantidad = cantidad;
         }
     }

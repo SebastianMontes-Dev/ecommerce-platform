@@ -62,7 +62,8 @@ class VarianteProductoTest {
     void debeLanzarExcepcionAlReducirInventarioInsuficiente() {
         variante.setInventario(2);
 
-        assertThrows(IllegalStateException.class, () -> variante.decreaseInventory(5));
+        assertThrows(com.ecommerce.modulos.compartido.domain.ExcepcionStockInsuficiente.class,
+                () -> variante.decreaseInventory(5));
     }
 
     @Test

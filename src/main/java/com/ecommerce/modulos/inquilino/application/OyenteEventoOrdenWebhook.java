@@ -6,9 +6,10 @@ import com.ecommerce.modulos.ordenes.domain.eventos.EventoEstadoOrdenCambiado;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.event.TransactionPhase;
+import org.springframework.transaction.event.TransactionalEventListener;
 
 import java.util.Map;
 import java.util.UUID;
@@ -29,7 +30,7 @@ public class OyenteEventoOrdenWebhook {
     private final ObjectMapper objectMapper;
 
     @Async
-    @EventListener
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT, fallbackExecution = true)
     public void onOrderCreated(EventoOrdenCreada evento) {
         emitir(evento.getIdTienda(), "orden.creada", Map.of(
                 "idOrden", evento.getIdOrden(),
@@ -40,7 +41,7 @@ public class OyenteEventoOrdenWebhook {
     }
 
     @Async
-    @EventListener
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT, fallbackExecution = true)
     public void onOrderStatusChanged(EventoEstadoOrdenCambiado evento) {
         String nombreEvento = nombreEventoParaEstado(evento.getNuevoEstado());
         if (nombreEvento == null) {
