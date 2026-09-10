@@ -71,12 +71,15 @@ public class Carrito {
         return articulos.size();
     }
 
-    public BigDecimal getTotal() {
-        BigDecimal subtotal = articulos.stream()
+    public BigDecimal calcularSubtotal() {
+        return articulos.stream()
                 .map(ArticuloCarrito::getSubtotal)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
-        
-        BigDecimal totalFinal = subtotal.subtract(montoDescuento != null ? montoDescuento : BigDecimal.ZERO);
+    }
+
+    public BigDecimal getTotal() {
+        BigDecimal totalFinal = calcularSubtotal()
+                .subtract(montoDescuento != null ? montoDescuento : BigDecimal.ZERO);
         return totalFinal.compareTo(BigDecimal.ZERO) < 0 ? BigDecimal.ZERO : totalFinal;
     }
 

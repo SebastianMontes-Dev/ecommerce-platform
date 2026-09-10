@@ -25,6 +25,9 @@ public class CasoUsoCrearProducto {
     private final RepositorioProducto repositorioProducto;
     private final PublicadorEventoDominio eventPublisher;
 
+    // Invalida solo la entrada del slug que se está creando (cubre el caso borrar-y-recrear
+    // con el mismo slug). La lista paginada no se cachea, así que no hace falta purgarla.
+    @org.springframework.cache.annotation.CacheEvict(value = "product_details", key = "#idTienda + '_' + #request.enlaceCorto")
     @Transactional
     public RespuestaProducto execute(SolicitudCrearProducto request, UUID idTienda) {
         if (repositorioProducto.countByIdTienda(idTienda) >= 999999) {

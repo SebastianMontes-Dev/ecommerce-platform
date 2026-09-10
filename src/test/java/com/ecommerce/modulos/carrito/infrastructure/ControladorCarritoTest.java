@@ -10,8 +10,6 @@ import com.ecommerce.modulos.compartido.infrastructure.security.FiltroAutenticac
 import com.ecommerce.modulos.compartido.infrastructure.security.FiltroRateLimit;
 import com.ecommerce.modulos.identidad.application.DetallesUsuarioPersonalizado;
 import com.ecommerce.modulos.ordenes.application.CasoUsoGestionarCupon;
-import com.ecommerce.modulos.ordenes.domain.Cupon;
-import com.ecommerce.modulos.ordenes.domain.TipoDescuento;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -139,26 +137,21 @@ class ControladorCarritoTest {
     @Test
     void debeAplicarCupon() throws Exception {
         String codigoCupon = "DESC10";
-        Cupon cupon = new Cupon();
-        cupon.setCodigo(codigoCupon);
-        cupon.setTipo(TipoDescuento.MONTO_FIJO);
-        cupon.setValor(new BigDecimal("10.00"));
-
         Carrito carrito = new Carrito();
         ArticuloCarrito item = new ArticuloCarrito();
         item.setPrecioUnitario(new BigDecimal("50.00"));
         item.setCantidad(1);
         carrito.agregarArticulo(item);
 
-        when(casoUsoGestionarCupon.validarYObtenerCupon(any(), eq(codigoCupon))).thenReturn(cupon);
         when(servicioCarrito.getOrCreateCart(eq(userId), any())).thenReturn(carrito);
+        when(casoUsoGestionarCupon.calcularDescuento(any(), eq(codigoCupon), any())).thenReturn(new BigDecimal("10.00"));
         when(servicioCarrito.aplicarCupon(eq(userId), any(), any(), eq(codigoCupon), any())).thenReturn(carrito);
 
         mockMvc.perform(post("/api/v1/carrito/cupones/{codigo}", codigoCupon)
                         .with(user(userDetails))
                         .with(csrf()))
                 .andExpect(status().isOk());
-                
+
         verify(servicioCarrito).aplicarCupon(eq(userId), any(), any(), eq(codigoCupon), eq(new BigDecimal("10.00")));
     }
 }
