@@ -7,7 +7,7 @@ import com.ecommerce.modulos.catalogo.domain.VarianteProducto;
 import com.ecommerce.modulos.compartido.domain.ExcepcionEntidadNoEncontrada;
 import com.ecommerce.modulos.compartido.domain.ExcepcionStockInsuficiente;
 import com.ecommerce.modulos.ordenes.domain.ArticuloOrden;
-import com.ecommerce.modulos.ordenes.domain.events.EventoOrdenCancelada;
+import com.ecommerce.modulos.ordenes.domain.events.EventoInventarioLiberado;
 import com.ecommerce.modulos.ordenes.domain.events.EventoOrdenCreada;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -140,7 +140,7 @@ class ManejadorEventosOrdenTest {
         when(repositorioProducto.save(any())).thenAnswer(i -> i.getArguments()[0]);
         when(repositorioVarianteProducto.save(any())).thenAnswer(i -> i.getArguments()[0]);
 
-        manejadorEventosOrden.handle(new EventoOrdenCancelada(
+        manejadorEventosOrden.handle(new EventoInventarioLiberado(
                 UUID.randomUUID(), idTienda, "Pago expirado",
                 List.of(crearArticulo(idProducto, 3), crearArticuloVariante(UUID.randomUUID(), variantId, 4))));
 
@@ -161,7 +161,7 @@ class ManejadorEventosOrdenTest {
                 idOrden, idTienda, UUID.randomUUID(), List.of(crearArticulo(idProducto, 4))));
         assertEquals(6, producto.getInventario());
 
-        manejadorEventosOrden.handle(new EventoOrdenCancelada(
+        manejadorEventosOrden.handle(new EventoInventarioLiberado(
                 idOrden, idTienda, "Pago rechazado", List.of(crearArticulo(idProducto, 4))));
         assertEquals(10, producto.getInventario());
     }

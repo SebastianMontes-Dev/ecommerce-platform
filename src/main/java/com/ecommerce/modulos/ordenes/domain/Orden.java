@@ -131,14 +131,20 @@ public class Orden extends RaizAgregadaInquilino {
 
     public void cancel(String reason) {
         changeStatus(EstadoOrden.CANCELLED, reason);
-        if (this.getId() != null) {
-            registerEvent(new com.ecommerce.modulos.ordenes.domain.events.EventoOrdenCancelada(
-                    this.getId(), this.getIdTienda(), reason, this.getArticulos()));
-        }
+        liberarInventarioReservado(reason);
     }
-    
+
     public void refund(String reason) {
         changeStatus(EstadoOrden.REFUNDED, reason);
+        liberarInventarioReservado(reason);
+    }
+
+    /** Señala a catálogo que devuelva al stock lo que esta orden tenía reservado. */
+    private void liberarInventarioReservado(String motivo) {
+        if (this.getId() != null) {
+            registerEvent(new com.ecommerce.modulos.ordenes.domain.events.EventoInventarioLiberado(
+                    this.getId(), this.getIdTienda(), motivo, this.getArticulos()));
+        }
     }
 
     private void changeStatus(EstadoOrden nuevoEstado, String notas) {
