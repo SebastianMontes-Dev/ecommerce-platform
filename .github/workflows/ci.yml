@@ -10,8 +10,8 @@ jobs:
   build-and-test:
     runs-on: ubuntu-latest
     
-    # We don't need to define services here because Testcontainers 
-    # will automatically spin up PostgreSQL, Redis, and RabbitMQ via Docker
+    # No hacen falta 'services' aquí: Testcontainers levanta PostgreSQL, Redis y
+    # Elasticsearch bajo demanda usando el Docker del runner.
 
     steps:
     - uses: actions/checkout@v4

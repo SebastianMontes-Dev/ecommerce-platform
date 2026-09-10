@@ -38,10 +38,6 @@ class EcommerceApplicationTests {
     static GenericContainer<?> redis = new GenericContainer<>(DockerImageName.parse("redis:7-alpine"))
             .withExposedPorts(6379);
 
-    @Container
-    static GenericContainer<?> rabbitmq = new GenericContainer<>(DockerImageName.parse("rabbitmq:3-management-alpine"))
-            .withExposedPorts(5672);
-
     static {
         // @Testcontainers normally starts @Container static fields in beforeAll, but
         // @DynamicPropertySource is evaluated by Spring's own extension and the relative
@@ -50,7 +46,6 @@ class EcommerceApplicationTests {
         // containers are up before configureProperties() reads their mapped ports below.
         postgres.start();
         redis.start();
-        rabbitmq.start();
     }
 
     @DynamicPropertySource
@@ -60,8 +55,6 @@ class EcommerceApplicationTests {
         registry.add("spring.datasource.password", postgres::getPassword);
         registry.add("spring.data.redis.host", redis::getHost);
         registry.add("spring.data.redis.port", redis::getFirstMappedPort);
-        registry.add("spring.rabbitmq.host", rabbitmq::getHost);
-        registry.add("spring.rabbitmq.port", rabbitmq::getFirstMappedPort);
     }
 
     @Autowired

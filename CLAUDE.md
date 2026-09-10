@@ -1,6 +1,6 @@
 # ecommerce-platform (NexaSaaS)
 
-API REST de e-commerce multi-tenant (SaaS B2B/B2C) sobre Java 21 + Spring Boot 3.4.4 (Gradle). Monolito modular con aislamiento de datos por inquilino (row-level filtering con Hibernate `@Filter` para tenants estándar, `AbstractRoutingDataSource` para tenants premium con DB dedicada).
+API REST de e-commerce multi-tenant (SaaS B2B/B2C) sobre Java 21 + Spring Boot 3.4.4 (Gradle). Monolito modular con aislamiento de datos por inquilino: row-level filtering con Hibernate `@Filter` (`filtroInquilino`) + validación del `tenant` en cada request. Una sola base de datos compartida.
 
 ## Comandos verificados
 
@@ -8,14 +8,14 @@ API REST de e-commerce multi-tenant (SaaS B2B/B2C) sobre Java 21 + Spring Boot 3
 ./gradlew build          # compila + corre tests
 ./gradlew bootRun        # levanta la app en :8081 (perfil "dev" por defecto)
 ./gradlew test           # solo tests (JUnit 5 vía useJUnitPlatform)
-docker-compose -f docker/docker-compose.yml up -d   # infra: postgres, redis, rabbitmq, minio, elasticsearch, mailhog, prometheus, grafana, zipkin
+docker-compose -f docker/docker-compose.yml up -d   # infra: postgres, redis, minio, elasticsearch, mailhog, prometheus, grafana, zipkin
 ```
 
 **Puerto Postgres no estándar: `5433`, no `5432`.** `docker/docker-compose.yml` mapea `5433:5432` y `application.yml` apunta a `jdbc:postgresql://localhost:5433/ecommerce_db`. Ojo: `src/test/resources/application-test.yml` usa `localhost:5432/ecommerce_test` (puerto default, distinto al de dev) — si corrés Postgres solo vía el docker-compose del repo, los tests de integración que dependan de esa DB fallarán a menos que expongas también el 5432, o ajustes el yml de test.
 
 Swagger UI: `http://localhost:8081/swagger-ui.html`. Actuator expone `health,info,metrics,prometheus`.
 
-Variables de entorno relevantes están en `.env.example` (DB, Redis, RabbitMQ, JWT, MinIO, Stripe, Elasticsearch) — copiar a `.env`, nunca commitear secretos.
+Variables de entorno relevantes están en `.env.example` (DB, Redis, JWT, MinIO, Stripe, Elasticsearch) — copiar a `.env`, nunca commitear secretos.
 
 ## Convenciones de commits, ramas y PRs
 
@@ -38,20 +38,20 @@ Todo el código vive bajo `src/main/java/com/ecommerce/`:
   - `pagos/` — Stripe, patrón Strategy en `infrastructure/pasarelas`.
   - `notificacion/` — listener de eventos de orden + envío de correo (Thymeleaf).
   - `logistica/`, `resenas/`, `analiticas/`, `ia/` — logística, reseñas, reportes/analítica, asistente IA.
-  - `compartido/` — cross-cutting: `RedisConfig`, `SecurityConfig`, `ConfiguracionMultiTenantDB`, `ConfiguracionFiltroInquilinoHibernate`, `RateLimitConfig` (Bucket4j), `ConfiguracionObservabilidad` (Zipkin/Micrometer), WebSocket config.
+  - `compartido/` — cross-cutting: `RedisConfig`, `SecurityConfig`, `ConfiguracionFiltroInquilinoHibernate` / `AspectoFiltroInquilino`, `RateLimitConfig` (Bucket4j), `ConfiguracionObservabilidad` (Zipkin/Micrometer), WebSocket config (`ConfiguracionWebSocket` + `InterceptorAutenticacionWebSocket`).
 
 Convención de nombres en español (`ServicioX`, `CasoUsoX`, `ControladorX`, `RepositorioX`) — seguirla al agregar código nuevo.
 
-Migraciones Flyway en `src/main/resources/db/migration/V1..V8`, `ddl-auto: update` en dev pero Flyway es la fuente real de verdad del esquema.
+Migraciones Flyway en `src/main/resources/db/migration/V1..V14`, `ddl-auto: validate` (Flyway es la única fuente de verdad del esquema).
 
-## Redis, AMQP y GraphQL — estado real (verificado en código, no en docs)
+## Redis, eventos y GraphQL — estado real (verificado en código, no en docs)
 
 - **Redis: implementado.** `RedisConfig` (`compartido/infrastructure`) define `RedisTemplate` (serialización JSON con Jackson) y un `RedisCacheManager` (`@EnableCaching`, TTL 10 min). Se usa en `ServicioCarrito` (carrito activo), `ControladorCatalogo` y `InterceptorLimiteTasa` (rate limiting con Bucket4j).
-- **AMQP/RabbitMQ: NO implementado, solo dependencia + infra.** `spring-boot-starter-amqp` está en `build.gradle`, RabbitMQ corre en `docker-compose.yml` y `application.yml` tiene credenciales de conexión, pero no hay ningún `@RabbitListener`, `RabbitTemplate`, `Queue`/`Exchange`/`Binding` en `src/main/java`. Los eventos de dominio (ej. cambio de estado de orden → notificación) se manejan con `@EventListener` + `@Async` in-process (`OyenteEventoOrden`), no con mensajería real. Si vas a tocar notificaciones o eventos asíncronos, es Spring events, no colas.
+- **Eventos: in-process, sin broker.** Los eventos de dominio (`EventoOrdenCreada`, `EventoEstadoOrdenCambiado`, etc.) se publican con `ApplicationEventPublisher` (`PublicadorEventoDominio`). Los listeners de efecto externo (correos, webhooks salientes) son `@Async @TransactionalEventListener(AFTER_COMMIT)`; la reserva de inventario (`ManejadorEventosOrden`) es `@EventListener` **síncrono dentro de la transacción**. NO hay RabbitMQ ni ninguna cola — se quitó la dependencia `spring-boot-starter-amqp` (era enterprise theater). Si hace falta un broker en el futuro, es una decisión a documentar en un ADR.
 - **GraphQL: implementado, pero mínimo.** `spring-boot-starter-graphql` + schema en `src/main/resources/graphql/schema.graphqls` + un único controller (`ControladorGraphQLProducto`, query `obtenerProductoPorId`). Es una capa fina sobre el mismo caso de uso que ya expone REST (`CasoUsoObtenerProducto`); no asumas cobertura GraphQL de otros dominios sin verificar.
 
 ## Testing
 
 - `src/test/java` sigue la misma estructura de paquetes que `main` (`modulos/<dominio>/application|infrastructure`), con tests unitarios (`*Test`) e de integración (`*IntegrationTest`, usan Testcontainers — hay dependencias para Postgres y Elasticsearch).
-- `src/test/resources/application-test.yml`: DB `ecommerce_test` en puerto **5432** (no 5433), `ddl-auto: validate` (no crea/actualiza esquema, exige que Flyway ya lo haya migrado), listener de RabbitMQ desactivado (`auto-startup: false`).
+- `src/test/resources/application-test.yml`: DB `ecommerce_test` en puerto **5432** (no 5433), `ddl-auto: validate` (no crea/actualiza esquema, exige que Flyway ya lo haya migrado).
 - Rest Assured (`spring-mock-mvc`) disponible para tests de controllers.
