@@ -5,6 +5,7 @@ import com.ecommerce.modulos.catalogo.domain.*;
 import com.ecommerce.modulos.compartido.domain.ExcepcionEntidadNoEncontrada;
 import com.ecommerce.modulos.compartido.infrastructure.RespuestaPaginada;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -18,6 +19,10 @@ public class CasoUsoObtenerProducto {
 
     private final RepositorioProducto repositorioProducto;
 
+    // Se cachea el DTO (no un ResponseEntity) y por (tenant, slug), que es la clave que
+    // realmente se invalida. La lista paginada NO se cachea: es una query indexada barata
+    // y su invalidación al crear/editar productos es un dolor de cabeza que no vale la pena.
+    @Cacheable(value = "product_details", key = "#idTienda + '_' + #enlaceCorto")
     @Transactional(readOnly = true)
     public RespuestaProducto bySlug(String enlaceCorto, UUID idTienda) {
         Producto producto = repositorioProducto.findByIdTiendaAndEnlaceCortoWithImages(idTienda, enlaceCorto)

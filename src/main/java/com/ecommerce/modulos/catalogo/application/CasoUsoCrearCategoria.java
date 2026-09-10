@@ -16,6 +16,7 @@ public class CasoUsoCrearCategoria {
 
     private final RepositorioCategoria repositorioCategoria;
 
+    @org.springframework.cache.annotation.CacheEvict(value = "categorias", key = "#idTienda")
     @Transactional
     public RespuestaCategoria execute(SolicitudCrearCategoria request, UUID idTienda) {
         Categoria categoria = new Categoria();
@@ -33,6 +34,7 @@ public class CasoUsoCrearCategoria {
         return mapToResponse(categoria);
     }
 
+    @org.springframework.cache.annotation.Cacheable(value = "categorias", key = "#idTienda")
     @Transactional(readOnly = true)
     public List<RespuestaCategoria> getCategories(UUID idTienda) {
         return repositorioCategoria.findRootCategoriesWithChildren(idTienda).stream()
