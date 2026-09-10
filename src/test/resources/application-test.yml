@@ -27,6 +27,9 @@ app:
     secret: test-secret-key-for-testing-must-be-at-least-256-bits-long-for-hmac-sha512
     access-token-expiration: 900000
     refresh-token-expiration: 604800000
+  outbox:
+    # Intervalo enorme: el worker no dispara solo durante los tests; se invoca a mano.
+    intervalo-ms: 3600000
   stripe:
     api-key: sk_test_placeholder
     webhook-secret: whsec_placeholder

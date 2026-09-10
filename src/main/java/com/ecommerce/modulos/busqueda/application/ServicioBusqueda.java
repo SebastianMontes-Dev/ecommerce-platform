@@ -20,17 +20,21 @@ public class ServicioBusqueda {
     private final ElasticsearchClient elasticsearchClient;
     private static final String INDEX_NAME = "productos";
 
+    /**
+     * Indexa el documento en Elasticsearch. <b>Propaga</b> la excepción si ES falla: el
+     * llamador es el worker del outbox, que necesita el error para reintentar. Perder
+     * silenciosamente la indexación era lo que dejaba PostgreSQL y ES divergentes.
+     */
     public void indexProduct(DocumentoProducto document) {
         try {
-            IndexRequest<DocumentoProducto> request = IndexRequest.of(i -> i
+            elasticsearchClient.index(IndexRequest.of(i -> i
                     .index(INDEX_NAME)
                     .id(document.getId())
-                    .document(document)
-            );
-            elasticsearchClient.index(request);
+                    .document(document)));
             log.info("Indexed producto {} in Elasticsearch", document.getId());
         } catch (Exception e) {
             log.error("Failed to index producto {}", document.getId(), e);
+            throw new RuntimeException("No se pudo indexar el producto " + document.getId() + " en Elasticsearch", e);
         }
     }
 
@@ -58,15 +62,14 @@ public class ServicioBusqueda {
         }
     }
 
+    /** Elimina el documento del índice. Propaga la excepción (ver {@link #indexProduct}). */
     public void deleteProduct(UUID idTienda, String idProducto) {
         try {
-            elasticsearchClient.delete(d -> d
-                    .index(INDEX_NAME)
-                    .id(idProducto)
-            );
+            elasticsearchClient.delete(d -> d.index(INDEX_NAME).id(idProducto));
             log.info("Deleted producto {} from Elasticsearch", idProducto);
         } catch (Exception e) {
             log.error("Failed to delete producto {}", idProducto, e);
+            throw new RuntimeException("No se pudo eliminar el producto " + idProducto + " de Elasticsearch", e);
         }
     }
 }

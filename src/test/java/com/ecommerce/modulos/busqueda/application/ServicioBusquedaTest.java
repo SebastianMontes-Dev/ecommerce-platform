@@ -70,10 +70,11 @@ class ServicioBusquedaTest {
     }
 
     @Test
-    void noDebePropagarExcepcionSiElasticsearchFallaAlIndexar() throws IOException {
+    void debePropagarExcepcionSiElasticsearchFallaAlIndexar() throws IOException {
         doThrow(new IOException("elasticsearch caido")).when(elasticsearchClient).index(any(IndexRequest.class));
 
-        assertDoesNotThrow(() -> servicioBusqueda.indexProduct(documento));
+        // El worker del outbox necesita el error para reintentar.
+        assertThrows(RuntimeException.class, () -> servicioBusqueda.indexProduct(documento));
 
         verify(elasticsearchClient).index(any(IndexRequest.class));
     }
@@ -193,10 +194,10 @@ class ServicioBusquedaTest {
     }
 
     @Test
-    void noDebePropagarExcepcionSiElasticsearchFallaAlEliminar() throws IOException {
+    void debePropagarExcepcionSiElasticsearchFallaAlEliminar() throws IOException {
         when(elasticsearchClient.delete(any(Function.class))).thenThrow(excepcionSimuladaDeElasticsearch());
 
-        assertDoesNotThrow(() -> servicioBusqueda.deleteProduct(idTienda, "algun-id"));
+        assertThrows(RuntimeException.class, () -> servicioBusqueda.deleteProduct(idTienda, "algun-id"));
 
         verify(elasticsearchClient).delete(any(Function.class));
     }
