@@ -1,9 +1,7 @@
 package com.ecommerce.modulos.pagos.application;
 
 import com.ecommerce.modulos.compartido.domain.ExcepcionEntidadNoEncontrada;
-import com.ecommerce.modulos.ordenes.domain.EstadoOrden;
-import com.ecommerce.modulos.ordenes.domain.Orden;
-import com.ecommerce.modulos.ordenes.domain.RepositorioOrden;
+import com.ecommerce.modulos.ordenes.application.ServicioEstadoOrden;
 import com.ecommerce.modulos.pagos.domain.EstadoPago;
 import com.ecommerce.modulos.pagos.domain.Pago;
 import com.ecommerce.modulos.pagos.domain.RepositorioPago;
@@ -28,7 +26,7 @@ class CasoUsoConfirmarPagoTest {
     @Mock
     private RepositorioPago repositorioPago;
     @Mock
-    private RepositorioOrden repositorioOrden;
+    private ServicioEstadoOrden servicioEstadoOrden;
 
     @InjectMocks
     private CasoUsoConfirmarPago casoUsoConfirmarPago;
@@ -36,7 +34,6 @@ class CasoUsoConfirmarPagoTest {
     private UUID idPago;
     private UUID idOrden;
     private Pago pago;
-    private Orden orden;
 
     @BeforeEach
     void setUp() {
@@ -49,33 +46,24 @@ class CasoUsoConfirmarPagoTest {
         pago.setIdTienda(UUID.randomUUID());
         pago.setEstado(EstadoPago.PENDING);
         pago.setIdExterno("cs_test_ref");
-
-        orden = new Orden();
-        orden.setId(idOrden);
-        orden.setIdTienda(pago.getIdTienda());
-        orden.setIdCliente(UUID.randomUUID());
-        orden.setNumeroOrden("ORD-1");
-        orden.setEstado(EstadoOrden.PENDING);
     }
 
     @Test
-    @DisplayName("Pago PENDING + orden PENDING -> pago COMPLETED, orden PAID, devuelve id de orden")
-    void confirmaPagoYOrdenAtomicamente() {
+    @DisplayName("Pago PENDING -> pago COMPLETED y se delega la transición de la orden a ordenes")
+    void confirmaPagoYDelegaLaOrden() {
         when(repositorioPago.findById(idPago)).thenReturn(Optional.of(pago));
-        when(repositorioOrden.findById(idOrden)).thenReturn(Optional.of(orden));
 
         UUID resultado = casoUsoConfirmarPago.confirmarPagoExitoso(idPago, "pi_123");
 
         assertEquals(idOrden, resultado);
         assertEquals(EstadoPago.COMPLETED, pago.getEstado());
         assertEquals("pi_123", pago.getIdExterno());
-        assertEquals(EstadoOrden.PAID, orden.getEstado());
         verify(repositorioPago).save(pago);
-        verify(repositorioOrden).save(orden);
+        verify(servicioEstadoOrden).marcarPagada(idOrden);
     }
 
     @Test
-    @DisplayName("Webhook duplicado: pago ya COMPLETED -> no toca nada y devuelve id de orden")
+    @DisplayName("Webhook duplicado: pago ya COMPLETED -> no toca nada, no delega")
     void esIdempotente() {
         pago.setEstado(EstadoPago.COMPLETED);
         when(repositorioPago.findById(idPago)).thenReturn(Optional.of(pago));
@@ -84,21 +72,7 @@ class CasoUsoConfirmarPagoTest {
 
         assertEquals(idOrden, resultado);
         verify(repositorioPago, never()).save(any());
-        verify(repositorioOrden, never()).findById(any());
-        verify(repositorioOrden, never()).save(any());
-    }
-
-    @Test
-    @DisplayName("Orden ya PAID (carrera con otra confirmación) -> no re-transiciona la orden")
-    void noRetransicionaOrdenYaPagada() {
-        orden.setEstado(EstadoOrden.PAID);
-        when(repositorioPago.findById(idPago)).thenReturn(Optional.of(pago));
-        when(repositorioOrden.findById(idOrden)).thenReturn(Optional.of(orden));
-
-        casoUsoConfirmarPago.confirmarPagoExitoso(idPago, "pi_123");
-
-        assertEquals(EstadoPago.COMPLETED, pago.getEstado());
-        verify(repositorioOrden, never()).save(any());
+        verifyNoInteractions(servicioEstadoOrden);
     }
 
     @Test
@@ -108,15 +82,6 @@ class CasoUsoConfirmarPagoTest {
 
         assertThrows(ExcepcionEntidadNoEncontrada.class,
                 () -> casoUsoConfirmarPago.confirmarPagoExitoso(idPago, "pi_123"));
-    }
-
-    @Test
-    @DisplayName("Orden inexistente -> ExcepcionEntidadNoEncontrada (y la transacción revierte el pago)")
-    void fallaSiOrdenNoExiste() {
-        when(repositorioPago.findById(idPago)).thenReturn(Optional.of(pago));
-        when(repositorioOrden.findById(idOrden)).thenReturn(Optional.empty());
-
-        assertThrows(ExcepcionEntidadNoEncontrada.class,
-                () -> casoUsoConfirmarPago.confirmarPagoExitoso(idPago, "pi_123"));
+        verifyNoInteractions(servicioEstadoOrden);
     }
 }

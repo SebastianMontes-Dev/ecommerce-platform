@@ -49,4 +49,8 @@ public class Pago extends EntidadInquilino {
     public void fail() {
         this.estado = EstadoPago.FAILED;
     }
+
+    public void refund() {
+        this.estado = EstadoPago.REFUNDED;
+    }
 }

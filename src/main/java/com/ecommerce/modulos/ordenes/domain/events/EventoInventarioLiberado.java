@@ -10,12 +10,14 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
- * Se emite cuando una orden pasa a CANCELLED. Lleva los items (payload autónomo) para
- * que el módulo de catálogo pueda reponer el inventario reservado sin tener que
- * consultar la base de datos de órdenes. Es el evento simétrico a {@link EventoOrdenCreada}.
+ * Se emite cuando el inventario reservado por una orden debe devolverse al stock: cuando la
+ * orden pasa a {@code CANCELLED} (pago expirado/rechazado, o cancelación del cliente) o a
+ * {@code REFUNDED}. Lleva los items (payload autónomo) para que el módulo de catálogo reponga
+ * el stock sin consultar la base de datos de órdenes. Es el evento simétrico a
+ * {@link EventoOrdenCreada}.
  */
 @Getter
-public class EventoOrdenCancelada implements EventoDominio {
+public class EventoInventarioLiberado implements EventoDominio {
 
     private final UUID idEvento;
     private final Instant ocurrioEn;
@@ -25,7 +27,7 @@ public class EventoOrdenCancelada implements EventoDominio {
     private final String motivo;
     private final List<ItemInfo> items;
 
-    public EventoOrdenCancelada(UUID idOrden, UUID idTienda, String motivo, List<ArticuloOrden> articulos) {
+    public EventoInventarioLiberado(UUID idOrden, UUID idTienda, String motivo, List<ArticuloOrden> articulos) {
         this.idEvento = UUID.randomUUID();
         this.ocurrioEn = Instant.now();
         this.idOrden = idOrden;
@@ -38,7 +40,7 @@ public class EventoOrdenCancelada implements EventoDominio {
 
     @Override
     public String getTipoEvento() {
-        return "ORDER_CANCELLED";
+        return "ORDER_INVENTORY_RELEASED";
     }
 
     @Getter

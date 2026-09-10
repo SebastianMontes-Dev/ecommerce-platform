@@ -4,7 +4,7 @@ import com.ecommerce.modulos.catalogo.domain.Producto;
 import com.ecommerce.modulos.catalogo.domain.RepositorioProducto;
 import com.ecommerce.modulos.catalogo.domain.RepositorioVarianteProducto;
 import com.ecommerce.modulos.catalogo.domain.VarianteProducto;
-import com.ecommerce.modulos.ordenes.domain.events.EventoOrdenCancelada;
+import com.ecommerce.modulos.ordenes.domain.events.EventoInventarioLiberado;
 import com.ecommerce.modulos.ordenes.domain.events.EventoOrdenCreada;
 import com.ecommerce.modulos.compartido.domain.ExcepcionEntidadNoEncontrada;
 import lombok.RequiredArgsConstructor;
@@ -46,13 +46,14 @@ public class ManejadorEventosOrden {
     }
 
     /**
-     * Repone el inventario cuando una orden se cancela (pago expirado, rechazado o cancelación
-     * explícita). Manejador simétrico a {@link #handle(EventoOrdenCreada)}.
+     * Repone el inventario cuando una orden libera su stock reservado (cancelación por pago
+     * expirado/rechazado, cancelación del cliente, o reembolso). Simétrico a
+     * {@link #handle(EventoOrdenCreada)}.
      */
     @EventListener
     @Transactional
-    public void handle(EventoOrdenCancelada event) {
-        log.info("Reponiendo inventario por cancelación de orden {} (Inquilino: {}). Motivo: {}",
+    public void handle(EventoInventarioLiberado event) {
+        log.info("Reponiendo inventario de la orden {} (Inquilino: {}). Motivo: {}",
                 event.getIdOrden(), event.getIdTienda(), event.getMotivo());
 
         for (Linea linea : lineasOrdenadas(event.getItems(), i -> new Linea(i.getIdProducto(), i.getVariantId(), i.getCantidad()))) {

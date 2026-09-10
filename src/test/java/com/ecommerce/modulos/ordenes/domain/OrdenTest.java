@@ -1,7 +1,7 @@
 package com.ecommerce.modulos.ordenes.domain;
 
 import com.ecommerce.modulos.compartido.domain.ExcepcionOperacionInvalida;
-import com.ecommerce.modulos.ordenes.domain.events.EventoOrdenCancelada;
+import com.ecommerce.modulos.ordenes.domain.events.EventoInventarioLiberado;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
 
@@ -65,15 +65,24 @@ class OrdenTest {
     }
 
     @Test
-    @DisplayName("cancel() registra EventoOrdenCancelada con los items para reponer inventario")
-    void cancelEmiteEventoDeCancelacion() {
+    @DisplayName("cancel() registra EventoInventarioLiberado con los items para reponer inventario")
+    void cancelEmiteEventoDeLiberacion() {
         Orden orden = ordenEn(EstadoOrden.PENDING);
 
         orden.cancel("Pago expirado");
 
-        boolean hayEventoCancelada = orden.getDomainEvents().stream()
-                .anyMatch(e -> e instanceof EventoOrdenCancelada);
-        assertTrue(hayEventoCancelada);
+        assertTrue(orden.getDomainEvents().stream().anyMatch(e -> e instanceof EventoInventarioLiberado));
+    }
+
+    @Test
+    @DisplayName("refund() también registra EventoInventarioLiberado (el stock vuelve al catálogo)")
+    void refundEmiteEventoDeLiberacion() {
+        Orden orden = ordenEn(EstadoOrden.DELIVERED);
+
+        orden.refund("Producto defectuoso");
+
+        assertEquals(EstadoOrden.REFUNDED, orden.getEstado());
+        assertTrue(orden.getDomainEvents().stream().anyMatch(e -> e instanceof EventoInventarioLiberado));
     }
 
     @Test
