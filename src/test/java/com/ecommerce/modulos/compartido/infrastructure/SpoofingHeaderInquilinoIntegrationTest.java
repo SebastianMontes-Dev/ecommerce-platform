@@ -29,7 +29,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class SpoofingHeaderInquilinoIntegrationTest {
 
     @Container
-    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:15-alpine");
+    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:16-alpine");
 
     // FiltroInquilino resuelve la tienda propia en CADA request autenticado vía
     // ServicioResolutorInquilino, que es @Cacheable contra Redis - sin este container

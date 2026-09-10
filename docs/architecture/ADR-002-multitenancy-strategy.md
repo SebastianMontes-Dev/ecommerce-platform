@@ -15,12 +15,20 @@ Usar **columna discriminadora (`tenant_id`)** en todas las tablas.
 - **Columna discriminadora**: Simple, eficiente, fácil de mantener. Suficiente para la mayoría de los casos.
 
 ## Implementación
-- `TenantAwareEntity` agrega la columna `tenant_id` a las entidades
-- `TenantContext` (ThreadLocal) mantiene el tenant actual
-- `TenantFilter` extrae el tenant del JWT o del encabezado `X-Tenant-ID`
-- El filtro de Hibernate `@Filter(name = "tenantFilter")` se aplica automáticamente
+- `EntidadInquilino` (`compartido/domain`) es la superclase que aporta la columna `tenant_id`
+  y declara `@FilterDef(name = "filtroInquilino")` / `@Filter(condition = "tenant_id = :idTienda")`.
+- `ContextoInquilino` (ThreadLocal) mantiene el `idTienda` actual del request.
+- `FiltroInquilino` resuelve el `idTienda`: para dueños de tienda lo obtiene server-side
+  (`ServicioResolutorInquilino`, cacheado); en su defecto, del encabezado `X-Inquilino-ID`.
+  **Nunca se toma del JWT.**
+- `ConfiguracionFiltroInquilinoHibernate` / `AspectoFiltroInquilino` activan el filtro por
+  sesión de Hibernate como defensa de fondo.
+- El enrutamiento a **DB dedicada por inquilino Premium** (`ConfiguracionMultiTenantDB` +
+  `EnrutadorFuenteDatosInquilino`) está montado a nivel de infraestructura pero
+  `determineCurrentLookupKey()` siempre devuelve `"default"` — pendiente de activación.
 
 ## Consecuencias
-- Aislamiento a nivel de aplicación, no a nivel de base de datos
-- Validación adicional necesaria para evitar fugas de datos
-- Escala bien hasta cientos de inquilinos sin cambios
+- Aislamiento a nivel de aplicación, no a nivel de base de datos (mientras el routing Premium no se active).
+- El aislamiento entre inquilinos es una **frontera de seguridad**: cada consulta, caché, evento
+  y canal en tiempo real debe llevar el `idTienda`; requiere validación explícita y tests dedicados.
+- Escala bien hasta cientos de inquilinos sin cambios.

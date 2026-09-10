@@ -2,7 +2,7 @@
 
 <div align="center">
   <img src="https://img.shields.io/badge/Java-21-orange?style=for-the-badge&logo=java&logoColor=white" alt="Java 21" />
-  <img src="https://img.shields.io/badge/Spring_Boot-3.4.1-brightgreen?style=for-the-badge&logo=spring-boot&logoColor=white" alt="Spring Boot" />
+  <img src="https://img.shields.io/badge/Spring_Boot-3.4.4-brightgreen?style=for-the-badge&logo=spring-boot&logoColor=white" alt="Spring Boot" />
   <img src="https://img.shields.io/badge/PostgreSQL-16.0-blue?style=for-the-badge&logo=postgresql&logoColor=white" alt="PostgreSQL" />
   <img src="https://img.shields.io/badge/Elasticsearch-8.18-yellow?style=for-the-badge&logo=elasticsearch&logoColor=black" alt="Elasticsearch" />
   <img src="https://img.shields.io/badge/Redis-7.2-red?style=for-the-badge&logo=redis&logoColor=white" alt="Redis" />
@@ -17,11 +17,11 @@
 
 ## 🌟 Características Empresariales (SaaS Avanzado)
 
-- 🏢 **Arquitectura Multi-Inquilino Híbrida**: Aislamiento de datos por `Inquilino`. Combina filtros a nivel de fila (`@Filter` de Hibernate) para clientes estándar y **Bases de Datos Dedicadas** (`AbstractRoutingDataSource`) para clientes Premium.
+- 🏢 **Arquitectura Multi-Inquilino**: Aislamiento de datos por `Inquilino` con filtros a nivel de fila (`@Filter` de Hibernate) más validación del `tenant` en cada request. El enrutamiento a **Bases de Datos Dedicadas** para clientes Premium (`AbstractRoutingDataSource`) está preparado a nivel de infraestructura y pendiente de activación.
 - ⚡ **Búsquedas de Alto Rendimiento (CQRS)**: Sincronización asíncrona de inventario hacia **Elasticsearch**, garantizando búsquedas en milisegundos.
 - 🤖 **Asistente Virtual con IA**: Punto de acceso (Endpoint) integrado con OpenAI (ChatGPT) para actuar como vendedor virtual en cada tienda.
 - 📦 **Motor de Logística y Envíos**: Seguimiento de paquetes, estados de envío y proveedores integrados a los pedidos.
-- 🛍️ **Lógica Comercial Potente**: Cupones de descuento, variantes de producto (tallas, colores) y bloqueo pesimista (para evitar sobreventas).
+- 🛍️ **Lógica Comercial**: Cupones de descuento, variantes de producto (tallas, colores) y control de concurrencia con *optimistic locking* (`@Version`) en el inventario.
 - 📊 **Reportes y Observabilidad**: Reportes en Excel (Apache POI), paneles analíticos, trazabilidad con Zipkin, y métricas con Prometheus/Grafana.
 - 🛡️ **Seguridad Anti-DDoS y Resiliencia**: Cortacircuitos (`Resilience4j`) y limitación de peticiones (Rate Limiting) mediante Bucket4j.
 - 💳 **Pagos, Facturas y Reembolsos**: Integración oficial con **Stripe** para pagos y reembolsos, junto con facturación electrónica automática en formato PDF.
@@ -37,7 +37,7 @@
 | Capa | Tecnología |
 | :--- | :--- |
 | **Lenguaje Principal** | Java 21 |
-| **Marco de Trabajo (Framework)** | Spring Boot 3.4.1 (Web, Security, Data JPA, Actuator) |
+| **Marco de Trabajo (Framework)** | Spring Boot 3.4.4 (Web, Security, Data JPA, Actuator) |
 | **Bases de Datos** | PostgreSQL 16 (Escritura) / Elasticsearch 8.18 (Lectura) |
 | **Caché y Sesiones**| Redis 7.2 |
 | **Tolerancia a Fallos**| Resilience4j (Cortacircuitos) |
@@ -54,7 +54,7 @@ El proyecto sigue un enfoque modular, dividiendo la lógica de negocio en microm
 - 🛒 `carrito/` - Interacciones ultrarrápidas con Redis para carritos activos.
 - 📦 `catalogo/` - Gestión de productos y variantes (PostgreSQL).
 - 🔍 `busqueda/` - Búsqueda indexada de texto completo (Elasticsearch).
-- 🏢 `inquilino/` - Gestión de clientes corporativos (B2B), planes y enrutamiento dinámico de bases de datos.
+- 🏢 `inquilino/` - Gestión de clientes corporativos (B2B), planes y resolución del `tenant` por request.
 - 💳 `pagos/` - Patrón Estrategia (Strategy), webhooks e integraciones con Stripe.
 - ✉️ `notificacion/` - Eventos de dominio asíncronos y envío de correos electrónicos.
 
@@ -68,9 +68,9 @@ El proyecto sigue un enfoque modular, dividiendo la lógica de negocio en microm
    cd ecommerce-platform
    ```
 
-2. **Levantar la Infraestructura Base** (PostgreSQL, Redis, Elasticsearch):
+2. **Levantar la Infraestructura Base** (PostgreSQL, Redis, Elasticsearch, MinIO, MailHog, Prometheus/Grafana, Zipkin):
    ```bash
-   docker-compose up -d
+   docker-compose -f docker/docker-compose.yml up -d
    ```
 
 3. **Compilar y Ejecutar Pruebas (Opcional)**:

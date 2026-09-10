@@ -29,7 +29,7 @@ import static org.mockito.Mockito.when;
 public class ServicioCarritoIntegrationTest {
 
     @Container
-    public static GenericContainer<?> redis = new GenericContainer<>("redis:6-alpine")
+    public static GenericContainer<?> redis = new GenericContainer<>("redis:7-alpine")
             .withExposedPorts(6379);
 
     // @SpringBootTest(classes = AplicacionEcommerce.class) loads the full application
@@ -37,7 +37,7 @@ public class ServicioCarritoIntegrationTest {
     // Redis, so it fell back to the statically-configured (dev) datasource URL and failed
     // to connect in any environment without that exact Postgres instance running.
     @Container
-    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:15-alpine");
+    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:16-alpine");
 
     @DynamicPropertySource
     static void redisProperties(DynamicPropertyRegistry registry) {
