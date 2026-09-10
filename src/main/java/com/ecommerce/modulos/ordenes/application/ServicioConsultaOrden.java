@@ -2,7 +2,9 @@ package com.ecommerce.modulos.ordenes.application;
 
 import com.ecommerce.modulos.compartido.domain.Dinero;
 import com.ecommerce.modulos.compartido.domain.ExcepcionEntidadNoEncontrada;
+import com.ecommerce.modulos.compartido.domain.ExcepcionOperacionInvalida;
 import com.ecommerce.modulos.ordenes.application.dto.FacturaOrden;
+import com.ecommerce.modulos.ordenes.domain.EstadoOrden;
 import com.ecommerce.modulos.ordenes.domain.Orden;
 import com.ecommerce.modulos.ordenes.domain.RepositorioOrden;
 import lombok.RequiredArgsConstructor;
@@ -57,6 +59,30 @@ public class ServicioConsultaOrden {
                                 .build())
                         .toList())
                 .build();
+    }
+
+    /**
+     * Verifica que {@code idCliente} puede reseñar {@code idProducto}: la orden es suya,
+     * está {@code DELIVERED} y contiene ese producto ("compra verificada"). Lanza
+     * {@link ExcepcionOperacionInvalida} con el motivo exacto si no. Evita que el módulo
+     * de reseñas tenga que conocer la entidad {@code Orden}.
+     */
+    @Transactional(readOnly = true)
+    public void verificarElegibilidadResena(UUID idOrden, UUID idCliente, UUID idProducto) {
+        Orden orden = repositorioOrden.findByIdConArticulos(idOrden)
+                .orElseThrow(() -> new ExcepcionEntidadNoEncontrada("Orden", idOrden));
+
+        if (!orden.getIdCliente().equals(idCliente)) {
+            throw new ExcepcionOperacionInvalida("La orden no pertenece al usuario autenticado.");
+        }
+        if (orden.getEstado() != EstadoOrden.DELIVERED) {
+            throw new ExcepcionOperacionInvalida("Solo se pueden reseñar productos de órdenes entregadas.");
+        }
+        boolean contieneProducto = orden.getArticulos().stream()
+                .anyMatch(articulo -> articulo.getIdProducto().equals(idProducto));
+        if (!contieneProducto) {
+            throw new ExcepcionOperacionInvalida("La orden no contiene el producto especificado.");
+        }
     }
 
     private static String formatear(Dinero dinero) {
