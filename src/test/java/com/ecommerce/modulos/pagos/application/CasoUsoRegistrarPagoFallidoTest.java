@@ -26,6 +26,7 @@ class CasoUsoRegistrarPagoFallidoTest {
 
     @Mock private RepositorioPago repositorioPago;
     @Mock private ServicioEstadoOrden servicioEstadoOrden;
+    @Mock private com.ecommerce.modulos.compartido.infrastructure.observabilidad.MetricasNegocio metricasNegocio;
 
     @InjectMocks private CasoUsoRegistrarPagoFallido casoUso;
 
@@ -54,7 +55,19 @@ class CasoUsoRegistrarPagoFallidoTest {
 
         assertEquals(EstadoPago.FAILED, pago.getEstado());
         verify(repositorioPago).save(pago);
+        verify(metricasNegocio).pagoFallido();
         verify(servicioEstadoOrden).cancelarPorFalloDePago(eq(idOrden), any());
+    }
+
+    @Test
+    @DisplayName("Idempotente: pago ya FAILED -> no incrementa la métrica de pagos fallidos")
+    void noIncrementaMetricaSiYaFallido() {
+        pago.setEstado(EstadoPago.FAILED);
+        when(repositorioPago.findById(idPago)).thenReturn(Optional.of(pago));
+
+        casoUso.registrar(idPago, "Sesión expirada");
+
+        verifyNoInteractions(metricasNegocio);
     }
 
     @Test

@@ -69,12 +69,28 @@ management:
     health:
       show-details: when-authorized
       roles: PLATFORM_ADMIN
+      probes:
+        enabled: true          # habilita /actuator/health/{liveness,readiness} para k8s/Docker
+      group:
+        # readiness: no aceptar tráfico si la DB o Redis (carrito) no responden
+        readiness:
+          include: readinessState,db,redis
+        # liveness: solo el estado del contexto; un blip de infra no debe reiniciar el pod
+        liveness:
+          include: livenessState
   tracing:
     sampling:
-      probability: 1.0
+      probability: ${TRACING_SAMPLE_RATE:1.0}
   zipkin:
     tracing:
-      endpoint: http://localhost:9411/api/v2/spans
+      endpoint: ${ZIPKIN_ENDPOINT:http://localhost:9411/api/v2/spans}
+
+logging:
+  # traceId/spanId los inyecta Micrometer Tracing; FiltroMdc añade tenantId/userId.
+  # En consola (dev) se ven en este bloque; en prod salen como campos del JSON estructurado.
+  pattern:
+    correlation: "[trace=%X{traceId:-} tienda=%X{tenantId:-} user=%X{userId:-}] "
+  include-application-name: false
 
 springdoc:
   api-docs:
