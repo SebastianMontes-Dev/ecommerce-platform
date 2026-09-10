@@ -42,4 +42,7 @@ jobs:
         path: build/reports/tests/test/
         
     - name: Build Docker Image
+      # Solo en push (no en cada PR): validar que la imagen construye sin gastar
+      # minutos de runner en cada iteración de revisión.
+      if: github.event_name == 'push'
       run: docker build -t ecommerce-platform:latest .
