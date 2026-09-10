@@ -152,13 +152,13 @@ class ControladorCarritoTest {
 
         when(casoUsoGestionarCupon.validarYObtenerCupon(any(), eq(codigoCupon))).thenReturn(cupon);
         when(servicioCarrito.getOrCreateCart(eq(userId), any())).thenReturn(carrito);
-        when(servicioCarrito.aplicarCupon(eq(userId), any(), eq(codigoCupon), any())).thenReturn(carrito);
+        when(servicioCarrito.aplicarCupon(eq(userId), any(), any(), eq(codigoCupon), any())).thenReturn(carrito);
 
         mockMvc.perform(post("/api/v1/carrito/cupones/{codigo}", codigoCupon)
                         .with(user(userDetails))
                         .with(csrf()))
                 .andExpect(status().isOk());
                 
-        verify(servicioCarrito).aplicarCupon(eq(userId), any(), eq(codigoCupon), eq(new BigDecimal("10.00")));
+        verify(servicioCarrito).aplicarCupon(eq(userId), any(), any(), eq(codigoCupon), eq(new BigDecimal("10.00")));
     }
 }

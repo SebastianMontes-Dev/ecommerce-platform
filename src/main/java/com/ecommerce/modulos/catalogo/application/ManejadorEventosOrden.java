@@ -2,6 +2,7 @@ package com.ecommerce.modulos.catalogo.application;
 
 import com.ecommerce.modulos.catalogo.domain.Producto;
 import com.ecommerce.modulos.catalogo.domain.RepositorioProducto;
+import com.ecommerce.modulos.ordenes.domain.events.EventoOrdenCancelada;
 import com.ecommerce.modulos.ordenes.domain.events.EventoOrdenCreada;
 import com.ecommerce.modulos.compartido.domain.ExcepcionEntidadNoEncontrada;
 import lombok.RequiredArgsConstructor;
@@ -29,7 +30,29 @@ public class ManejadorEventosOrden {
             producto.decreaseInventory(item.getCantidad());
             repositorioProducto.save(producto);
             
-            log.info("Inventario reducido en {} para producto {}. Nuevo stock: {}", 
+            log.info("Inventario reducido en {} para producto {}. Nuevo stock: {}",
+                item.getCantidad(), producto.getNombre(), producto.getInventario());
+        }
+    }
+
+    /**
+     * Repone el inventario reservado cuando una orden se cancela (pago expirado, rechazado
+     * o cancelación explícita). Es el manejador simétrico a {@link #handle(EventoOrdenCreada)}.
+     */
+    @EventListener
+    @Transactional
+    public void handle(EventoOrdenCancelada event) {
+        log.info("Reponiendo inventario por cancelación de orden {} (Inquilino: {}). Motivo: {}",
+                event.getIdOrden(), event.getIdTienda(), event.getMotivo());
+
+        for (EventoOrdenCancelada.ItemInfo item : event.getItems()) {
+            Producto producto = repositorioProducto.findById(item.getIdProducto())
+                    .orElseThrow(() -> new ExcepcionEntidadNoEncontrada("Producto", item.getIdProducto()));
+
+            producto.increaseInventory(item.getCantidad());
+            repositorioProducto.save(producto);
+
+            log.info("Inventario repuesto en {} para producto {}. Nuevo stock: {}",
                 item.getCantidad(), producto.getNombre(), producto.getInventario());
         }
     }

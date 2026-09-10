@@ -2,7 +2,6 @@ package com.ecommerce.modulos.pagos.infrastructure;
 
 import com.ecommerce.modulos.pagos.domain.Pago;
 import com.ecommerce.modulos.pagos.domain.RepositorioPago;
-import com.ecommerce.modulos.pagos.domain.EstadoPago;
 import com.ecommerce.modulos.pagos.domain.EventoProcesado;
 import com.ecommerce.modulos.pagos.domain.RepositorioEventoProcesado;
 import com.stripe.exception.SignatureVerificationException;
@@ -30,7 +29,8 @@ public class ControladorWebhookStripe {
 
     private final RepositorioPago repositorioPago;
     private final RepositorioEventoProcesado repositorioEventoProcesado;
-    private final com.ecommerce.modulos.ordenes.domain.RepositorioOrden repositorioOrden;
+    private final com.ecommerce.modulos.pagos.application.CasoUsoConfirmarPago casoUsoConfirmarPago;
+    private final com.ecommerce.modulos.pagos.application.CasoUsoRegistrarPagoFallido casoUsoRegistrarPagoFallido;
     private final com.ecommerce.modulos.logistica.application.CasoUsoLogistica casoUsoLogistica;
 
     @Value("${app.stripe.webhook-secret}")
@@ -104,19 +104,18 @@ public class ControladorWebhookStripe {
 
         com.ecommerce.modulos.compartido.infrastructure.ContextoInquilino.setIdTienda(pagos.getIdTienda());
         try {
-            pagos.setIdExterno(session.getPaymentIntent());
-            pagos.complete();
-            repositorioPago.save(pagos);
-            
-            // Actualizar Orden
-            com.ecommerce.modulos.ordenes.domain.Orden orden = repositorioOrden.findById(pagos.getIdOrden())
-                    .orElseThrow(() -> new IllegalStateException("Orden no encontrada"));
-            orden.markAsPaid();
-            repositorioOrden.save(orden);
-            
-            // Preparar envío
-            casoUsoLogistica.prepararEnvio(pagos.getIdTienda(), orden.getId());
-            
+            // Pago -> COMPLETED y Orden -> PAID en una sola transacción.
+            java.util.UUID idOrden = casoUsoConfirmarPago.confirmarPagoExitoso(pagos.getId(), session.getPaymentIntent());
+
+            try {
+                casoUsoLogistica.prepararEnvio(pagos.getIdTienda(), idOrden);
+            } catch (Exception e) {
+                // El cobro ya está confirmado y persistido. Un fallo al preparar el envío no
+                // debe devolver 500 a Stripe (dispararía reintentos infinitos); se registra
+                // para reconciliación posterior.
+                log.error("Pago {} confirmado pero falló la preparación de envío para la orden {}", pagos.getId(), idOrden, e);
+            }
+
             log.info("Pago completado exitosamente para la orden: {}", pagos.getIdOrden());
         } finally {
             com.ecommerce.modulos.compartido.infrastructure.ContextoInquilino.clear();
@@ -133,16 +132,7 @@ public class ControladorWebhookStripe {
         String idReferenciaCliente = session.getClientReferenceId();
         if (idReferenciaCliente == null) return;
 
-        repositorioPago.findByIdExternoSinFiltro(idReferenciaCliente).ifPresent(pagos -> {
-            com.ecommerce.modulos.compartido.infrastructure.ContextoInquilino.setIdTienda(pagos.getIdTienda());
-            try {
-                pagos.setEstado(EstadoPago.FAILED);
-                repositorioPago.save(pagos);
-                log.info("Pago expirado: {}", pagos.getId());
-            } finally {
-                com.ecommerce.modulos.compartido.infrastructure.ContextoInquilino.clear();
-            }
-        });
+        registrarPagoFallido(idReferenciaCliente, "Sesión de checkout de Stripe expirada");
     }
 
     private void handlePaymentFailed(Event evento) {
@@ -152,12 +142,19 @@ public class ControladorWebhookStripe {
 
         if (intent == null) return;
 
-        repositorioPago.findByIdExternoSinFiltro(intent.getId()).ifPresent(pagos -> {
+        // Nota: si el pago nunca llegó a completarse, pago.idExterno sigue siendo el
+        // clientReferenceId de la sesión (no el PaymentIntent), así que este lookup puede
+        // no encontrarlo. El camino fiable de fallo es checkout.session.expired.
+        registrarPagoFallido(intent.getId(), "PaymentIntent rechazado por Stripe");
+    }
+
+    private void registrarPagoFallido(String idExterno, String motivo) {
+        repositorioPago.findByIdExternoSinFiltro(idExterno).ifPresent(pagos -> {
             com.ecommerce.modulos.compartido.infrastructure.ContextoInquilino.setIdTienda(pagos.getIdTienda());
             try {
-                pagos.setEstado(EstadoPago.FAILED);
-                repositorioPago.save(pagos);
-                log.info("Pago fallido: {}", pagos.getId());
+                // Marca el Pago como FAILED y cancela la orden (si sigue sin pagar) para que
+                // catálogo reponga el inventario reservado — todo en una transacción.
+                casoUsoRegistrarPagoFallido.registrar(pagos.getId(), motivo);
             } finally {
                 com.ecommerce.modulos.compartido.infrastructure.ContextoInquilino.clear();
             }

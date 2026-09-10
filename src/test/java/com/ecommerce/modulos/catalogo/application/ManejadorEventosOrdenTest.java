@@ -4,6 +4,7 @@ import com.ecommerce.modulos.catalogo.domain.Producto;
 import com.ecommerce.modulos.catalogo.domain.RepositorioProducto;
 import com.ecommerce.modulos.compartido.domain.ExcepcionEntidadNoEncontrada;
 import com.ecommerce.modulos.ordenes.domain.ArticuloOrden;
+import com.ecommerce.modulos.ordenes.domain.events.EventoOrdenCancelada;
 import com.ecommerce.modulos.ordenes.domain.events.EventoOrdenCreada;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -98,5 +99,42 @@ class ManejadorEventosOrdenTest {
         assertThrows(ExcepcionEntidadNoEncontrada.class, () -> manejadorEventosOrden.handle(evento));
 
         verify(repositorioProducto, never()).save(any());
+    }
+
+    @Test
+    void debeReponerElInventarioAlCancelarLaOrden() {
+        UUID idProducto = UUID.randomUUID();
+        Producto producto = new Producto();
+        producto.setInventario(7);
+        producto.setRastreoInventarioHabilitado(true);
+        when(repositorioProducto.findById(idProducto)).thenReturn(Optional.of(producto));
+        when(repositorioProducto.save(any(Producto.class))).thenAnswer(i -> i.getArguments()[0]);
+
+        EventoOrdenCancelada evento = new EventoOrdenCancelada(
+                UUID.randomUUID(), idTienda, "Pago expirado", List.of(crearArticulo(idProducto, 3)));
+
+        manejadorEventosOrden.handle(evento);
+
+        assertEquals(10, producto.getInventario());
+        verify(repositorioProducto).save(producto);
+    }
+
+    @Test
+    void reservaYReposicionSonSimetricas() {
+        UUID idProducto = UUID.randomUUID();
+        Producto producto = new Producto();
+        producto.setInventario(10);
+        producto.setRastreoInventarioHabilitado(true);
+        when(repositorioProducto.findById(idProducto)).thenReturn(Optional.of(producto));
+        when(repositorioProducto.save(any(Producto.class))).thenAnswer(i -> i.getArguments()[0]);
+
+        UUID idOrden = UUID.randomUUID();
+        manejadorEventosOrden.handle(new EventoOrdenCreada(
+                idOrden, idTienda, UUID.randomUUID(), List.of(crearArticulo(idProducto, 4))));
+        assertEquals(6, producto.getInventario());
+
+        manejadorEventosOrden.handle(new EventoOrdenCancelada(
+                idOrden, idTienda, "Pago rechazado", List.of(crearArticulo(idProducto, 4))));
+        assertEquals(10, producto.getInventario());
     }
 }

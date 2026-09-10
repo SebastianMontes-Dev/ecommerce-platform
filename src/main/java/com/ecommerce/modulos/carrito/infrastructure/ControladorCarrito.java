@@ -71,7 +71,8 @@ public class ControladorCarrito {
             @RequestParam(required = false) UUID variantId,
             @AuthenticationPrincipal DetallesUsuarioPersonalizado userDetails) {
 
-        Carrito carrito = servicioCarrito.updateQuantity(userDetails.getUserId(), idProducto, variantId, cantidad);
+        Carrito carrito = servicioCarrito.updateQuantity(
+                userDetails.getUserId(), ContextoInquilino.getIdTienda(), idProducto, variantId, cantidad);
         return ResponseEntity.ok(carrito);
     }
 
@@ -82,7 +83,8 @@ public class ControladorCarrito {
             @RequestParam(required = false) UUID variantId,
             @AuthenticationPrincipal DetallesUsuarioPersonalizado userDetails) {
 
-        Carrito carrito = servicioCarrito.removerArticulo(userDetails.getUserId(), idProducto, variantId);
+        Carrito carrito = servicioCarrito.removerArticulo(
+                userDetails.getUserId(), ContextoInquilino.getIdTienda(), idProducto, variantId);
         return ResponseEntity.ok(carrito);
     }
 
@@ -91,7 +93,7 @@ public class ControladorCarrito {
     public ResponseEntity<Map<String, String>> clearCart(
             @AuthenticationPrincipal DetallesUsuarioPersonalizado userDetails) {
 
-        servicioCarrito.clearCart(userDetails.getUserId());
+        servicioCarrito.clearCart(userDetails.getUserId(), ContextoInquilino.getIdTienda());
         return ResponseEntity.ok(Map.of("message", "Carrito cleared"));
     }
 
@@ -120,9 +122,10 @@ public class ControladorCarrito {
         }
         
         carrito = servicioCarrito.aplicarCupon(
-            userDetails != null ? userDetails.getUserId() : null, 
-            session.getId(), 
-            codigo, 
+            userDetails != null ? userDetails.getUserId() : null,
+            session.getId(),
+            ContextoInquilino.getIdTienda(),
+            codigo,
             descuento
         );
         

@@ -46,7 +46,10 @@ public class SecurityConfig {
                                 "/swagger-ui/**",
                                 "/swagger-ui.html",
                                 "/api-docs/**",
-                                "/actuator/health/**"
+                                "/actuator/health/**",
+                                // El handshake SockJS no admite cabeceras: la autenticación se
+                                // hace en el frame STOMP CONNECT (InterceptorAutenticacionWebSocket).
+                                "/ws/**"
                         ).permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/catalogo/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/busqueda/**").permitAll()

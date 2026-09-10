@@ -82,7 +82,7 @@ class CasoUsoOrdenTest {
         assertNotNull(respuesta);
         assertEquals(idCliente, respuesta.getIdCliente());
         verify(repositorioOrden).save(any(Orden.class));
-        verify(servicioCarrito).clearCart(idCliente);
+        verify(servicioCarrito).clearCart(idCliente, idTienda);
         verify(eventPublisher).publish(any(List.class));
         verify(servicioNotificacionTiempoReal).notificarNuevaOrden(eq(idTienda), any(RespuestaOrden.class));
     }

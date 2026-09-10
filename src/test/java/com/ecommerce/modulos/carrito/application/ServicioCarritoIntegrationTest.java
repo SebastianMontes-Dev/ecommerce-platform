@@ -69,7 +69,7 @@ public class ServicioCarritoIntegrationTest {
         userId = UUID.randomUUID();
         idTienda = UUID.randomUUID();
         idProducto = UUID.randomUUID();
-        servicioCarrito.clearCart(userId);
+        servicioCarrito.clearCart(userId, idTienda);
     }
 
     @Test

@@ -26,7 +26,9 @@ public class InterceptorLimiteTasa implements HandlerInterceptor {
         String clientIp = getClientIp(request);
         String path = request.getRequestURI();
 
-        boolean isAuthEndpoint = path.startsWith("/api/v1/auth/login") || path.startsWith("/api/v1/auth/register");
+        // El endpoint real de alta es /api/v1/auth/registro (no /register): con el prefijo
+        // equivocado el registro caía al cubo general de 60/min en vez del estricto de 10/min.
+        boolean isAuthEndpoint = path.startsWith("/api/v1/auth/login") || path.startsWith("/api/v1/auth/registro");
         int maxRequests = isAuthEndpoint ? MAX_AUTH_REQUESTS_PER_MINUTE : MAX_REQUESTS_PER_MINUTE;
         String keyPrefix = isAuthEndpoint ? "rate:auth:" : "rate:api:";
 
