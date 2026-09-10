@@ -105,7 +105,7 @@ public class CasoUsoOrden {
         eventPublisher.publish(orden.getDomainEvents());
         orden.clearDomainEvents();
 
-        servicioCarrito.clearCart(idCliente);
+        servicioCarrito.clearCart(idCliente, idTienda);
 
         RespuestaOrden respuesta = mapToResponse(orden);
         servicioNotificacionTiempoReal.notificarNuevaOrden(idTienda, respuesta);

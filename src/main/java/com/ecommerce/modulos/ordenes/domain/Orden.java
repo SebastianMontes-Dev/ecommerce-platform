@@ -131,6 +131,10 @@ public class Orden extends RaizAgregadaInquilino {
 
     public void cancel(String reason) {
         changeStatus(EstadoOrden.CANCELLED, reason);
+        if (this.getId() != null) {
+            registerEvent(new com.ecommerce.modulos.ordenes.domain.events.EventoOrdenCancelada(
+                    this.getId(), this.getIdTienda(), reason, this.getArticulos()));
+        }
     }
     
     public void refund(String reason) {
@@ -158,7 +162,12 @@ public class Orden extends RaizAgregadaInquilino {
 
     private void validateTransition(EstadoOrden targetStatus) {
         boolean isValid = switch (this.estado) {
-            case PENDING -> targetStatus == EstadoOrden.CONFIRMED || targetStatus == EstadoOrden.CANCELLED;
+            // PENDING -> PAID es el camino normal: una pasarela hosted (Stripe Checkout)
+            // no garantiza un paso "confirmado" intermedio. CONFIRMED queda disponible como
+            // transición opcional para flujos B2B con aprobación manual previa al cobro.
+            case PENDING -> targetStatus == EstadoOrden.CONFIRMED
+                    || targetStatus == EstadoOrden.PAID
+                    || targetStatus == EstadoOrden.CANCELLED;
             case CONFIRMED -> targetStatus == EstadoOrden.PAID || targetStatus == EstadoOrden.CANCELLED;
             case PAID -> targetStatus == EstadoOrden.PROCESSING || targetStatus == EstadoOrden.SHIPPED || targetStatus == EstadoOrden.REFUNDED;
             case PROCESSING -> targetStatus == EstadoOrden.SHIPPED || targetStatus == EstadoOrden.REFUNDED;

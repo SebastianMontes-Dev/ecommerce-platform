@@ -13,7 +13,6 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -22,15 +21,27 @@ public class ServicioCarrito {
 
     private static final Logger log = LoggerFactory.getLogger(ServicioCarrito.class);
     private static final String CART_KEY_PREFIX = "carrito:";
-    private static final String SESSION_KEY_PREFIX = "carrito:session:";
     private static final Duration CART_TTL = Duration.ofDays(7);
 
     private final RedisTemplate<String, Object> redisTemplate;
     private final ObjectMapper objectMapper;
     private final RepositorioProducto repositorioProducto;
 
+    /**
+     * Los usuarios son identidades globales (no pertenecen a un inquilino), así que el
+     * mismo {@code userId} puede comprar en varias tiendas. La clave del carrito DEBE
+     * incluir la tienda o el carrito de una tienda contamina el de otra.
+     */
+    private String claveCarrito(UUID idTienda, UUID userId) {
+        return CART_KEY_PREFIX + idTienda + ":" + userId;
+    }
+
+    private String claveCarritoInvitado(UUID idTienda, String sessionId) {
+        return CART_KEY_PREFIX + idTienda + ":session:" + sessionId;
+    }
+
     public Carrito getOrCreateCart(UUID userId, UUID idTienda) {
-        String key = CART_KEY_PREFIX + userId;
+        String key = claveCarrito(idTienda, userId);
         Carrito carrito = loadCart(key);
         if (carrito == null) {
             carrito = new Carrito();
@@ -41,7 +52,7 @@ public class ServicioCarrito {
     }
 
     public Carrito getOrCreateGuestCart(String sessionId, UUID idTienda) {
-        String key = SESSION_KEY_PREFIX + sessionId;
+        String key = claveCarritoInvitado(idTienda, sessionId);
         Carrito carrito = loadCart(key);
         if (carrito == null) {
             carrito = new Carrito();
@@ -67,27 +78,28 @@ public class ServicioCarrito {
         return carrito;
     }
 
-    public Carrito removerArticulo(UUID userId, UUID idProducto, UUID variantId) {
-        Carrito carrito = getOrCreateCart(userId, null);
+    public Carrito removerArticulo(UUID userId, UUID idTienda, UUID idProducto, UUID variantId) {
+        Carrito carrito = getOrCreateCart(userId, idTienda);
         carrito.removerArticulo(idProducto, variantId);
         saveCart(carrito);
         return carrito;
     }
 
-    public Carrito updateQuantity(UUID userId, UUID idProducto, UUID variantId, int cantidad) {
-        Carrito carrito = getOrCreateCart(userId, null);
+    public Carrito updateQuantity(UUID userId, UUID idTienda, UUID idProducto, UUID variantId, int cantidad) {
+        Carrito carrito = getOrCreateCart(userId, idTienda);
         carrito.updateQuantity(idProducto, variantId, cantidad);
         saveCart(carrito);
         return carrito;
     }
 
-    public void clearCart(UUID userId) {
-        String key = CART_KEY_PREFIX + userId;
-        redisTemplate.delete(key);
+    public void clearCart(UUID userId, UUID idTienda) {
+        redisTemplate.delete(claveCarrito(idTienda, userId));
     }
 
-    public Carrito aplicarCupon(UUID userId, String sessionId, String codigoCupon, java.math.BigDecimal montoDescuento) {
-        Carrito carrito = userId != null ? getOrCreateCart(userId, null) : getOrCreateGuestCart(sessionId, null);
+    public Carrito aplicarCupon(UUID userId, String sessionId, UUID idTienda, String codigoCupon, java.math.BigDecimal montoDescuento) {
+        Carrito carrito = userId != null
+                ? getOrCreateCart(userId, idTienda)
+                : getOrCreateGuestCart(sessionId, idTienda);
         carrito.setCodigoCupon(codigoCupon);
         carrito.setMontoDescuento(montoDescuento);
         saveCart(carrito);
@@ -95,13 +107,13 @@ public class ServicioCarrito {
     }
 
     public void mergeGuestCartIntoUserCart(String sessionId, UUID userId, UUID idTienda) {
-        Carrito carritoInvitado = loadCart(SESSION_KEY_PREFIX + sessionId);
+        Carrito carritoInvitado = loadCart(claveCarritoInvitado(idTienda, sessionId));
         if (carritoInvitado == null || carritoInvitado.isEmpty()) return;
 
         Carrito carritoUsuario = getOrCreateCart(userId, idTienda);
         carritoInvitado.getArticulos().forEach(carritoUsuario::agregarArticulo);
         saveCart(carritoUsuario);
-        redisTemplate.delete(SESSION_KEY_PREFIX + sessionId);
+        redisTemplate.delete(claveCarritoInvitado(idTienda, sessionId));
     }
 
     private void validateCartItem(ArticuloCarrito item) {

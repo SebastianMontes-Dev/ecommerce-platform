@@ -8,6 +8,7 @@ import com.ecommerce.modulos.compartido.domain.Dinero;
 import com.ecommerce.modulos.compartido.domain.ExcepcionEntidadNoEncontrada;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -46,11 +47,14 @@ class ServicioCarritoTest {
     private ArticuloCarrito item;
     private Producto productoMoc;
 
+    private String clave;
+
     @BeforeEach
     void setUp() {
         userId = UUID.randomUUID();
         idTienda = UUID.randomUUID();
         idProducto = UUID.randomUUID();
+        clave = "carrito:" + idTienda + ":" + userId;
 
         item = new ArticuloCarrito();
         item.setIdProducto(idProducto);
@@ -66,19 +70,33 @@ class ServicioCarritoTest {
     @Test
     void debeObtenerOCrearCarrito() {
         when(redisTemplate.opsForValue()).thenReturn(valueOperations);
-        when(valueOperations.get("carrito:" + userId)).thenReturn(null); // No existe
+        when(valueOperations.get(clave)).thenReturn(null); // No existe
 
         Carrito carrito = servicioCarrito.getOrCreateCart(userId, idTienda);
 
         assertNotNull(carrito);
-        assertEquals("carrito:" + userId, carrito.getId());
+        assertEquals(clave, carrito.getId());
         assertEquals(idTienda, carrito.getIdTienda());
+    }
+
+    @Test
+    @DisplayName("El mismo usuario en dos tiendas usa claves de Redis distintas (aislamiento multi-tenant)")
+    void debeAislarCarritosPorTienda() {
+        UUID tiendaA = UUID.randomUUID();
+        UUID tiendaB = UUID.randomUUID();
+        when(redisTemplate.opsForValue()).thenReturn(valueOperations);
+
+        servicioCarrito.getOrCreateCart(userId, tiendaA);
+        servicioCarrito.getOrCreateCart(userId, tiendaB);
+
+        verify(valueOperations).get("carrito:" + tiendaA + ":" + userId);
+        verify(valueOperations).get("carrito:" + tiendaB + ":" + userId);
     }
 
     @Test
     void debeAgregarArticuloYValidarConBaseDeDatos() {
         when(redisTemplate.opsForValue()).thenReturn(valueOperations);
-        when(valueOperations.get("carrito:" + userId)).thenReturn(null);
+        when(valueOperations.get(clave)).thenReturn(null);
         when(repositorioProducto.findByIdWithVariants(idProducto)).thenReturn(Optional.of(productoMoc));
 
         Carrito carrito = servicioCarrito.agregarArticulo(userId, idTienda, item);
@@ -87,14 +105,14 @@ class ServicioCarritoTest {
         assertEquals(1, carrito.getArticulos().size());
         assertEquals(new BigDecimal("10.00"), carrito.getArticulos().get(0).getPrecioUnitario());
         assertEquals(new BigDecimal("20.00"), carrito.getArticulos().get(0).getSubtotal());
-        
-        verify(valueOperations).set(eq("carrito:" + userId), any(Carrito.class), any());
+
+        verify(valueOperations).set(eq(clave), any(Carrito.class), any());
     }
 
     @Test
     void debeLanzarExcepcionAlAgregarProductoInexistente() {
         when(redisTemplate.opsForValue()).thenReturn(valueOperations);
-        when(valueOperations.get("carrito:" + userId)).thenReturn(null);
+        when(valueOperations.get(clave)).thenReturn(null);
         when(repositorioProducto.findByIdWithVariants(idProducto)).thenReturn(Optional.empty());
 
         assertThrows(ExcepcionEntidadNoEncontrada.class, () -> {
@@ -107,8 +125,8 @@ class ServicioCarritoTest {
     @Test
     void debeLanzarExcepcionSiProductoEsDeOtraTienda() {
         when(redisTemplate.opsForValue()).thenReturn(valueOperations);
-        when(valueOperations.get("carrito:" + userId)).thenReturn(null);
-        
+        when(valueOperations.get(clave)).thenReturn(null);
+
         productoMoc.setIdTienda(UUID.randomUUID()); // Otra tienda
         when(repositorioProducto.findByIdWithVariants(idProducto)).thenReturn(Optional.of(productoMoc));
 
@@ -118,8 +136,8 @@ class ServicioCarritoTest {
     }
 
     @Test
-    void debeLimpiarCarrito() {
-        servicioCarrito.clearCart(userId);
-        verify(redisTemplate).delete("carrito:" + userId);
+    void debeLimpiarCarritoConClaveDeLaTienda() {
+        servicioCarrito.clearCart(userId, idTienda);
+        verify(redisTemplate).delete(clave);
     }
 }

@@ -87,7 +87,7 @@ class InterceptorLimiteTasaTest {
     void permiteHastaElLimiteExactoDePeticionesDeAutenticacion() throws Exception {
         configurarInterceptor();
         MockHttpServletRequest request = new MockHttpServletRequest();
-        request.setRequestURI("/api/v1/auth/register");
+        request.setRequestURI("/api/v1/auth/registro");
         request.setRemoteAddr("10.0.0.3");
         MockHttpServletResponse response = new MockHttpServletResponse();
 
@@ -97,6 +97,23 @@ class InterceptorLimiteTasaTest {
 
         assertTrue(continuar);
         assertEquals("0", response.getHeader("X-RateLimit-Remaining"));
+    }
+
+    @Test
+    void aplicaElLimiteEstrictoAlEndpointRealDeRegistro() throws Exception {
+        configurarInterceptor();
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setRequestURI("/api/v1/auth/registro");
+        request.setRemoteAddr("10.0.0.9");
+        MockHttpServletResponse response = new MockHttpServletResponse();
+
+        // 11 supera el cubo estricto de 10/min; con el bug (/register) habría pasado (cubo de 60).
+        when(valueOperations.increment("rate:auth:10.0.0.9")).thenReturn(11L);
+
+        boolean continuar = interceptor.preHandle(request, response, new Object());
+
+        assertFalse(continuar);
+        assertEquals(HttpStatus.TOO_MANY_REQUESTS.value(), response.getStatus());
     }
 
     @Test
