@@ -39,6 +39,7 @@ class AislamientoMultiTenantIntegrationTest {
         registry.add("spring.datasource.username", postgres::getUsername);
         registry.add("spring.datasource.password", postgres::getPassword);
         registry.add("spring.jpa.hibernate.ddl-auto", () -> "update");
+        registry.add("app.outbox.intervalo-ms", () -> "3600000");
         // SecurityConfig calls .oauth2Login(...) unconditionally, which needs a
         // ClientRegistrationRepository bean to exist to build the filter chain at all —
         // placeholder values only, the OAuth2 login flow itself isn't exercised here.

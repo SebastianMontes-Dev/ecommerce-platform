@@ -58,6 +58,7 @@ class ReservaInventarioConcurrenciaIntegrationTest {
         registry.add("spring.datasource.username", postgres::getUsername);
         registry.add("spring.datasource.password", postgres::getPassword);
         registry.add("spring.jpa.hibernate.ddl-auto", () -> "update");
+        registry.add("app.outbox.intervalo-ms", () -> "3600000");
         registry.add("spring.data.redis.host", redis::getHost);
         registry.add("spring.data.redis.port", redis::getFirstMappedPort);
         registry.add("spring.security.oauth2.client.registration.google.client-id", () -> "test-client-id");
