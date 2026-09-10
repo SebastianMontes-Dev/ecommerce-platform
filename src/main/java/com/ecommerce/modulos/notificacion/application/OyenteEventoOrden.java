@@ -4,9 +4,10 @@ import com.ecommerce.modulos.ordenes.domain.EstadoOrden;
 import com.ecommerce.modulos.ordenes.domain.eventos.EventoEstadoOrdenCambiado;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.event.TransactionPhase;
+import org.springframework.transaction.event.TransactionalEventListener;
 
 @Component
 @RequiredArgsConstructor
@@ -15,8 +16,10 @@ public class OyenteEventoOrden {
 
     private final ServicioNotificacionCorreo servicioNotificacionCorreo;
 
+    // AFTER_COMMIT: no enviar el correo si el cambio de estado hizo rollback.
+    // fallbackExecution=true: si se publicara sin transacción, se entrega igual.
     @Async
-    @EventListener
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT, fallbackExecution = true)
     public void onOrderStatusChanged(EventoEstadoOrdenCambiado evento) {
         log.info("Orden {} estado changed: {} -> {}", evento.getIdOrden(), evento.getEstadoAnterior(), evento.getNuevoEstado());
 

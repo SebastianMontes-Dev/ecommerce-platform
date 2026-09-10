@@ -101,8 +101,8 @@ public class CasoUsoOrdenIntegrationTest {
 
         when(servicioCarrito.getOrCreateCart(idCliente, idTienda)).thenReturn(carrito);
 
-        // ManejadorEventosOrden reduce inventario de forma sincrona al crear la orden
-        // (@EventListener sobre EventoOrdenCreada) - necesita encontrar el producto.
+        // ManejadorEventosOrden reserva inventario de forma sincrona al crear la orden
+        // (@EventListener sobre EventoOrdenCreada), bloqueando la fila con findByIdForUpdate.
         Producto producto = new Producto();
         producto.setId(idProducto);
         producto.setIdTienda(idTienda);
@@ -111,7 +111,7 @@ public class CasoUsoOrdenIntegrationTest {
         producto.setPrecio(Dinero.of(new BigDecimal("25.00"), "USD"));
         producto.setInventario(100);
         producto.setEstado(EstadoProducto.ACTIVE);
-        when(repositorioProducto.findById(idProducto)).thenReturn(Optional.of(producto));
+        when(repositorioProducto.findByIdForUpdate(idProducto)).thenReturn(Optional.of(producto));
         when(repositorioProducto.save(any(Producto.class))).thenAnswer(i -> i.getArguments()[0]);
 
         SolicitudCheckout request = new SolicitudCheckout();

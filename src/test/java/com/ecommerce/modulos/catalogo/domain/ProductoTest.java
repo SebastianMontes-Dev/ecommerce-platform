@@ -113,7 +113,8 @@ class ProductoTest {
         producto.setInventario(2);
         producto.setPermitirReserva(false);
 
-        assertThrows(IllegalStateException.class, () -> producto.decreaseInventory(5));
+        assertThrows(com.ecommerce.modulos.compartido.domain.ExcepcionStockInsuficiente.class,
+                () -> producto.decreaseInventory(5));
     }
 
     @Test

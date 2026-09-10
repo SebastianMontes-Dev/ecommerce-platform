@@ -53,10 +53,19 @@ public class VarianteProducto extends EntidadInquilino {
         return producto != null ? producto.getPrecio() : null;
     }
 
+    /**
+     * Descuenta inventario de la variante. Igual que en {@link Producto}, debe correr
+     * sobre una fila bloqueada con {@code findByIdForUpdate}.
+     */
     public void decreaseInventory(int cantidad) {
         if (this.inventario < cantidad) {
-            throw new IllegalStateException("Insufficient inventario for variant: " + this.nombre);
+            throw new com.ecommerce.modulos.compartido.domain.ExcepcionStockInsuficiente(
+                    "Inventario insuficiente para la variante: " + this.nombre);
         }
         this.inventario -= cantidad;
+    }
+
+    public void increaseInventory(int cantidad) {
+        this.inventario += cantidad;
     }
 }

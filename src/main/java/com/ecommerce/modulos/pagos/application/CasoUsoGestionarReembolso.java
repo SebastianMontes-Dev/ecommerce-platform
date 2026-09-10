@@ -8,8 +8,8 @@ import com.ecommerce.modulos.ordenes.domain.RepositorioOrden;
 import com.ecommerce.modulos.pagos.domain.EstadoPago;
 import com.ecommerce.modulos.pagos.domain.Pago;
 import com.ecommerce.modulos.pagos.domain.RepositorioPago;
+import com.ecommerce.modulos.catalogo.domain.RepositorioProducto;
 import com.ecommerce.modulos.catalogo.domain.RepositorioVarianteProducto;
-import com.ecommerce.modulos.catalogo.domain.VarianteProducto;
 import com.stripe.exception.StripeException;
 import com.stripe.model.Refund;
 import com.stripe.param.RefundCreateParams;
@@ -27,6 +27,7 @@ public class CasoUsoGestionarReembolso {
 
     private final RepositorioPago repositorioPago;
     private final RepositorioOrden repositorioOrden;
+    private final RepositorioProducto repositorioProducto;
     private final RepositorioVarianteProducto repositorioVarianteProducto;
 
     @Transactional
@@ -65,13 +66,20 @@ public class CasoUsoGestionarReembolso {
             orden.refund(reason);
             repositorioOrden.save(orden);
 
-            // Re-añadir inventario
+            // Reponer inventario sobre filas bloqueadas (FOR UPDATE) para no pisar decrementos
+            // concurrentes. Antes se hacía load-modify-save (racy) y solo para variantes: los
+            // productos sin variante nunca recuperaban stock al reembolsar.
             orden.getArticulos().forEach(articulo -> {
-                VarianteProducto variante = repositorioVarianteProducto.findById(articulo.getVariantId())
-                        .orElse(null);
-                if (variante != null) {
-                    variante.setInventario(variante.getInventario() + articulo.getCantidad());
-                    repositorioVarianteProducto.save(variante);
+                if (articulo.getVariantId() != null) {
+                    repositorioVarianteProducto.findByIdForUpdate(articulo.getVariantId()).ifPresent(variante -> {
+                        variante.increaseInventory(articulo.getCantidad());
+                        repositorioVarianteProducto.save(variante);
+                    });
+                } else {
+                    repositorioProducto.findByIdForUpdate(articulo.getIdProducto()).ifPresent(producto -> {
+                        producto.increaseInventory(articulo.getCantidad());
+                        repositorioProducto.save(producto);
+                    });
                 }
             });
 

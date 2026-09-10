@@ -99,10 +99,17 @@ public class Producto extends RaizAgregadaInquilino {
                 (!this.rastreoInventarioHabilitado || this.inventario > 0 || this.permitirReserva);
     }
 
+    /**
+     * Descuenta inventario. Debe invocarse sobre una instancia cargada con
+     * {@code SELECT ... FOR UPDATE} ({@code RepositorioProducto.findByIdForUpdate});
+     * la comprobación en memoria solo es segura frente a concurrencia si la fila
+     * está bloqueada.
+     */
     public void decreaseInventory(int cantidad) {
         if (this.rastreoInventarioHabilitado) {
             if (this.inventario < cantidad && !this.permitirReserva) {
-                throw new IllegalStateException("Inventario insuficiente para el producto: " + this.nombre);
+                throw new com.ecommerce.modulos.compartido.domain.ExcepcionStockInsuficiente(
+                        "Inventario insuficiente para el producto: " + this.nombre);
             }
             this.inventario -= cantidad;
         }
