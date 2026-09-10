@@ -23,12 +23,17 @@ Usar **columna discriminadora (`tenant_id`)** en todas las tablas.
   **Nunca se toma del JWT.**
 - `ConfiguracionFiltroInquilinoHibernate` / `AspectoFiltroInquilino` activan el filtro por
   sesión de Hibernate como defensa de fondo.
-- El enrutamiento a **DB dedicada por inquilino Premium** (`ConfiguracionMultiTenantDB` +
-  `EnrutadorFuenteDatosInquilino`) está montado a nivel de infraestructura pero
-  `determineCurrentLookupKey()` siempre devuelve `"default"` — pendiente de activación.
+
+### Sobre el enrutamiento a DB dedicada por inquilino Premium
+Existió un `AbstractRoutingDataSource` (`EnrutadorFuenteDatosInquilino` + `ConfiguracionMultiTenantDB`)
+como andamiaje para clientes Premium con base de datos propia, pero `determineCurrentLookupKey()`
+siempre devolvía `"default"`: no enrutaba a nada y, al ser `@Primary`, desplazaba la
+autoconfiguración de Spring Boot (health del datasource, métricas de Hikari, pool). Se **eliminó**
+(2026-09) y se usa el `DataSource` autoconfigurado estándar. Si el aislamiento por DB dedicada
+llega a ser un requisito real, reintroducir el patrón es un cambio localizado.
 
 ## Consecuencias
-- Aislamiento a nivel de aplicación, no a nivel de base de datos (mientras el routing Premium no se active).
+- Aislamiento a nivel de aplicación, no a nivel de base de datos.
 - El aislamiento entre inquilinos es una **frontera de seguridad**: cada consulta, caché, evento
   y canal en tiempo real debe llevar el `idTienda`; requiere validación explícita y tests dedicados.
 - Escala bien hasta cientos de inquilinos sin cambios.

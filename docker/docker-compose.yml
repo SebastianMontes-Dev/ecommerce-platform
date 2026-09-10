@@ -72,25 +72,6 @@ services:
     networks:
       - ecommerce-net
 
-  rabbitmq:
-    image: rabbitmq:3.13-management-alpine
-    container_name: ecommerce-rabbitmq
-    environment:
-      RABBITMQ_DEFAULT_USER: guest
-      RABBITMQ_DEFAULT_PASS: guest
-    ports:
-      - "5672:5672"
-      - "15672:15672"
-    volumes:
-      - rabbitmq_data:/var/lib/rabbitmq
-    healthcheck:
-      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    networks:
-      - ecommerce-net
-
   elasticsearch:
     image: elasticsearch:8.18.0
     container_name: ecommerce-elasticsearch
@@ -157,7 +138,6 @@ volumes:
   postgres_data:
   redis_data:
   minio_data:
-  rabbitmq_data:
   es_data:
   prometheus_data:
   grafana_data:
