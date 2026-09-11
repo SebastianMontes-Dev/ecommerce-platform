@@ -41,6 +41,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 /**
@@ -99,10 +100,19 @@ class CuponConcurrenciaIntegrationTest {
 
         List<UUID> clientes = crearClientes(compradores);
 
+        // El stub se arma UNA sola vez, antes de lanzar los hilos: llamar when(...) sobre el
+        // mismo mock concurrentemente desde varios hilos no es seguro en Mockito (el registro
+        // interno de stubbings no está pensado para escritura concurrente). thenAnswer además
+        // devuelve un Carrito nuevo por invocación -si fuera el mismo objeto compartido,
+        // agregarArticulo() en paralelo sería su propia carrera de datos-.
+        when(servicioCarrito.getOrCreateCart(any(UUID.class), eq(idTienda)))
+                .thenAnswer(invocation -> carritoConCuponPara(codigo));
+
         ExecutorService pool = Executors.newFixedThreadPool(compradores);
         CountDownLatch listos = new CountDownLatch(compradores);
         CountDownLatch salida = new CountDownLatch(1);
         AtomicInteger errores = new AtomicInteger();
+        java.util.concurrent.atomic.AtomicReference<Throwable> ultimoError = new java.util.concurrent.atomic.AtomicReference<>();
 
         for (UUID idCliente : clientes) {
             pool.submit(() -> {
@@ -110,11 +120,10 @@ class CuponConcurrenciaIntegrationTest {
                 try {
                     salida.await();
                     ContextoInquilino.setIdTienda(idTienda);
-                    when(servicioCarrito.getOrCreateCart(idCliente, idTienda))
-                            .thenReturn(carritoConCuponPara(codigo));
                     casoUsoOrden.createOrderFromCart(idCliente, idTienda, solicitudCheckoutDeMuestra());
                 } catch (Exception e) {
                     errores.incrementAndGet();
+                    ultimoError.set(e);
                 } finally {
                     ContextoInquilino.clear();
                 }
@@ -126,7 +135,8 @@ class CuponConcurrenciaIntegrationTest {
         pool.shutdown();
         assertTrue(pool.awaitTermination(30, TimeUnit.SECONDS), "los checkouts no terminaron a tiempo");
 
-        assertEquals(0, errores.get(), "el checkout nunca debe fallar aunque el cupón ya no sea válido");
+        assertEquals(0, errores.get(), "el checkout nunca debe fallar aunque el cupón ya no sea válido: "
+                + (ultimoError.get() != null ? ultimoError.get() : ""));
 
         List<Orden> ordenes = repositorioOrdenDeLaTienda();
         long ordenesConCupon = ordenes.stream().filter(o -> o.getCodigoCupon() != null).count();
