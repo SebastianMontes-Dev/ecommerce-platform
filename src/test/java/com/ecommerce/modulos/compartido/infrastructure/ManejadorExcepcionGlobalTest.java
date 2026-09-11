@@ -83,6 +83,31 @@ class ManejadorExcepcionGlobalTest {
     }
 
     @Test
+    void handleDataIntegrityViolationDevuelve409SinFiltrarElDetalleDeLaConstraint() {
+        org.springframework.dao.DataIntegrityViolationException ex =
+                new org.springframework.dao.DataIntegrityViolationException(
+                        "duplicate key value violates unique constraint \"uk_cupones_tenant_codigo\"");
+
+        ResponseEntity<ProblemDetail> respuesta = manejador.handleDataIntegrityViolation(ex, requestCon("/api/v1/cupones"));
+
+        assertEquals(HttpStatus.CONFLICT, respuesta.getStatusCode());
+        assertEquals("La operación entra en conflicto con un dato existente.", respuesta.getBody().getDetail());
+        assertFalse(respuesta.getBody().getDetail().contains("constraint"));
+    }
+
+    @Test
+    void handleServicioExternoDevuelve502ConMensajeGenericoSinFiltrarElDeLaCausa() {
+        ExcepcionServicioExterno ex = new ExcepcionServicioExterno(
+                "Timeout conectando a http://openai-interno.local:8443", new RuntimeException("boom"));
+
+        ResponseEntity<ProblemDetail> respuesta = manejador.handleServicioExterno(ex, requestCon("/api/v1/chatbot/chat"));
+
+        assertEquals(HttpStatus.BAD_GATEWAY, respuesta.getStatusCode());
+        assertEquals("El servicio no está disponible en este momento. Intenta de nuevo más tarde.", respuesta.getBody().getDetail());
+        assertFalse(respuesta.getBody().getDetail().contains("openai-interno"));
+    }
+
+    @Test
     void handleIllegalArgumentDevuelve400ConElMensajeDeLaExcepcion() {
         IllegalArgumentException ex = new IllegalArgumentException("Monto cannot be null");
 

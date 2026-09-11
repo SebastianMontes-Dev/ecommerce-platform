@@ -17,8 +17,14 @@ logging:
     org.hibernate.SQL: WARN
 
 server:
-  # Detrás de un proxy/ingress: respetar X-Forwarded-* para logs y URLs correctas.
-  forward-headers-strategy: framework
+  # 'native' (RemoteIpValve de Tomcat), no 'framework': solo así request.getRemoteAddr() se
+  # resuelve de forma segura a partir de X-Forwarded-For. RemoteIpValve únicamente confía en
+  # ese header cuando la conexión TCP entra desde un proxy en 'internal-proxies' (rangos
+  # privados por defecto: 10.x, 172.16-31.x, 192.168.x, loopback) -si no viene de ahí, ignora
+  # el header y usa la IP real del socket-. Con 'framework' (ForwardedHeaderFilter) el header
+  # se usa para reescribir host/scheme/URL pero NO remoteAddr, así que InterceptorLimiteTasa
+  # seguía expuesto a que cualquier cliente falsee su propia IP y resetee su cubo de rate limit.
+  forward-headers-strategy: native
   shutdown: graceful
 
 management:

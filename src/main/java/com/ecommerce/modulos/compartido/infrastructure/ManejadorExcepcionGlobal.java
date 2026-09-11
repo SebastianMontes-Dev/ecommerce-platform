@@ -4,6 +4,7 @@ import com.ecommerce.modulos.compartido.domain.*;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
@@ -82,6 +83,40 @@ public class ManejadorExcepcionGlobal {
         problem.setProperty("timestamp", Instant.now());
         problem.setProperty("path", request.getRequestURI());
         return ResponseEntity.status(HttpStatus.CONFLICT).body(problem);
+    }
+
+    /**
+     * Cubre las carreras que un check-then-insert a nivel de aplicación no alcanza a evitar
+     * (código/slug/cupón duplicado, reseña repetida): antes cualquiera de estas caía en
+     * {@link #handleGeneral} como 500. El detalle real de la violación (nombre de constraint,
+     * columna) no se expone al cliente — solo se loguea.
+     */
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ProblemDetail> handleDataIntegrityViolation(DataIntegrityViolationException ex, HttpServletRequest request) {
+        log.warn("Violación de integridad de datos en {}: {}", request.getRequestURI(), ex.getMessage());
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT,
+                "La operación entra en conflicto con un dato existente.");
+        problem.setTitle("Data Conflict");
+        problem.setType(URI.create("https://api.ecommerce.com/errors/data-conflict"));
+        problem.setProperty("timestamp", Instant.now());
+        problem.setProperty("path", request.getRequestURI());
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(problem);
+    }
+
+    /**
+     * Un servicio externo (IA, correo, un proveedor de terceros) falló. El mensaje de {@code ex}
+     * es para logs, no para el cliente — puede llevar detalle de conectividad interna.
+     */
+    @ExceptionHandler(ExcepcionServicioExterno.class)
+    public ResponseEntity<ProblemDetail> handleServicioExterno(ExcepcionServicioExterno ex, HttpServletRequest request) {
+        log.error("Fallo de servicio externo en {}: {}", request.getRequestURI(), ex.getMessage(), ex);
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_GATEWAY,
+                "El servicio no está disponible en este momento. Intenta de nuevo más tarde.");
+        problem.setTitle("Upstream Service Unavailable");
+        problem.setType(URI.create("https://api.ecommerce.com/errors/upstream-unavailable"));
+        problem.setProperty("timestamp", Instant.now());
+        problem.setProperty("path", request.getRequestURI());
+        return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body(problem);
     }
 
     @ExceptionHandler(IllegalArgumentException.class)

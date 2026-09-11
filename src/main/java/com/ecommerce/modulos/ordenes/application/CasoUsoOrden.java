@@ -81,9 +81,11 @@ public class CasoUsoOrden {
 
         BigDecimal descuento = BigDecimal.ZERO;
         if (carrito.getCodigoCupon() != null) {
-            Cupon cupon = repositorioCupon.findByIdTiendaAndCodigo(idTienda, carrito.getCodigoCupon())
+            // Lock pesimista: dos checkouts concurrentes con el mismo cupón de un solo uso no
+            // deben poder leer "válido" los dos antes de que cualquiera registre el uso.
+            Cupon cupon = repositorioCupon.findByIdTiendaAndCodigoForUpdate(idTienda, carrito.getCodigoCupon())
                     .orElse(null);
-            
+
             if (cupon != null && cupon.esValido()) {
                 descuento = carrito.getMontoDescuento() != null ? carrito.getMontoDescuento() : BigDecimal.ZERO;
                 orden.setCodigoCupon(cupon.getCodigo());
