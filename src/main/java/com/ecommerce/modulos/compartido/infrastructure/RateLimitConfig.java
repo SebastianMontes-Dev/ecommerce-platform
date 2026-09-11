@@ -14,7 +14,9 @@ public class RateLimitConfig implements WebMvcConfigurer {
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(interceptorLimiteTasa)
-                .addPathPatterns("/api/**")
+                // /graphql expone el mismo tipo de lectura que el catálogo REST y no tenía
+                // ningún límite de tasa: quedaba fuera de "/api/**".
+                .addPathPatterns("/api/**", "/graphql")
                 .excludePathPatterns(
                         "/api/v1/pagos/webhook/**",
                         "/v3/api-docs/**",

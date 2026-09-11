@@ -1,5 +1,6 @@
 package com.ecommerce.modulos.ia;
 
+import com.ecommerce.modulos.compartido.domain.ExcepcionServicioExterno;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -15,7 +16,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
@@ -37,7 +38,7 @@ class CasoUsoChatbotTest {
 
     @Test
     void debeDevolverContenidoDeRespuestaSiOpenAiRespondeConChoices() {
-        String tenantId = UUID.randomUUID().toString();
+        UUID idTienda = UUID.randomUUID();
         String prompt = "¿Cuál es el horario de la tienda?";
 
         OpenAiResponseDto.Message mensaje = new OpenAiResponseDto.Message();
@@ -51,20 +52,20 @@ class CasoUsoChatbotTest {
         when(restTemplate.postForEntity(eq(OPENAI_API_URL), any(HttpEntity.class), eq(OpenAiResponseDto.class)))
                 .thenReturn(ResponseEntity.ok(responseDto));
 
-        String resultado = casoUsoChatbot.procesarChat(prompt, tenantId);
+        String resultado = casoUsoChatbot.procesarChat(prompt, idTienda);
 
         assertEquals("El horario es de 9 a 18hs.", resultado);
     }
 
     @Test
     void debeEnviarPromptConContextoDeTiendaAOpenAi() {
-        String tenantId = "tienda-123";
+        UUID idTienda = UUID.randomUUID();
         String prompt = "hola";
 
         when(restTemplate.postForEntity(eq(OPENAI_API_URL), any(HttpEntity.class), eq(OpenAiResponseDto.class)))
                 .thenReturn(ResponseEntity.ok(new OpenAiResponseDto()));
 
-        casoUsoChatbot.procesarChat(prompt, tenantId);
+        casoUsoChatbot.procesarChat(prompt, idTienda);
 
         @SuppressWarnings("unchecked")
         ArgumentCaptor<HttpEntity<OpenAiRequestDto>> captor = ArgumentCaptor.forClass(HttpEntity.class);
@@ -72,7 +73,7 @@ class CasoUsoChatbotTest {
 
         OpenAiRequestDto requestEnviado = captor.getValue().getBody();
         assertEquals(1, requestEnviado.getMessages().size());
-        assertEquals("Contexto tienda tienda-123: hola", requestEnviado.getMessages().get(0).getContent());
+        assertEquals("Contexto tienda " + idTienda + ": hola", requestEnviado.getMessages().get(0).getContent());
     }
 
     @Test
@@ -80,7 +81,7 @@ class CasoUsoChatbotTest {
         when(restTemplate.postForEntity(eq(OPENAI_API_URL), any(HttpEntity.class), eq(OpenAiResponseDto.class)))
                 .thenReturn(ResponseEntity.ok(null));
 
-        String resultado = casoUsoChatbot.procesarChat("hola", "tienda-1");
+        String resultado = casoUsoChatbot.procesarChat("hola", UUID.randomUUID());
 
         assertEquals("No se pudo obtener respuesta del chatbot.", resultado);
     }
@@ -93,7 +94,7 @@ class CasoUsoChatbotTest {
         when(restTemplate.postForEntity(eq(OPENAI_API_URL), any(HttpEntity.class), eq(OpenAiResponseDto.class)))
                 .thenReturn(ResponseEntity.ok(responseDto));
 
-        String resultado = casoUsoChatbot.procesarChat("hola", "tienda-1");
+        String resultado = casoUsoChatbot.procesarChat("hola", UUID.randomUUID());
 
         assertEquals("No se pudo obtener respuesta del chatbot.", resultado);
     }
@@ -106,19 +107,18 @@ class CasoUsoChatbotTest {
         when(restTemplate.postForEntity(eq(OPENAI_API_URL), any(HttpEntity.class), eq(OpenAiResponseDto.class)))
                 .thenReturn(ResponseEntity.ok(responseDto));
 
-        String resultado = casoUsoChatbot.procesarChat("hola", "tienda-1");
+        String resultado = casoUsoChatbot.procesarChat("hola", UUID.randomUUID());
 
         assertEquals("No se pudo obtener respuesta del chatbot.", resultado);
     }
 
     @Test
-    void debeDevolverMensajeDeErrorSiRestTemplateLanzaExcepcion() {
+    @org.junit.jupiter.api.DisplayName("Si OpenAI falla, lanza ExcepcionServicioExterno en vez de devolver el detalle como respuesta 200")
+    void debeLanzarExcepcionServicioExternoSiRestTemplateFalla() {
         when(restTemplate.postForEntity(eq(OPENAI_API_URL), any(HttpEntity.class), eq(OpenAiResponseDto.class)))
                 .thenThrow(new RestClientException("Timeout al conectar con OpenAI"));
 
-        String resultado = casoUsoChatbot.procesarChat("hola", "tienda-1");
-
-        assertTrue(resultado.startsWith("Error al comunicarse con OpenAI: "));
-        assertTrue(resultado.contains("Timeout al conectar con OpenAI"));
+        assertThrows(ExcepcionServicioExterno.class,
+                () -> casoUsoChatbot.procesarChat("hola", UUID.randomUUID()));
     }
 }

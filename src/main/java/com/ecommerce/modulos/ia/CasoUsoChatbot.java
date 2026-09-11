@@ -1,5 +1,7 @@
 package com.ecommerce.modulos.ia;
 
+import com.ecommerce.modulos.compartido.domain.ExcepcionServicioExterno;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -8,7 +10,10 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.MediaType;
 
+import java.util.UUID;
+
 @Service
+@Slf4j
 public class CasoUsoChatbot {
 
     @Value("${openai.api.key:sk-mock-key-for-testing}")
@@ -22,8 +27,8 @@ public class CasoUsoChatbot {
         this.restTemplate = restTemplate;
     }
 
-    public String procesarChat(String prompt, String tenantId) {
-        String promptConContexto = "Contexto tienda " + tenantId + ": " + prompt;
+    public String procesarChat(String prompt, UUID idTienda) {
+        String promptConContexto = "Contexto tienda " + idTienda + ": " + prompt;
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -34,12 +39,17 @@ public class CasoUsoChatbot {
 
         try {
             ResponseEntity<OpenAiResponseDto> response = restTemplate.postForEntity(OPENAI_API_URL, entity, OpenAiResponseDto.class);
-            
+
             if (response.getBody() != null && response.getBody().getChoices() != null && !response.getBody().getChoices().isEmpty()) {
                 return response.getBody().getChoices().get(0).getMessage().getContent();
             }
         } catch (Exception e) {
-            return "Error al comunicarse con OpenAI: " + e.getMessage();
+            // Antes esto devolvía "Error al comunicarse con OpenAI: " + e.getMessage() como si
+            // fuera una respuesta normal del chatbot (200 OK), filtrando detalle interno
+            // (timeouts, URLs) al cliente. ManejadorExcepcionGlobal mapea esto a 502 sin
+            // reenviar e.getMessage().
+            log.error("Fallo al comunicarse con OpenAI para tienda {}: {}", idTienda, e.getMessage(), e);
+            throw new ExcepcionServicioExterno("Fallo al comunicarse con OpenAI", e);
         }
 
         return "No se pudo obtener respuesta del chatbot.";

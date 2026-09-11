@@ -77,15 +77,16 @@ public class InterceptorLimiteTasa implements HandlerInterceptor {
         return true;
     }
 
+    /**
+     * {@code request.getRemoteAddr()} y nada más: leer {@code X-Forwarded-For}/{@code X-Real-IP}
+     * acá directamente permitía que cualquier cliente mandara su propio valor y reseteara su
+     * cubo a voluntad, neutralizando los tres límites de este interceptor. En producción
+     * ({@code server.forward-headers-strategy: native}, ver {@code application-prod.yml}) es
+     * Tomcat ({@code RemoteIpValve}) quien resuelve {@code getRemoteAddr()} a partir de
+     * {@code X-Forwarded-For}, y solo cuando la conexión entra desde un proxy confiable — un
+     * cliente que no pasa por ese proxy no puede falsear nada acá.
+     */
     private String getClientIp(HttpServletRequest request) {
-        String xForwardedFor = request.getHeader("X-Forwarded-For");
-        if (xForwardedFor != null && !xForwardedFor.isEmpty()) {
-            return xForwardedFor.split(",")[0].trim();
-        }
-        String xRealIp = request.getHeader("X-Real-IP");
-        if (xRealIp != null && !xRealIp.isEmpty()) {
-            return xRealIp;
-        }
         return request.getRemoteAddr();
     }
 }

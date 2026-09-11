@@ -2,6 +2,7 @@ package com.ecommerce.modulos.catalogo.infrastructure;
 
 import com.ecommerce.modulos.catalogo.application.CasoUsoObtenerProducto;
 import com.ecommerce.modulos.catalogo.application.dto.RespuestaProducto;
+import com.ecommerce.modulos.compartido.domain.ExcepcionNoAutorizado;
 import com.ecommerce.modulos.compartido.infrastructure.ContextoInquilino;
 import lombok.RequiredArgsConstructor;
 import org.springframework.graphql.data.method.annotation.Argument;
@@ -18,13 +19,14 @@ public class ControladorGraphQLProducto {
 
     @QueryMapping
     public RespuestaProducto obtenerProductoPorId(@Argument UUID id) {
-        // En consultas GraphQL, puede ser necesario resolver el tenant context desde la request si no está inyectado globalmente,
-        // pero asumiremos que el ContextoInquilino ya cuenta con el ID, o usaremos un fallback si no está seteado.
+        // FiltroAutenticacionJwt y FiltroInquilino son filtros globales (no restringidos a
+        // /api/**), así que corren igual para /graphql y dejan ContextoInquilino resuelto acá
+        // -confirmado con AislamientoTenantGraphQLIntegrationTest-. Si de todas formas no hay
+        // tenant (ej. un cliente MCP/GraphQL que llama sin header ni tienda propia), es un 401,
+        // no un 500: el cliente necesita mandar X-Inquilino-ID como en el resto de la API.
         UUID idTienda = ContextoInquilino.getIdTienda();
         if (idTienda == null) {
-            // Manejo por defecto en caso de que GraphQL no cuente con el filtro de tenant context configurado para este endpoint
-            // Esto requeriría que casoUsoObtenerProducto lo maneje o lanzar excepción.
-            throw new RuntimeException("No se encontró el contexto de tienda para la petición GraphQL");
+            throw new ExcepcionNoAutorizado("Falta especificar la tienda (header X-Inquilino-ID)");
         }
         return casoUsoObtenerProducto.byId(id, idTienda);
     }

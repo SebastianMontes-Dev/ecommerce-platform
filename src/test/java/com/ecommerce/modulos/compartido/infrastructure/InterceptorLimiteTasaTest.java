@@ -165,18 +165,23 @@ class InterceptorLimiteTasaTest {
     }
 
     @Test
-    void usaLaPrimeraIpDeXForwardedForCuandoEstaPresente() throws Exception {
+    @org.junit.jupiter.api.DisplayName("Ignora X-Forwarded-For del cliente: un header falsificado no puede resetear el cubo de otra IP")
+    void ignoraElHeaderXForwardedForYUsaSoloLaIpDeLaConexion() throws Exception {
         configurarInterceptor();
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.setRequestURI("/api/v1/productos");
-        request.addHeader("X-Forwarded-For", "203.0.113.5, 10.0.0.1");
+        // Un cliente cualquiera puede mandar este header con lo que quiera; no debe pesar.
+        request.addHeader("X-Forwarded-For", "203.0.113.5");
+        request.addHeader("X-Real-IP", "203.0.113.9");
         request.setRemoteAddr("10.0.0.1");
         MockHttpServletResponse response = new MockHttpServletResponse();
 
-        when(valueOperations.increment("rate:api:203.0.113.5")).thenReturn(1L);
+        when(valueOperations.increment("rate:api:10.0.0.1")).thenReturn(1L);
 
         interceptor.preHandle(request, response, new Object());
 
-        verify(valueOperations).increment("rate:api:203.0.113.5");
+        verify(valueOperations).increment("rate:api:10.0.0.1");
+        verify(valueOperations, never()).increment("rate:api:203.0.113.5");
+        verify(valueOperations, never()).increment("rate:api:203.0.113.9");
     }
 }
