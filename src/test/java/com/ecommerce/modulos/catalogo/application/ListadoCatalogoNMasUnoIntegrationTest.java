@@ -13,6 +13,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -48,6 +50,7 @@ class ListadoCatalogoNMasUnoIntegrationTest {
     @Autowired private RepositorioProducto repositorioProducto;
     @Autowired private RepositorioInquilino repositorioInquilino;
     @Autowired private EntityManagerFactory entityManagerFactory;
+    @Autowired private PlatformTransactionManager transactionManager;
 
     @Test
     void listarProductosNoDebeEscalarLinealConLaCantidadDeProductos() {
@@ -82,12 +85,25 @@ class ListadoCatalogoNMasUnoIntegrationTest {
         Statistics stats = sessionFactory.getStatistics();
         stats.clear();
 
-        repositorioProducto.findAllByIdTienda(idTienda, PageRequest.of(0, 20))
-                .forEach(p -> {
-                    if (p.getCategoria() != null) p.getCategoria().getNombre();
-                    p.getVariants().size();
-                    p.getImages().size();
-                });
+        // El setup de arriba corrió fuera de una transacción explícita (cada save() de
+        // Spring Data abre y cierra la suya), así que no comparte persistence-context con
+        // la lectura de abajo: el identity-map no puede esconder el N+1 real.
+        //
+        // findAllByIdTienda es un método derivado de Spring Data — su propia transacción
+        // readOnly se cierra apenas retorna, así que acceder a `variants`/`images` (LAZY)
+        // después, sin sesión de Hibernate abierta, dispara LazyInitializationException.
+        // Se envuelve explícitamente la fase de lectura en una transacción (mismo patrón
+        // que @Transactional(readOnly = true) en CasoUsoObtenerProducto.listProducts) para
+        // que la sesión siga abierta mientras se recorren las colecciones lazy.
+        TransactionTemplate transactionTemplate = new TransactionTemplate(transactionManager);
+        transactionTemplate.setReadOnly(true);
+        transactionTemplate.executeWithoutResult(status ->
+                repositorioProducto.findAllByIdTienda(idTienda, PageRequest.of(0, 20))
+                        .forEach(p -> {
+                            if (p.getCategoria() != null) p.getCategoria().getNombre();
+                            p.getVariants().size();
+                            p.getImages().size();
+                        }));
 
         long queries = stats.getPrepareStatementCount();
         // Sin el fix: ~1 (count) + 1 (page) + 15 (variants) + 15 (images) = 32+.
