@@ -3,8 +3,10 @@ package com.ecommerce.modulos.busqueda.application;
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch._types.ElasticsearchException;
 import co.elastic.clients.elasticsearch._types.ErrorResponse;
+import co.elastic.clients.elasticsearch._types.SortOrder;
 import co.elastic.clients.elasticsearch._types.query_dsl.BoolQuery;
 import co.elastic.clients.elasticsearch._types.query_dsl.MultiMatchQuery;
+import co.elastic.clients.elasticsearch._types.query_dsl.NumberRangeQuery;
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 import co.elastic.clients.elasticsearch._types.query_dsl.TermQuery;
 import co.elastic.clients.elasticsearch.core.DeleteRequest;
@@ -81,75 +83,70 @@ class ServicioBusquedaTest {
 
     // ---------- busqueda ----------
 
-    @Test
-    void debeRetornarProductosCuandoElasticsearchEncuentraResultados() throws IOException {
-        Hit<DocumentoProducto> hit = Hit.of(h -> h.index("productos").id(documento.getId()).source(documento));
+    private void mockearRespuesta(List<Hit<DocumentoProducto>> hits, long total) throws IOException {
         HitsMetadata<DocumentoProducto> hitsMetadata = HitsMetadata.of(hm -> hm
-                .total(t -> t.value(1).relation(TotalHitsRelation.Eq))
-                .hits(List.of(hit)));
+                .total(t -> t.value((int) total).relation(TotalHitsRelation.Eq))
+                .hits(hits));
         SearchResponse<DocumentoProducto> response = SearchResponse.of(s -> s
                 .took(1)
                 .timedOut(false)
                 .shards(sh -> sh.total(1).successful(1).failed(0))
                 .hits(hitsMetadata));
-
         when(elasticsearchClient.search(any(Function.class), eq(DocumentoProducto.class))).thenReturn(response);
+    }
 
-        List<DocumentoProducto> resultado = servicioBusqueda.busqueda(idTienda, "zapatilla");
+    @SuppressWarnings("unchecked")
+    private SearchRequest capturarSearchRequest() throws IOException {
+        ArgumentCaptor<Function> captor = ArgumentCaptor.forClass(Function.class);
+        verify(elasticsearchClient).search(captor.capture(), eq(DocumentoProducto.class));
+        return SearchRequest.of((Function) captor.getValue());
+    }
 
-        assertEquals(1, resultado.size());
-        assertSame(documento, resultado.get(0));
+    @Test
+    void debeRetornarProductosCuandoElasticsearchEncuentraResultados() throws IOException {
+        Hit<DocumentoProducto> hit = Hit.of(h -> h.index("productos").id(documento.getId()).source(documento));
+        mockearRespuesta(List.of(hit), 1);
+
+        ResultadoBusqueda resultado = servicioBusqueda.busqueda(
+                idTienda, "zapatilla", null, null, null, null, "relevance", 0, 20);
+
+        assertEquals(1, resultado.content().size());
+        assertSame(documento, resultado.content().get(0));
+        assertEquals(1, resultado.totalElements());
     }
 
     @Test
     void debeRetornarListaVaciaCuandoElasticsearchNoEncuentraResultados() throws IOException {
-        HitsMetadata<DocumentoProducto> hitsMetadata = HitsMetadata.of(hm -> hm
-                .total(t -> t.value(0).relation(TotalHitsRelation.Eq))
-                .hits(List.of()));
-        SearchResponse<DocumentoProducto> response = SearchResponse.of(s -> s
-                .took(1)
-                .timedOut(false)
-                .shards(sh -> sh.total(1).successful(1).failed(0))
-                .hits(hitsMetadata));
+        mockearRespuesta(List.of(), 0);
 
-        when(elasticsearchClient.search(any(Function.class), eq(DocumentoProducto.class))).thenReturn(response);
+        ResultadoBusqueda resultado = servicioBusqueda.busqueda(
+                idTienda, "inexistente", null, null, null, null, "relevance", 0, 20);
 
-        List<DocumentoProducto> resultado = servicioBusqueda.busqueda(idTienda, "inexistente");
-
-        assertNotNull(resultado);
-        assertTrue(resultado.isEmpty());
+        assertNotNull(resultado.content());
+        assertTrue(resultado.content().isEmpty());
+        assertEquals(0, resultado.totalElements());
     }
 
     @Test
-    void debeRetornarListaVaciaSinPropagarExcepcionSiElasticsearchFallaAlBuscar() throws IOException {
+    void debeRetornarResultadoVacioSinPropagarExcepcionSiElasticsearchFallaAlBuscar() throws IOException {
         when(elasticsearchClient.search(any(Function.class), eq(DocumentoProducto.class)))
                 .thenThrow(excepcionSimuladaDeElasticsearch());
 
-        List<DocumentoProducto> resultado = assertDoesNotThrow(() -> servicioBusqueda.busqueda(idTienda, "zapatilla"));
+        ResultadoBusqueda resultado = assertDoesNotThrow(() -> servicioBusqueda.busqueda(
+                idTienda, "zapatilla", null, null, null, null, "relevance", 0, 20));
 
-        assertNotNull(resultado);
-        assertTrue(resultado.isEmpty());
+        assertNotNull(resultado.content());
+        assertTrue(resultado.content().isEmpty());
+        assertEquals(0, resultado.totalElements());
     }
 
     @Test
-    @SuppressWarnings("unchecked")
     void debeConstruirQueryConFiltroDeTiendaYTextoDeBusqueda() throws IOException {
-        HitsMetadata<DocumentoProducto> hitsMetadata = HitsMetadata.of(hm -> hm
-                .total(t -> t.value(0).relation(TotalHitsRelation.Eq))
-                .hits(List.of()));
-        SearchResponse<DocumentoProducto> response = SearchResponse.of(s -> s
-                .took(1)
-                .timedOut(false)
-                .shards(sh -> sh.total(1).successful(1).failed(0))
-                .hits(hitsMetadata));
-        when(elasticsearchClient.search(any(Function.class), eq(DocumentoProducto.class))).thenReturn(response);
+        mockearRespuesta(List.of(), 0);
 
-        servicioBusqueda.busqueda(idTienda, "zapatilla running");
+        servicioBusqueda.busqueda(idTienda, "zapatilla running", null, null, null, null, "relevance", 0, 20);
 
-        ArgumentCaptor<Function> captor = ArgumentCaptor.forClass(Function.class);
-        verify(elasticsearchClient).search(captor.capture(), eq(DocumentoProducto.class));
-
-        SearchRequest request = SearchRequest.of((Function) captor.getValue());
+        SearchRequest request = capturarSearchRequest();
         assertEquals(List.of("productos"), request.index());
 
         BoolQuery boolQuery = request.query().bool();
@@ -167,6 +164,170 @@ class ServicioBusquedaTest {
         assertEquals("zapatilla running", multiMatchQuery.query());
         assertEquals(List.of("nombre", "descripcion", "nombreCategoria"), multiMatchQuery.fields());
         assertEquals("AUTO", multiMatchQuery.fuzziness());
+    }
+
+    @Test
+    void debeNoAplicarMultiMatchCuandoQueryEsNuloOBlank() throws IOException {
+        mockearRespuesta(List.of(), 0);
+
+        servicioBusqueda.busqueda(idTienda, "   ", null, null, null, null, "relevance", 0, 20);
+
+        SearchRequest request = capturarSearchRequest();
+        BoolQuery boolQuery = request.query().bool();
+
+        // Solo el filtro obligatorio de idTienda; sin multiMatch cuando query es blank.
+        assertEquals(1, boolQuery.must().size());
+        assertTrue(boolQuery.must().get(0).isTerm());
+    }
+
+    @Test
+    void debeAplicarPaginacionRealFromYSize() throws IOException {
+        mockearRespuesta(List.of(), 0);
+
+        servicioBusqueda.busqueda(idTienda, null, null, null, null, null, "relevance", 2, 10);
+
+        SearchRequest request = capturarSearchRequest();
+        assertEquals(20, request.from());
+        assertEquals(10, request.size());
+    }
+
+    @Test
+    void debeDevolverElTotalRealDeElasticsearchNoElTamanioDeLaListaDeHits() throws IOException {
+        Hit<DocumentoProducto> hit = Hit.of(h -> h.index("productos").id(documento.getId()).source(documento));
+        mockearRespuesta(List.of(hit), 137);
+
+        ResultadoBusqueda resultado = servicioBusqueda.busqueda(
+                idTienda, null, null, null, null, null, "relevance", 0, 20);
+
+        assertEquals(1, resultado.content().size());
+        assertEquals(137, resultado.totalElements());
+    }
+
+    @Test
+    void debeAplicarFiltroDeCategoriaCuandoSeProvee() throws IOException {
+        mockearRespuesta(List.of(), 0);
+
+        servicioBusqueda.busqueda(idTienda, null, "Calzado", null, null, null, "relevance", 0, 20);
+
+        SearchRequest request = capturarSearchRequest();
+        BoolQuery boolQuery = request.query().bool();
+
+        assertEquals(1, boolQuery.filter().size());
+        Query filtroCategoria = boolQuery.filter().get(0);
+        assertTrue(filtroCategoria.isTerm());
+        TermQuery termQuery = filtroCategoria.term();
+        assertEquals("nombreCategoria.keyword", termQuery.field());
+        assertEquals("Calzado", termQuery.value().stringValue());
+    }
+
+    @Test
+    void debeAplicarFiltroDeRangoDePrecioCuandoSeProveenMinYMaxPrice() throws IOException {
+        mockearRespuesta(List.of(), 0);
+
+        servicioBusqueda.busqueda(
+                idTienda, null, null, new BigDecimal("50"), new BigDecimal("200"), null, "relevance", 0, 20);
+
+        SearchRequest request = capturarSearchRequest();
+        BoolQuery boolQuery = request.query().bool();
+
+        assertEquals(1, boolQuery.filter().size());
+        Query filtroPrecio = boolQuery.filter().get(0);
+        assertTrue(filtroPrecio.isRange());
+        assertTrue(filtroPrecio.range().isNumber());
+        NumberRangeQuery rangoPrecio = filtroPrecio.range().number();
+        assertEquals("precio", rangoPrecio.field());
+        assertEquals(50.0, rangoPrecio.gte());
+        assertEquals(200.0, rangoPrecio.lte());
+    }
+
+    @Test
+    void debeAplicarSoloElLimiteInferiorDePrecioCuandoSoloSeProveeMinPrice() throws IOException {
+        mockearRespuesta(List.of(), 0);
+
+        servicioBusqueda.busqueda(idTienda, null, null, new BigDecimal("50"), null, null, "relevance", 0, 20);
+
+        SearchRequest request = capturarSearchRequest();
+        NumberRangeQuery rangoPrecio = request.query().bool().filter().get(0).range().number();
+        assertEquals(50.0, rangoPrecio.gte());
+        assertNull(rangoPrecio.lte());
+    }
+
+    @Test
+    void debeAplicarFiltroDeRatingMinimoCuandoSeProveeMinRating() throws IOException {
+        mockearRespuesta(List.of(), 0);
+
+        servicioBusqueda.busqueda(idTienda, null, null, null, null, 4.0, "relevance", 0, 20);
+
+        SearchRequest request = capturarSearchRequest();
+        BoolQuery boolQuery = request.query().bool();
+
+        assertEquals(1, boolQuery.filter().size());
+        Query filtroRating = boolQuery.filter().get(0);
+        assertTrue(filtroRating.isRange());
+        NumberRangeQuery rangoRating = filtroRating.range().number();
+        assertEquals("calificacionPromedio", rangoRating.field());
+        assertEquals(4.0, rangoRating.gte());
+    }
+
+    @Test
+    void debeOrdenarPorPrecioAscendenteCuandoSortEsPriceAsc() throws IOException {
+        mockearRespuesta(List.of(), 0);
+
+        servicioBusqueda.busqueda(idTienda, null, null, null, null, null, "price_asc", 0, 20);
+
+        SearchRequest request = capturarSearchRequest();
+        assertEquals(1, request.sort().size());
+        assertEquals("precio", request.sort().get(0).field().field());
+        assertEquals(SortOrder.Asc, request.sort().get(0).field().order());
+    }
+
+    @Test
+    void debeOrdenarPorPrecioDescendenteCuandoSortEsPriceDesc() throws IOException {
+        mockearRespuesta(List.of(), 0);
+
+        servicioBusqueda.busqueda(idTienda, null, null, null, null, null, "price_desc", 0, 20);
+
+        SearchRequest request = capturarSearchRequest();
+        assertEquals(1, request.sort().size());
+        assertEquals("precio", request.sort().get(0).field().field());
+        assertEquals(SortOrder.Desc, request.sort().get(0).field().order());
+    }
+
+    @Test
+    void debeOrdenarPorCalificacionCuandoSortEsRating() throws IOException {
+        mockearRespuesta(List.of(), 0);
+
+        servicioBusqueda.busqueda(idTienda, null, null, null, null, null, "rating", 0, 20);
+
+        SearchRequest request = capturarSearchRequest();
+        assertEquals(1, request.sort().size());
+        assertEquals("calificacionPromedio", request.sort().get(0).field().field());
+    }
+
+    @Test
+    void debeDejarOrdenPorRelevanciaCuandoSortEsRelevanceOValorDesconocido() throws IOException {
+        mockearRespuesta(List.of(), 0);
+
+        servicioBusqueda.busqueda(idTienda, null, null, null, null, null, "relevance", 0, 20);
+
+        SearchRequest request = capturarSearchRequest();
+        assertTrue(request.sort() == null || request.sort().isEmpty());
+    }
+
+    @Test
+    void debeIgnorarFiltrosOpcionalesCuandoNoSeProveen() throws IOException {
+        mockearRespuesta(List.of(), 0);
+
+        ResultadoBusqueda resultado = assertDoesNotThrow(() -> servicioBusqueda.busqueda(
+                idTienda, null, null, null, null, null, "relevance", 0, 20));
+
+        assertNotNull(resultado);
+        assertTrue(resultado.content().isEmpty());
+
+        SearchRequest request = capturarSearchRequest();
+        BoolQuery boolQuery = request.query().bool();
+        assertEquals(1, boolQuery.must().size());
+        assertTrue(boolQuery.filter() == null || boolQuery.filter().isEmpty());
     }
 
     // ---------- deleteProduct ----------

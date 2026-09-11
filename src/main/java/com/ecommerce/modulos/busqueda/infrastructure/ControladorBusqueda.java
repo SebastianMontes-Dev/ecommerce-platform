@@ -9,9 +9,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import com.ecommerce.modulos.busqueda.application.ResultadoBusqueda;
 import com.ecommerce.modulos.busqueda.application.ServicioBusqueda;
-import com.ecommerce.modulos.busqueda.domain.DocumentoProducto;
-import java.util.List;
+import java.math.BigDecimal;
 import java.util.Map;
 
 @RestController
@@ -28,8 +28,8 @@ public class ControladorBusqueda {
     public ResponseEntity<Map<String, Object>> searchProducts(
             @RequestParam(required = false) String q,
             @RequestParam(required = false) String categoria,
-            @RequestParam(required = false) Double minPrice,
-            @RequestParam(required = false) Double maxPrice,
+            @RequestParam(required = false) BigDecimal minPrice,
+            @RequestParam(required = false) BigDecimal maxPrice,
             @RequestParam(required = false) Double minRating,
             @RequestParam(defaultValue = "relevance") String sort,
             @RequestParam(defaultValue = "0") int page,
@@ -37,14 +37,17 @@ public class ControladorBusqueda {
 
         log.info("Search: q={}, inquilino={}, categoria={}, priceRange=[{}-{}], calificacion={}", q, ContextoInquilino.getIdTienda(), categoria, minPrice, maxPrice, minRating);
 
-        List<DocumentoProducto> results = servicioBusqueda.busqueda(ContextoInquilino.getIdTienda(), q);
+        ResultadoBusqueda resultado = servicioBusqueda.busqueda(
+                ContextoInquilino.getIdTienda(), q, categoria, minPrice, maxPrice, minRating, sort, page, size);
+
+        int totalPages = (int) Math.ceil((double) resultado.totalElements() / size);
 
         return ResponseEntity.ok(Map.of(
-                "content", results,
+                "content", resultado.content(),
                 "page", page,
                 "size", size,
-                "totalElements", results.size(),
-                "totalPages", 1,
+                "totalElements", resultado.totalElements(),
+                "totalPages", totalPages,
                 "query", q != null ? q : "",
                 "filters", Map.of(
                         "categoria", categoria != null ? categoria : "",
