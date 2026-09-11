@@ -132,6 +132,39 @@ class InterceptorLimiteTasaTest {
     }
 
     @Test
+    @org.junit.jupiter.api.DisplayName("Checkout y chatbot usan el cubo estricto de sensibles (antes vivía en FiltroRateLimit)")
+    void aplicaElLimiteEstrictoAEndpointsSensibles() throws Exception {
+        configurarInterceptor();
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setRequestURI("/api/v1/ordenes/checkout");
+        request.setRemoteAddr("10.0.0.5");
+        MockHttpServletResponse response = new MockHttpServletResponse();
+
+        when(valueOperations.increment("rate:sensible:10.0.0.5")).thenReturn(11L);
+
+        boolean continuar = interceptor.preHandle(request, response, new Object());
+
+        assertFalse(continuar);
+        assertEquals(HttpStatus.TOO_MANY_REQUESTS.value(), response.getStatus());
+    }
+
+    @Test
+    void elChatbotUsaElMismoCuboSensibleQueElCheckout() throws Exception {
+        configurarInterceptor();
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setRequestURI("/api/v1/chatbot/chat");
+        request.setRemoteAddr("10.0.0.6");
+        MockHttpServletResponse response = new MockHttpServletResponse();
+
+        when(valueOperations.increment("rate:sensible:10.0.0.6")).thenReturn(5L);
+
+        boolean continuar = interceptor.preHandle(request, response, new Object());
+
+        assertTrue(continuar);
+        assertEquals("10", response.getHeader("X-RateLimit-Limit"));
+    }
+
+    @Test
     void usaLaPrimeraIpDeXForwardedForCuandoEstaPresente() throws Exception {
         configurarInterceptor();
         MockHttpServletRequest request = new MockHttpServletRequest();

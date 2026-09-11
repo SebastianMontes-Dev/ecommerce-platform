@@ -52,9 +52,8 @@ dependencies {
     implementation 'co.elastic.clients:elasticsearch-java:8.18.0'
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
     
-    // Módulos Empresariales (OAuth2, Rate Limiting, Facturas PDF)
+    // Módulos Empresariales (OAuth2, Facturas PDF)
     implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
-    implementation 'com.bucket4j:bucket4j-core:8.10.1'
     implementation 'org.xhtmlrenderer:flying-saucer-pdf-openpdf:9.4.0'
     
     // WebSockets (Tiempo Real)

@@ -30,7 +30,8 @@ public class SecurityConfig {
 
     private final FiltroAutenticacionJwt filtroAutenticacionJwt;
     private final CustomOAuth2UserService customOAuth2UserService;
-    private final FiltroRateLimit filtroRateLimit;
+    private final ManejadorExitoAutenticacionOAuth2 manejadorExitoAutenticacionOAuth2;
+    private final ManejadorFalloAutenticacionOAuth2 manejadorFalloAutenticacionOAuth2;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -61,8 +62,13 @@ public class SecurityConfig {
                         .userInfoEndpoint(userInfo -> userInfo
                                 .userService(customOAuth2UserService)
                         )
+                        // Sin esto, un login social exitoso terminaba en un callejón sin salida:
+                        // CustomOAuth2UserService crea/encuentra al Usuario, pero el contexto
+                        // STATELESS se descarta al final de la request sin emitir el JWT que el
+                        // resto de la API necesita.
+                        .successHandler(manejadorExitoAutenticacionOAuth2)
+                        .failureHandler(manejadorFalloAutenticacionOAuth2)
                 )
-                .addFilterBefore(filtroRateLimit, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(filtroAutenticacionJwt, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

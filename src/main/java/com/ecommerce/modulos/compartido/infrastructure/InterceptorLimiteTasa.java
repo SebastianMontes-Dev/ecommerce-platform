@@ -20,6 +20,10 @@ public class InterceptorLimiteTasa implements HandlerInterceptor {
 
     private static final int MAX_REQUESTS_PER_MINUTE = 60;
     private static final int MAX_AUTH_REQUESTS_PER_MINUTE = 10;
+    // Antes vivía en FiltroRateLimit (Bucket4j, Map en memoria): no se compartía entre
+    // instancias -rompía el escalado horizontal- y el mapa crecía sin límite ni expiración.
+    // Mismo umbral que tenía, ahora sobre el mismo Redis que ya usan los demás cubos.
+    private static final int MAX_SENSITIVE_REQUESTS_PER_MINUTE = 10;
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
@@ -29,8 +33,20 @@ public class InterceptorLimiteTasa implements HandlerInterceptor {
         // El endpoint real de alta es /api/v1/auth/registro (no /register): con el prefijo
         // equivocado el registro caía al cubo general de 60/min en vez del estricto de 10/min.
         boolean isAuthEndpoint = path.startsWith("/api/v1/auth/login") || path.startsWith("/api/v1/auth/registro");
-        int maxRequests = isAuthEndpoint ? MAX_AUTH_REQUESTS_PER_MINUTE : MAX_REQUESTS_PER_MINUTE;
-        String keyPrefix = isAuthEndpoint ? "rate:auth:" : "rate:api:";
+        boolean isSensitiveEndpoint = path.startsWith("/api/v1/ordenes/checkout") || path.startsWith("/api/v1/chatbot/chat");
+
+        int maxRequests;
+        String keyPrefix;
+        if (isAuthEndpoint) {
+            maxRequests = MAX_AUTH_REQUESTS_PER_MINUTE;
+            keyPrefix = "rate:auth:";
+        } else if (isSensitiveEndpoint) {
+            maxRequests = MAX_SENSITIVE_REQUESTS_PER_MINUTE;
+            keyPrefix = "rate:sensible:";
+        } else {
+            maxRequests = MAX_REQUESTS_PER_MINUTE;
+            keyPrefix = "rate:api:";
+        }
 
         String key = keyPrefix + clientIp;
 
