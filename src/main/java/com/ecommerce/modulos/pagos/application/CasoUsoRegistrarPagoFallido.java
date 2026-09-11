@@ -1,6 +1,7 @@
 package com.ecommerce.modulos.pagos.application;
 
 import com.ecommerce.modulos.compartido.domain.ExcepcionEntidadNoEncontrada;
+import com.ecommerce.modulos.compartido.infrastructure.observabilidad.MetricasNegocio;
 import com.ecommerce.modulos.ordenes.application.ServicioEstadoOrden;
 import com.ecommerce.modulos.pagos.domain.EstadoPago;
 import com.ecommerce.modulos.pagos.domain.Pago;
@@ -31,6 +32,7 @@ public class CasoUsoRegistrarPagoFallido {
 
     private final RepositorioPago repositorioPago;
     private final ServicioEstadoOrden servicioEstadoOrden;
+    private final MetricasNegocio metricasNegocio;
 
     @Transactional
     public void registrar(UUID idPago, String motivo) {
@@ -48,6 +50,7 @@ public class CasoUsoRegistrarPagoFallido {
 
         pago.fail();
         repositorioPago.save(pago);
+        metricasNegocio.pagoFallido();
 
         servicioEstadoOrden.cancelarPorFalloDePago(pago.getIdOrden(), motivo);
     }

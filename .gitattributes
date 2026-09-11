@@ -1,0 +1,24 @@
+# Normaliza los finales de línea: el repo se edita en Windows (core.autocrlf=true) pero
+# el build corre en Linux (CI y la imagen Docker). Sin esto, gradlew queda con CRLF y el
+# contenedor falla con "/bin/sh: ./gradlew: not found" (el \r se cuela en el shebang).
+* text=auto eol=lf
+
+# El wrapper de Gradle y los scripts de shell SIEMPRE en LF, aunque se clonen en Windows.
+gradlew text eol=lf
+*.sh text eol=lf
+
+# Scripts de Windows en CRLF.
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Binarios: que Git no toque los finales de línea.
+*.jar binary
+*.war binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.woff binary
+*.woff2 binary

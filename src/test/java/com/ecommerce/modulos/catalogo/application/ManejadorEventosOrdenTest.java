@@ -32,6 +32,8 @@ class ManejadorEventosOrdenTest {
     private RepositorioProducto repositorioProducto;
     @Mock
     private RepositorioVarianteProducto repositorioVarianteProducto;
+    @Mock
+    private com.ecommerce.modulos.compartido.infrastructure.observabilidad.MetricasNegocio metricasNegocio;
 
     @InjectMocks
     private ManejadorEventosOrden manejadorEventosOrden;
@@ -112,6 +114,7 @@ class ManejadorEventosOrdenTest {
 
         assertThrows(ExcepcionStockInsuficiente.class, () -> manejadorEventosOrden.handle(evento));
         verify(repositorioProducto, never()).save(any());
+        verify(metricasNegocio).inventarioAgotado();
     }
 
     @Test

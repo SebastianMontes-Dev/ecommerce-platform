@@ -7,6 +7,8 @@ import com.ecommerce.modulos.catalogo.domain.VarianteProducto;
 import com.ecommerce.modulos.ordenes.domain.events.EventoInventarioLiberado;
 import com.ecommerce.modulos.ordenes.domain.events.EventoOrdenCreada;
 import com.ecommerce.modulos.compartido.domain.ExcepcionEntidadNoEncontrada;
+import com.ecommerce.modulos.compartido.domain.ExcepcionStockInsuficiente;
+import com.ecommerce.modulos.compartido.infrastructure.observabilidad.MetricasNegocio;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
@@ -34,14 +36,20 @@ public class ManejadorEventosOrden {
 
     private final RepositorioProducto repositorioProducto;
     private final RepositorioVarianteProducto repositorioVarianteProducto;
+    private final MetricasNegocio metricasNegocio;
 
     @EventListener
     @Transactional
     public void handle(EventoOrdenCreada event) {
         log.info("Reservando inventario para orden {} (Inquilino: {})", event.getIdOrden(), event.getIdTienda());
 
-        for (Linea linea : lineasOrdenadas(event.getItems(), i -> new Linea(i.getIdProducto(), i.getVariantId(), i.getCantidad()))) {
-            reservar(linea);
+        try {
+            for (Linea linea : lineasOrdenadas(event.getItems(), i -> new Linea(i.getIdProducto(), i.getVariantId(), i.getCantidad()))) {
+                reservar(linea);
+            }
+        } catch (ExcepcionStockInsuficiente e) {
+            metricasNegocio.inventarioAgotado();
+            throw e;
         }
     }
 

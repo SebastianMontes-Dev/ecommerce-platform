@@ -1,0 +1,20 @@
+# Contexto mínimo: solo lo que el build multi-stage necesita.
+.git
+.github
+.gradle
+build
+bin
+out
+*.log
+
+# Nada de secretos ni infra local en la imagen
+.env
+docker/
+docs/
+*.md
+
+# IDE / herramientas
+.idea
+.vscode
+.agents
+AGENTS.md

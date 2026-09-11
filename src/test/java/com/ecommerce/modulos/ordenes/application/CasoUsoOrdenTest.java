@@ -42,6 +42,8 @@ class CasoUsoOrdenTest {
     private com.ecommerce.modulos.ordenes.domain.RepositorioCupon repositorioCupon;
     @Mock
     private com.ecommerce.modulos.compartido.infrastructure.websocket.ServicioNotificacionTiempoReal servicioNotificacionTiempoReal;
+    @Mock
+    private com.ecommerce.modulos.compartido.infrastructure.observabilidad.MetricasNegocio metricasNegocio;
 
     @InjectMocks
     private CasoUsoOrden casoUsoOrden;
@@ -85,6 +87,7 @@ class CasoUsoOrdenTest {
         verify(servicioCarrito).clearCart(idCliente, idTienda);
         verify(eventPublisher).publish(any(List.class));
         verify(servicioNotificacionTiempoReal).notificarNuevaOrden(eq(idTienda), any(RespuestaOrden.class));
+        verify(metricasNegocio).ordenCreada();
     }
 
     @Test

@@ -32,6 +32,7 @@ public class CasoUsoOrden {
     private final PublicadorEventoDominio eventPublisher;
     private final RepositorioCupon repositorioCupon;
     private final com.ecommerce.modulos.compartido.infrastructure.websocket.ServicioNotificacionTiempoReal servicioNotificacionTiempoReal;
+    private final com.ecommerce.modulos.compartido.infrastructure.observabilidad.MetricasNegocio metricasNegocio;
 
     @Transactional
     public RespuestaOrden createOrderFromCart(UUID idCliente, UUID idTienda, SolicitudCheckout request) {
@@ -117,6 +118,7 @@ public class CasoUsoOrden {
         ejecutarTrasCommit(() -> {
             servicioCarrito.clearCart(idCliente, idTienda);
             servicioNotificacionTiempoReal.notificarNuevaOrden(idTienda, respuesta);
+            metricasNegocio.ordenCreada();
         });
 
         return respuesta;

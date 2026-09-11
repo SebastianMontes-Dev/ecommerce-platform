@@ -1,0 +1,28 @@
+# Perfil de despliegue. La imagen Docker arranca con SPRING_PROFILES_ACTIVE=prod.
+# Todo lo sensible o específico del entorno llega por variable de entorno (ver .env.example).
+spring:
+  jpa:
+    show-sql: false
+    open-in-view: false
+
+logging:
+  # Logs en JSON (Elastic Common Schema), una línea por evento, listos para ELK/Loki.
+  # El MDC (traceId, spanId, tenantId, userId) se incluye automáticamente en cada objeto.
+  structured:
+    format:
+      console: ecs
+  level:
+    root: INFO
+    com.ecommerce: INFO
+    org.hibernate.SQL: WARN
+
+server:
+  # Detrás de un proxy/ingress: respetar X-Forwarded-* para logs y URLs correctas.
+  forward-headers-strategy: framework
+  shutdown: graceful
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
