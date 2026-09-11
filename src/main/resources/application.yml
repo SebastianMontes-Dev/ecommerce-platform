@@ -57,6 +57,22 @@ spring:
       max-file-size: 10MB
       max-request-size: 10MB
 
+  security:
+    oauth2:
+      client:
+        registration:
+          # Sin ESTA entrada, SecurityConfig.oauth2Login() no encuentra un bean
+          # ClientRegistrationRepository y la app entera no arranca (falla la construcción
+          # del SecurityFilterChain), aunque nadie use el login social. El placeholder no
+          # puede ir vacío: Boot valida "client-id must not be empty" al construir el
+          # registro, así que sin GOOGLE_CLIENT_ID definido cae en este valor de relleno
+          # -arranca igual- y solo falla, en el proveedor y no acá, si alguien entra a
+          # /oauth2/authorization/google sin credenciales reales configuradas.
+          google:
+            client-id: ${GOOGLE_CLIENT_ID:sin-configurar}
+            client-secret: ${GOOGLE_CLIENT_SECRET:sin-configurar}
+            scope: email,profile
+
 server:
   port: ${SERVER_PORT:8081}
 
@@ -105,6 +121,10 @@ app:
     secret: ${JWT_SECRET}
     access-token-expiration: ${JWT_ACCESS_EXPIRATION:900000}
     refresh-token-expiration: ${JWT_REFRESH_EXPIRATION:604800000}
+  oauth2:
+    # A dónde redirige ManejadorExitoAutenticacionOAuth2/ManejadorFalloAutenticacionOAuth2
+    # tras el login social, llevando el JWT en el fragmento de la URL (#access_token=...).
+    frontend-redirect-uri: ${OAUTH2_FRONTEND_REDIRECT_URI:http://localhost:3000/oauth2/callback}
   outbox:
     intervalo-ms: ${OUTBOX_INTERVALO_MS:5000}   # cada cuánto corre el worker
     lote: 50                                     # filas por tick

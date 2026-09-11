@@ -7,7 +7,6 @@ import com.ecommerce.modulos.compartido.infrastructure.FiltroInquilino;
 import com.ecommerce.modulos.compartido.infrastructure.InterceptorLimiteTasa;
 import com.ecommerce.modulos.compartido.infrastructure.RateLimitConfig;
 import com.ecommerce.modulos.compartido.infrastructure.security.FiltroAutenticacionJwt;
-import com.ecommerce.modulos.compartido.infrastructure.security.FiltroRateLimit;
 import com.ecommerce.modulos.identidad.application.DetallesUsuarioPersonalizado;
 import com.ecommerce.modulos.ordenes.application.CasoUsoGestionarCupon;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -47,7 +46,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 // components outright rather than mocking their growing dependency chains one by one.
 @WebMvcTest(controllers = ControladorCarrito.class, excludeFilters = @ComponentScan.Filter(
         type = FilterType.ASSIGNABLE_TYPE,
-        classes = {FiltroInquilino.class, FiltroAutenticacionJwt.class, FiltroRateLimit.class,
+        classes = {FiltroInquilino.class, FiltroAutenticacionJwt.class,
                 InterceptorLimiteTasa.class, RateLimitConfig.class}
 ))
 // addFilters is left at its default (true): with it false, .with(user(...))'s
