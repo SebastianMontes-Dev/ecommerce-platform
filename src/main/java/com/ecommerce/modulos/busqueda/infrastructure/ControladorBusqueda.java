@@ -38,7 +38,7 @@ public class ControladorBusqueda {
             // repo (ni al crear/actualizar un producto ni al crear una reseña), así que no hay
             // nada real que filtrar por rating todavía. Ver ServicioBusqueda.busqueda.
             @RequestParam(defaultValue = "relevance") String sort,
-            @RequestParam(defaultValue = "0") @Min(0) int page,
+            @RequestParam(defaultValue = "0") @Min(0) @Max(10_000) int page,
             @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size) {
 
         log.info("Search: q={}, inquilino={}, categoria={}, priceRange=[{}-{}]", q, ContextoInquilino.getIdTienda(), categoria, minPrice, maxPrice);
