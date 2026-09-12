@@ -3,12 +3,15 @@ package com.ecommerce.modulos.catalogo.application;
 import com.ecommerce.modulos.catalogo.application.dto.RespuestaProducto;
 import com.ecommerce.modulos.catalogo.application.dto.SolicitudCrearProducto;
 import com.ecommerce.modulos.catalogo.application.dto.SolicitudVariante;
+import com.ecommerce.modulos.catalogo.domain.Categoria;
 import com.ecommerce.modulos.catalogo.domain.EstadoProducto;
 import com.ecommerce.modulos.catalogo.domain.Producto;
+import com.ecommerce.modulos.catalogo.domain.RepositorioCategoria;
 import com.ecommerce.modulos.catalogo.domain.RepositorioProducto;
 import com.ecommerce.modulos.catalogo.domain.VarianteProducto;
 import com.ecommerce.modulos.catalogo.domain.eventos.EventoProductoCreado;
 import com.ecommerce.modulos.compartido.domain.EventoDominio;
+import com.ecommerce.modulos.compartido.domain.ExcepcionEntidadNoEncontrada;
 import com.ecommerce.modulos.compartido.domain.ExcepcionViolacionReglaNegocio;
 import com.ecommerce.modulos.compartido.domain.PublicadorEventoDominio;
 import org.junit.jupiter.api.BeforeEach;
@@ -31,6 +34,8 @@ class CasoUsoCrearProductoTest {
 
     @Mock
     private RepositorioProducto repositorioProducto;
+    @Mock
+    private RepositorioCategoria repositorioCategoria;
     @Mock
     private PublicadorEventoDominio eventPublisher;
 
@@ -177,5 +182,43 @@ class CasoUsoCrearProductoTest {
         verify(eventPublisher).publish(anyList());
         assertEquals(1, eventosCapturados.size());
         assertInstanceOf(EventoProductoCreado.class, eventosCapturados.get(0));
+    }
+
+    @Test
+    void debeResolverYAsignarCategoriaCuandoSeProveeIdCategoriaParaQueElEventoDeDominioLaIncluya() {
+        UUID idCategoria = UUID.randomUUID();
+        Categoria categoria = new Categoria();
+        categoria.setNombre("Calzado");
+        request.setIdCategoria(idCategoria);
+
+        when(repositorioProducto.countByIdTienda(idTienda)).thenReturn(0L);
+        when(repositorioCategoria.findById(idCategoria)).thenReturn(java.util.Optional.of(categoria));
+        when(repositorioProducto.save(any(Producto.class))).thenAnswer(i -> i.getArguments()[0]);
+
+        List<EventoDominio> eventosCapturados = new java.util.ArrayList<>();
+        doAnswer(invocation -> {
+            List<EventoDominio> eventos = invocation.getArgument(0);
+            eventosCapturados.addAll(eventos);
+            return null;
+        }).when(eventPublisher).publish(anyList());
+
+        RespuestaProducto respuesta = casoUsoCrearProducto.execute(request, idTienda);
+
+        assertEquals("Calzado", respuesta.getNombreCategoria());
+        assertInstanceOf(EventoProductoCreado.class, eventosCapturados.get(0));
+        assertEquals("Calzado", ((EventoProductoCreado) eventosCapturados.get(0)).getNombreCategoria());
+    }
+
+    @Test
+    void debeLanzarExcepcionEntidadNoEncontradaSiLaCategoriaProvistaNoExiste() {
+        UUID idCategoria = UUID.randomUUID();
+        request.setIdCategoria(idCategoria);
+
+        when(repositorioProducto.countByIdTienda(idTienda)).thenReturn(0L);
+        when(repositorioCategoria.findById(idCategoria)).thenReturn(java.util.Optional.empty());
+
+        assertThrows(ExcepcionEntidadNoEncontrada.class, () -> casoUsoCrearProducto.execute(request, idTienda));
+
+        verify(repositorioProducto, never()).save(any());
     }
 }
