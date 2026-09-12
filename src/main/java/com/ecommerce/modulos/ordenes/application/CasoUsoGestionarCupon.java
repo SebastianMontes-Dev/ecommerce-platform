@@ -3,6 +3,7 @@ package com.ecommerce.modulos.ordenes.application;
 import com.ecommerce.modulos.compartido.domain.ExcepcionEntidadNoEncontrada;
 import com.ecommerce.modulos.compartido.domain.ExcepcionRecursoDuplicado;
 import com.ecommerce.modulos.compartido.infrastructure.RespuestaPaginada;
+import com.ecommerce.modulos.ordenes.application.dto.RespuestaCupon;
 import com.ecommerce.modulos.ordenes.application.dto.SolicitudCrearCupon;
 import com.ecommerce.modulos.ordenes.domain.Cupon;
 import com.ecommerce.modulos.ordenes.domain.RepositorioCupon;
@@ -24,7 +25,7 @@ public class CasoUsoGestionarCupon {
     private final RepositorioCupon repositorioCupon;
 
     @Transactional
-    public Cupon crearCupon(UUID idTienda, SolicitudCrearCupon request) {
+    public RespuestaCupon crearCupon(UUID idTienda, SolicitudCrearCupon request) {
         repositorioCupon.findByIdTiendaAndCodigo(idTienda, request.getCodigo().toUpperCase())
                 .ifPresent(c -> {
                     throw new ExcepcionRecursoDuplicado("Cupón", "código", request.getCodigo());
@@ -37,14 +38,14 @@ public class CasoUsoGestionarCupon {
         cupon.setValor(request.getValor());
         cupon.setFechaExpiracion(request.getFechaExpiracion());
         cupon.setLimiteUsos(request.getLimiteUsos());
-        
-        return repositorioCupon.save(cupon);
+
+        return mapToResponse(repositorioCupon.save(cupon));
     }
 
     @Transactional(readOnly = true)
-    public RespuestaPaginada<Cupon> listarCupones(UUID idTienda, Pageable pageable) {
+    public RespuestaPaginada<RespuestaCupon> listarCupones(UUID idTienda, Pageable pageable) {
         Page<Cupon> page = repositorioCupon.findAllByIdTienda(idTienda, pageable);
-        return RespuestaPaginada.from(page);
+        return RespuestaPaginada.from(page.map(CasoUsoGestionarCupon::mapToResponse));
     }
 
     @Transactional
@@ -84,5 +85,19 @@ public class CasoUsoGestionarCupon {
                 ? subtotal.multiply(cupon.getValor()).divide(new BigDecimal("100"), 2, RoundingMode.HALF_UP)
                 : cupon.getValor();
         return descuento.min(subtotal).max(BigDecimal.ZERO);
+    }
+
+    private static RespuestaCupon mapToResponse(Cupon cupon) {
+        return RespuestaCupon.builder()
+                .id(cupon.getId())
+                .codigo(cupon.getCodigo())
+                .tipo(cupon.getTipo())
+                .valor(cupon.getValor())
+                .fechaExpiracion(cupon.getFechaExpiracion())
+                .limiteUsos(cupon.getLimiteUsos())
+                .usosActuales(cupon.getUsosActuales())
+                .activo(cupon.isActivo())
+                .creadoEn(cupon.getCreadoEn())
+                .build();
     }
 }
