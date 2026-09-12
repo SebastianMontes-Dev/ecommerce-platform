@@ -4,6 +4,7 @@ import com.ecommerce.modulos.catalogo.domain.EstadoProducto;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -46,7 +47,9 @@ public class SolicitudCrearProducto {
     @Size(max = 100, message = "El código de barras no puede superar los 100 caracteres")
     private String codigoBarras;
 
-    @Positive
+    // PositiveOrZero (no Positive): un producto agotado o digital/sin stock físico
+    // debe poder crearse con inventario 0 (que además es el default de este campo).
+    @PositiveOrZero
     @Default
     private int inventario = 0;
 

@@ -174,4 +174,16 @@ class SolicitudCrearProductoValidationTest {
 
         assertTrue(validator.validate(solicitud).isEmpty());
     }
+
+    @Test
+    void aceptaInventarioEnCeroParaUnProductoAgotadoODigital() {
+        SolicitudCrearProducto solicitud = SolicitudCrearProducto.builder()
+                .nombre("Producto")
+                .enlaceCorto("link")
+                .precio(new BigDecimal("100.00"))
+                .inventario(0)
+                .build();
+
+        assertTrue(validator.validate(solicitud).isEmpty());
+    }
 }
