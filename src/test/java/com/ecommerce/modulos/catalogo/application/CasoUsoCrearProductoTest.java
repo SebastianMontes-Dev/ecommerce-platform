@@ -188,6 +188,7 @@ class CasoUsoCrearProductoTest {
     void debeResolverYAsignarCategoriaCuandoSeProveeIdCategoriaParaQueElEventoDeDominioLaIncluya() {
         UUID idCategoria = UUID.randomUUID();
         Categoria categoria = new Categoria();
+        categoria.setIdTienda(idTienda);
         categoria.setNombre("Calzado");
         request.setIdCategoria(idCategoria);
 
@@ -216,6 +217,24 @@ class CasoUsoCrearProductoTest {
 
         when(repositorioProducto.countByIdTienda(idTienda)).thenReturn(0L);
         when(repositorioCategoria.findById(idCategoria)).thenReturn(java.util.Optional.empty());
+
+        assertThrows(ExcepcionEntidadNoEncontrada.class, () -> casoUsoCrearProducto.execute(request, idTienda));
+
+        verify(repositorioProducto, never()).save(any());
+    }
+
+    @Test
+    void debeLanzarExcepcionEntidadNoEncontradaSiLaCategoriaProvistaEsDeOtroTenant() {
+        // findById no aplica el @Filter de Hibernate (solo corre en queries) — sin el chequeo
+        // explícito de tenant, un idCategoria ajeno se aceptaría y filtraría su nombre real.
+        UUID idCategoria = UUID.randomUUID();
+        Categoria categoriaDeOtroTenant = new Categoria();
+        categoriaDeOtroTenant.setIdTienda(UUID.randomUUID());
+        categoriaDeOtroTenant.setNombre("Categoria Ajena");
+        request.setIdCategoria(idCategoria);
+
+        when(repositorioProducto.countByIdTienda(idTienda)).thenReturn(0L);
+        when(repositorioCategoria.findById(idCategoria)).thenReturn(java.util.Optional.of(categoriaDeOtroTenant));
 
         assertThrows(ExcepcionEntidadNoEncontrada.class, () -> casoUsoCrearProducto.execute(request, idTienda));
 

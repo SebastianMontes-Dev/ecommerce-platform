@@ -62,6 +62,12 @@ public class CasoUsoCrearProducto {
             // evento de dominio que indexa el producto en Elasticsearch (nombreCategoria).
             Categoria categoria = repositorioCategoria.findById(request.getIdCategoria())
                     .orElseThrow(() -> new ExcepcionEntidadNoEncontrada("Categoria", request.getIdCategoria()));
+            // findById no aplica el @Filter de Hibernate (solo corre en queries), así que hay
+            // que validar el tenant a mano — mismo idiom que CasoUsoObtenerProducto.byId — para
+            // no dejar leer (y filtrar/exponer vía busqueda) el nombre de una categoría ajena.
+            if (!categoria.getIdTienda().equals(idTienda)) {
+                throw new ExcepcionEntidadNoEncontrada("Categoria", request.getIdCategoria());
+            }
             producto.setIdCategoria(request.getIdCategoria());
             producto.setCategoria(categoria);
         }
