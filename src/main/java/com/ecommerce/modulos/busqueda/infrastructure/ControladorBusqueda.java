@@ -3,10 +3,13 @@ package com.ecommerce.modulos.busqueda.infrastructure;
 import com.ecommerce.modulos.compartido.infrastructure.ContextoInquilino;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import com.ecommerce.modulos.busqueda.application.ResultadoBusqueda;
@@ -18,6 +21,7 @@ import java.util.Map;
 @RequestMapping("/api/v1/busqueda")
 @RequiredArgsConstructor
 @Slf4j
+@Validated
 @Tag(name = "Búsqueda", description = "Búsqueda de productos de texto completo (Full-text busqueda)")
 public class ControladorBusqueda {
 
@@ -30,15 +34,17 @@ public class ControladorBusqueda {
             @RequestParam(required = false) String categoria,
             @RequestParam(required = false) BigDecimal minPrice,
             @RequestParam(required = false) BigDecimal maxPrice,
-            @RequestParam(required = false) Double minRating,
+            // minRating queda descopado: `calificacionPromedio` no lo puebla ningún código del
+            // repo (ni al crear/actualizar un producto ni al crear una reseña), así que no hay
+            // nada real que filtrar por rating todavía. Ver ServicioBusqueda.busqueda.
             @RequestParam(defaultValue = "relevance") String sort,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
+            @RequestParam(defaultValue = "0") @Min(0) int page,
+            @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size) {
 
-        log.info("Search: q={}, inquilino={}, categoria={}, priceRange=[{}-{}], calificacion={}", q, ContextoInquilino.getIdTienda(), categoria, minPrice, maxPrice, minRating);
+        log.info("Search: q={}, inquilino={}, categoria={}, priceRange=[{}-{}]", q, ContextoInquilino.getIdTienda(), categoria, minPrice, maxPrice);
 
         ResultadoBusqueda resultado = servicioBusqueda.busqueda(
-                ContextoInquilino.getIdTienda(), q, categoria, minPrice, maxPrice, minRating, sort, page, size);
+                ContextoInquilino.getIdTienda(), q, categoria, minPrice, maxPrice, sort, page, size);
 
         int totalPages = (int) Math.ceil((double) resultado.totalElements() / size);
 
@@ -52,8 +58,7 @@ public class ControladorBusqueda {
                 "filters", Map.of(
                         "categoria", categoria != null ? categoria : "",
                         "minPrice", minPrice != null ? minPrice : "",
-                        "maxPrice", maxPrice != null ? maxPrice : "",
-                        "minRating", minRating != null ? minRating : ""
+                        "maxPrice", maxPrice != null ? maxPrice : ""
                 )
         ));
     }

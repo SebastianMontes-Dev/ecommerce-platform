@@ -100,7 +100,7 @@ class OutboxIndexacionIntegrationTest {
         // 3. El documento está en Elasticsearch (refresh no es instantáneo).
         await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
             ResultadoBusqueda resultado = servicioBusqueda.busqueda(
-                    idTienda, "termo acero", null, null, null, null, "relevance", 0, 20);
+                    idTienda, "termo acero", null, null, null, "relevance", 0, 20);
             assertFalse(resultado.content().isEmpty());
         });
     }

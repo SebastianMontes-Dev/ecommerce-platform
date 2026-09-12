@@ -44,9 +44,15 @@ public class ServicioBusqueda {
      * Busca productos en Elasticsearch aplicando realmente todos los filtros/paginación/orden
      * que recibe (ver hallazgo Fase 9 / Task 2: antes solo se usaba {@code idTienda} y
      * {@code query}, el resto se ignoraba).
+     *
+     * <p>No acepta {@code minRating} ni un orden por {@code "rating"}: {@code calificacionPromedio}
+     * no lo puebla ningún código del repo (ni al crear/actualizar un producto ni al crear una
+     * reseña), así que filtrar/ordenar por ese campo siempre daría 0 resultados o un orden
+     * arbitrario. Implementar esa agregación (reseñas → promedio → reindexar en Elasticsearch)
+     * es una feature nueva fuera de alcance de la Fase 9; se retoma en una fase de seguimiento.
      */
     public ResultadoBusqueda busqueda(UUID idTienda, String query, String categoria, BigDecimal minPrice,
-                                       BigDecimal maxPrice, Double minRating, String sort, int page, int size) {
+                                       BigDecimal maxPrice, String sort, int page, int size) {
         try {
             SearchResponse<DocumentoProducto> response = elasticsearchClient.search(s -> {
                 s.index(INDEX_NAME)
@@ -80,12 +86,6 @@ public class ServicioBusqueda {
                                 })));
                             }
 
-                            if (minRating != null) {
-                                b.filter(f -> f.range(r -> r.number(n -> n
-                                        .field("calificacionPromedio")
-                                        .gte(minRating))));
-                            }
-
                             return b;
                         }));
 
@@ -93,7 +93,6 @@ public class ServicioBusqueda {
                     switch (sort) {
                         case "price_asc" -> s.sort(so -> so.field(f -> f.field("precio").order(SortOrder.Asc)));
                         case "price_desc" -> s.sort(so -> so.field(f -> f.field("precio").order(SortOrder.Desc)));
-                        case "rating" -> s.sort(so -> so.field(f -> f.field("calificacionPromedio").order(SortOrder.Desc)));
                         default -> {
                             // "relevance" (default) y cualquier valor desconocido: se deja el orden
                             // por relevancia de Elasticsearch, no se setea .sort(...).

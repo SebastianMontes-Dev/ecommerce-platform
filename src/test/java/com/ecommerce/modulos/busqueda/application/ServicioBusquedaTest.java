@@ -108,7 +108,7 @@ class ServicioBusquedaTest {
         mockearRespuesta(List.of(hit), 1);
 
         ResultadoBusqueda resultado = servicioBusqueda.busqueda(
-                idTienda, "zapatilla", null, null, null, null, "relevance", 0, 20);
+                idTienda, "zapatilla", null, null, null, "relevance", 0, 20);
 
         assertEquals(1, resultado.content().size());
         assertSame(documento, resultado.content().get(0));
@@ -120,7 +120,7 @@ class ServicioBusquedaTest {
         mockearRespuesta(List.of(), 0);
 
         ResultadoBusqueda resultado = servicioBusqueda.busqueda(
-                idTienda, "inexistente", null, null, null, null, "relevance", 0, 20);
+                idTienda, "inexistente", null, null, null, "relevance", 0, 20);
 
         assertNotNull(resultado.content());
         assertTrue(resultado.content().isEmpty());
@@ -133,7 +133,7 @@ class ServicioBusquedaTest {
                 .thenThrow(excepcionSimuladaDeElasticsearch());
 
         ResultadoBusqueda resultado = assertDoesNotThrow(() -> servicioBusqueda.busqueda(
-                idTienda, "zapatilla", null, null, null, null, "relevance", 0, 20));
+                idTienda, "zapatilla", null, null, null, "relevance", 0, 20));
 
         assertNotNull(resultado.content());
         assertTrue(resultado.content().isEmpty());
@@ -144,7 +144,7 @@ class ServicioBusquedaTest {
     void debeConstruirQueryConFiltroDeTiendaYTextoDeBusqueda() throws IOException {
         mockearRespuesta(List.of(), 0);
 
-        servicioBusqueda.busqueda(idTienda, "zapatilla running", null, null, null, null, "relevance", 0, 20);
+        servicioBusqueda.busqueda(idTienda, "zapatilla running", null, null, null, "relevance", 0, 20);
 
         SearchRequest request = capturarSearchRequest();
         assertEquals(List.of("productos"), request.index());
@@ -170,7 +170,7 @@ class ServicioBusquedaTest {
     void debeNoAplicarMultiMatchCuandoQueryEsNuloOBlank() throws IOException {
         mockearRespuesta(List.of(), 0);
 
-        servicioBusqueda.busqueda(idTienda, "   ", null, null, null, null, "relevance", 0, 20);
+        servicioBusqueda.busqueda(idTienda, "   ", null, null, null, "relevance", 0, 20);
 
         SearchRequest request = capturarSearchRequest();
         BoolQuery boolQuery = request.query().bool();
@@ -184,7 +184,7 @@ class ServicioBusquedaTest {
     void debeAplicarPaginacionRealFromYSize() throws IOException {
         mockearRespuesta(List.of(), 0);
 
-        servicioBusqueda.busqueda(idTienda, null, null, null, null, null, "relevance", 2, 10);
+        servicioBusqueda.busqueda(idTienda, null, null, null, null, "relevance", 2, 10);
 
         SearchRequest request = capturarSearchRequest();
         assertEquals(20, request.from());
@@ -197,7 +197,7 @@ class ServicioBusquedaTest {
         mockearRespuesta(List.of(hit), 137);
 
         ResultadoBusqueda resultado = servicioBusqueda.busqueda(
-                idTienda, null, null, null, null, null, "relevance", 0, 20);
+                idTienda, null, null, null, null, "relevance", 0, 20);
 
         assertEquals(1, resultado.content().size());
         assertEquals(137, resultado.totalElements());
@@ -207,7 +207,7 @@ class ServicioBusquedaTest {
     void debeAplicarFiltroDeCategoriaCuandoSeProvee() throws IOException {
         mockearRespuesta(List.of(), 0);
 
-        servicioBusqueda.busqueda(idTienda, null, "Calzado", null, null, null, "relevance", 0, 20);
+        servicioBusqueda.busqueda(idTienda, null, "Calzado", null, null, "relevance", 0, 20);
 
         SearchRequest request = capturarSearchRequest();
         BoolQuery boolQuery = request.query().bool();
@@ -225,7 +225,7 @@ class ServicioBusquedaTest {
         mockearRespuesta(List.of(), 0);
 
         servicioBusqueda.busqueda(
-                idTienda, null, null, new BigDecimal("50"), new BigDecimal("200"), null, "relevance", 0, 20);
+                idTienda, null, null, new BigDecimal("50"), new BigDecimal("200"), "relevance", 0, 20);
 
         SearchRequest request = capturarSearchRequest();
         BoolQuery boolQuery = request.query().bool();
@@ -244,7 +244,7 @@ class ServicioBusquedaTest {
     void debeAplicarSoloElLimiteInferiorDePrecioCuandoSoloSeProveeMinPrice() throws IOException {
         mockearRespuesta(List.of(), 0);
 
-        servicioBusqueda.busqueda(idTienda, null, null, new BigDecimal("50"), null, null, "relevance", 0, 20);
+        servicioBusqueda.busqueda(idTienda, null, null, new BigDecimal("50"), null, "relevance", 0, 20);
 
         SearchRequest request = capturarSearchRequest();
         NumberRangeQuery rangoPrecio = request.query().bool().filter().get(0).range().number();
@@ -253,27 +253,10 @@ class ServicioBusquedaTest {
     }
 
     @Test
-    void debeAplicarFiltroDeRatingMinimoCuandoSeProveeMinRating() throws IOException {
-        mockearRespuesta(List.of(), 0);
-
-        servicioBusqueda.busqueda(idTienda, null, null, null, null, 4.0, "relevance", 0, 20);
-
-        SearchRequest request = capturarSearchRequest();
-        BoolQuery boolQuery = request.query().bool();
-
-        assertEquals(1, boolQuery.filter().size());
-        Query filtroRating = boolQuery.filter().get(0);
-        assertTrue(filtroRating.isRange());
-        NumberRangeQuery rangoRating = filtroRating.range().number();
-        assertEquals("calificacionPromedio", rangoRating.field());
-        assertEquals(4.0, rangoRating.gte());
-    }
-
-    @Test
     void debeOrdenarPorPrecioAscendenteCuandoSortEsPriceAsc() throws IOException {
         mockearRespuesta(List.of(), 0);
 
-        servicioBusqueda.busqueda(idTienda, null, null, null, null, null, "price_asc", 0, 20);
+        servicioBusqueda.busqueda(idTienda, null, null, null, null, "price_asc", 0, 20);
 
         SearchRequest request = capturarSearchRequest();
         assertEquals(1, request.sort().size());
@@ -285,7 +268,7 @@ class ServicioBusquedaTest {
     void debeOrdenarPorPrecioDescendenteCuandoSortEsPriceDesc() throws IOException {
         mockearRespuesta(List.of(), 0);
 
-        servicioBusqueda.busqueda(idTienda, null, null, null, null, null, "price_desc", 0, 20);
+        servicioBusqueda.busqueda(idTienda, null, null, null, null, "price_desc", 0, 20);
 
         SearchRequest request = capturarSearchRequest();
         assertEquals(1, request.sort().size());
@@ -294,21 +277,10 @@ class ServicioBusquedaTest {
     }
 
     @Test
-    void debeOrdenarPorCalificacionCuandoSortEsRating() throws IOException {
-        mockearRespuesta(List.of(), 0);
-
-        servicioBusqueda.busqueda(idTienda, null, null, null, null, null, "rating", 0, 20);
-
-        SearchRequest request = capturarSearchRequest();
-        assertEquals(1, request.sort().size());
-        assertEquals("calificacionPromedio", request.sort().get(0).field().field());
-    }
-
-    @Test
     void debeDejarOrdenPorRelevanciaCuandoSortEsRelevanceOValorDesconocido() throws IOException {
         mockearRespuesta(List.of(), 0);
 
-        servicioBusqueda.busqueda(idTienda, null, null, null, null, null, "relevance", 0, 20);
+        servicioBusqueda.busqueda(idTienda, null, null, null, null, "relevance", 0, 20);
 
         SearchRequest request = capturarSearchRequest();
         assertTrue(request.sort() == null || request.sort().isEmpty());
@@ -319,7 +291,7 @@ class ServicioBusquedaTest {
         mockearRespuesta(List.of(), 0);
 
         ResultadoBusqueda resultado = assertDoesNotThrow(() -> servicioBusqueda.busqueda(
-                idTienda, null, null, null, null, null, "relevance", 0, 20));
+                idTienda, null, null, null, null, "relevance", 0, 20));
 
         assertNotNull(resultado);
         assertTrue(resultado.content().isEmpty());
