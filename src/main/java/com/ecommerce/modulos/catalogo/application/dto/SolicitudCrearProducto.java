@@ -4,6 +4,8 @@ import com.ecommerce.modulos.catalogo.domain.EstadoProducto;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Builder.Default;
@@ -18,11 +20,14 @@ import java.math.BigDecimal;
 public class SolicitudCrearProducto {
 
     @NotBlank
+    @Size(max = 200, message = "El nombre no puede superar los 200 caracteres")
     private String nombre;
 
     @NotBlank
+    @Size(max = 200, message = "El enlace corto no puede superar los 200 caracteres")
     private String enlaceCorto;
 
+    @Size(max = 5000, message = "La descripción no puede superar los 5000 caracteres")
     private String descripcion;
 
     @NotNull
@@ -36,11 +41,15 @@ public class SolicitudCrearProducto {
 
     private BigDecimal precioCosto;
 
+    @Size(max = 100, message = "El SKU no puede superar los 100 caracteres")
     private String sku;
 
+    @Size(max = 100, message = "El código de barras no puede superar los 100 caracteres")
     private String codigoBarras;
 
-    @Positive
+    // PositiveOrZero (no Positive): un producto agotado o digital/sin stock físico
+    // debe poder crearse con inventario 0 (que además es el default de este campo).
+    @PositiveOrZero
     @Default
     private int inventario = 0;
 

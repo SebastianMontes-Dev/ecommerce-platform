@@ -1,5 +1,7 @@
 package com.ecommerce.modulos.ordenes.application;
 
+import com.ecommerce.modulos.ordenes.application.dto.RespuestaCupon;
+import com.ecommerce.modulos.ordenes.application.dto.SolicitudCrearCupon;
 import com.ecommerce.modulos.ordenes.domain.Cupon;
 import com.ecommerce.modulos.ordenes.domain.RepositorioCupon;
 import com.ecommerce.modulos.ordenes.domain.TipoDescuento;
@@ -70,5 +72,23 @@ class CasoUsoGestionarCuponTest {
 
         assertThrows(IllegalArgumentException.class,
                 () -> casoUsoGestionarCupon.calcularDescuento(idTienda, "DESC", new BigDecimal("100.00")));
+    }
+
+    @Test
+    void crearCuponDevuelveUnDtoNoLaEntidad() {
+        when(repositorioCupon.findByIdTiendaAndCodigo(any(), anyString())).thenReturn(Optional.empty());
+        when(repositorioCupon.save(any(Cupon.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        SolicitudCrearCupon solicitud = SolicitudCrearCupon.builder()
+                .codigo("promo10")
+                .tipo(TipoDescuento.PORCENTAJE)
+                .valor(new BigDecimal("10"))
+                .build();
+
+        RespuestaCupon respuesta = casoUsoGestionarCupon.crearCupon(idTienda, solicitud);
+
+        assertEquals("PROMO10", respuesta.getCodigo());
+        assertEquals(TipoDescuento.PORCENTAJE, respuesta.getTipo());
+        assertEquals(new BigDecimal("10"), respuesta.getValor());
     }
 }

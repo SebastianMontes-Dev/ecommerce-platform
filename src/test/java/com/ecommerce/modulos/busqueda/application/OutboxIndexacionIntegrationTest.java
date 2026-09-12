@@ -23,7 +23,6 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
 import java.math.BigDecimal;
-import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -100,8 +99,9 @@ class OutboxIndexacionIntegrationTest {
 
         // 3. El documento está en Elasticsearch (refresh no es instantáneo).
         await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
-            List<?> resultado = servicioBusqueda.busqueda(idTienda, "termo acero");
-            assertFalse(resultado.isEmpty());
+            ResultadoBusqueda resultado = servicioBusqueda.busqueda(
+                    idTienda, "termo acero", null, null, null, "relevance", 0, 20);
+            assertFalse(resultado.content().isEmpty());
         });
     }
 

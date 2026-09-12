@@ -134,6 +134,23 @@ class ManejadorExcepcionGlobalTest {
     }
 
     @Test
+    void handleConstraintViolationDevuelve400ConLasViolacionesUnidas() {
+        jakarta.validation.ConstraintViolationException ex = mock(jakarta.validation.ConstraintViolationException.class);
+        jakarta.validation.ConstraintViolation<?> violacion = mock(jakarta.validation.ConstraintViolation.class);
+        jakarta.validation.Path path = mock(jakarta.validation.Path.class);
+        when(path.toString()).thenReturn("searchProducts.size");
+        when(violacion.getPropertyPath()).thenReturn(path);
+        when(violacion.getMessage()).thenReturn("must be less than or equal to 100");
+        when(ex.getConstraintViolations()).thenReturn(java.util.Set.of(violacion));
+
+        ResponseEntity<ProblemDetail> respuesta = manejador.handleConstraintViolation(ex, requestCon("/api/v1/busqueda"));
+
+        assertEquals(HttpStatus.BAD_REQUEST, respuesta.getStatusCode());
+        assertEquals("Validation Error", respuesta.getBody().getTitle());
+        assertEquals("searchProducts.size: must be less than or equal to 100", respuesta.getBody().getDetail());
+    }
+
+    @Test
     void handleBadCredentialsDevuelve401ConMensajeGenerico() {
         BadCredentialsException ex = new BadCredentialsException("Bad credentials");
 

@@ -3,8 +3,8 @@ package com.ecommerce.modulos.ordenes.infrastructure;
 import com.ecommerce.modulos.compartido.infrastructure.ContextoInquilino;
 import com.ecommerce.modulos.compartido.infrastructure.RespuestaPaginada;
 import com.ecommerce.modulos.ordenes.application.CasoUsoGestionarCupon;
+import com.ecommerce.modulos.ordenes.application.dto.RespuestaCupon;
 import com.ecommerce.modulos.ordenes.application.dto.SolicitudCrearCupon;
-import com.ecommerce.modulos.ordenes.domain.Cupon;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -28,14 +28,14 @@ public class ControladorCupon {
 
     @PostMapping
     @Operation(summary = "Crear un nuevo cupón de descuento")
-    public ResponseEntity<Cupon> crearCupon(@Valid @RequestBody SolicitudCrearCupon request) {
-        Cupon cupon = casoUsoGestionarCupon.crearCupon(ContextoInquilino.getIdTiendaPropia(), request);
+    public ResponseEntity<RespuestaCupon> crearCupon(@Valid @RequestBody SolicitudCrearCupon request) {
+        RespuestaCupon cupon = casoUsoGestionarCupon.crearCupon(ContextoInquilino.getIdTiendaPropia(), request);
         return ResponseEntity.status(HttpStatus.CREATED).body(cupon);
     }
 
     @GetMapping
     @Operation(summary = "Listar cupones de la tienda")
-    public ResponseEntity<RespuestaPaginada<Cupon>> listarCupones(
+    public ResponseEntity<RespuestaPaginada<RespuestaCupon>> listarCupones(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
         return ResponseEntity.ok(casoUsoGestionarCupon.listarCupones(
