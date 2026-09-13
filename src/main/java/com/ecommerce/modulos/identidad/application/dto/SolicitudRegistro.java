@@ -19,10 +19,10 @@ public class SolicitudRegistro {
     private String correo;
 
     @NotBlank(message = "Password is required")
-    @Size(min = 8, message = "Password must be at least 8 characters")
+    @Size(min = 8, max = 100, message = "Password must be between 8 and 100 characters")
     private String contrasena;
 
-    @Size(min = 8, message = "Password must be at least 8 characters")
+    @Size(min = 8, max = 100, message = "Password must be between 8 and 100 characters")
     private String confirmarContrasena;
 
     @NotBlank(message = "First nombre is required")

@@ -1,6 +1,7 @@
 package com.ecommerce.modulos.ordenes.application.dto;
 
 import com.ecommerce.modulos.ordenes.domain.TipoDescuento;
+import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -34,4 +35,12 @@ public class SolicitudCrearCupon {
 
     @Positive(message = "El límite de usos debe ser mayor a cero")
     private Integer limiteUsos;
+
+    @AssertTrue(message = "El valor de un descuento porcentual no puede superar 100")
+    public boolean isValorPorcentualValido() {
+        if (tipo != TipoDescuento.PORCENTAJE || valor == null) {
+            return true;
+        }
+        return valor.compareTo(new BigDecimal("100")) <= 0;
+    }
 }

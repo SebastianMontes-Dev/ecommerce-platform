@@ -13,6 +13,10 @@ public class DocumentoProducto {
     private BigDecimal precio;
     private String nombreCategoria;
     private String urlImagen;
+    // Ningún código del repo escribe estos dos campos todavía (ni al crear/actualizar un
+    // producto ni al crear una reseña) — siempre quedan en su default (0.0 / 0). El filtro
+    // minRating y el sort=rating de ServicioBusqueda.busqueda se descoparon por esto mismo;
+    // ver el javadoc de ese método para el porqué y el plan de retomarlo.
     private double calificacionPromedio;
     private long conteoResenas;
 
