@@ -3,21 +3,25 @@ package com.ecommerce.modulos.busqueda.infrastructure;
 import com.ecommerce.modulos.compartido.infrastructure.ContextoInquilino;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import com.ecommerce.modulos.busqueda.application.ResultadoBusqueda;
 import com.ecommerce.modulos.busqueda.application.ServicioBusqueda;
-import com.ecommerce.modulos.busqueda.domain.DocumentoProducto;
-import java.util.List;
+import java.math.BigDecimal;
 import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/busqueda")
 @RequiredArgsConstructor
 @Slf4j
+@Validated
 @Tag(name = "Búsqueda", description = "Búsqueda de productos de texto completo (Full-text busqueda)")
 public class ControladorBusqueda {
 
@@ -28,29 +32,33 @@ public class ControladorBusqueda {
     public ResponseEntity<Map<String, Object>> searchProducts(
             @RequestParam(required = false) String q,
             @RequestParam(required = false) String categoria,
-            @RequestParam(required = false) Double minPrice,
-            @RequestParam(required = false) Double maxPrice,
-            @RequestParam(required = false) Double minRating,
+            @RequestParam(required = false) BigDecimal minPrice,
+            @RequestParam(required = false) BigDecimal maxPrice,
+            // minRating queda descopado: `calificacionPromedio` no lo puebla ningún código del
+            // repo (ni al crear/actualizar un producto ni al crear una reseña), así que no hay
+            // nada real que filtrar por rating todavía. Ver ServicioBusqueda.busqueda.
             @RequestParam(defaultValue = "relevance") String sort,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
+            @RequestParam(defaultValue = "0") @Min(0) @Max(10_000) int page,
+            @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size) {
 
-        log.info("Search: q={}, inquilino={}, categoria={}, priceRange=[{}-{}], calificacion={}", q, ContextoInquilino.getIdTienda(), categoria, minPrice, maxPrice, minRating);
+        log.info("Search: q={}, inquilino={}, categoria={}, priceRange=[{}-{}]", q, ContextoInquilino.getIdTienda(), categoria, minPrice, maxPrice);
 
-        List<DocumentoProducto> results = servicioBusqueda.busqueda(ContextoInquilino.getIdTienda(), q);
+        ResultadoBusqueda resultado = servicioBusqueda.busqueda(
+                ContextoInquilino.getIdTienda(), q, categoria, minPrice, maxPrice, sort, page, size);
+
+        int totalPages = (int) Math.ceil((double) resultado.totalElements() / size);
 
         return ResponseEntity.ok(Map.of(
-                "content", results,
+                "content", resultado.content(),
                 "page", page,
                 "size", size,
-                "totalElements", results.size(),
-                "totalPages", 1,
+                "totalElements", resultado.totalElements(),
+                "totalPages", totalPages,
                 "query", q != null ? q : "",
                 "filters", Map.of(
                         "categoria", categoria != null ? categoria : "",
                         "minPrice", minPrice != null ? minPrice : "",
-                        "maxPrice", maxPrice != null ? maxPrice : "",
-                        "minRating", minRating != null ? minRating : ""
+                        "maxPrice", maxPrice != null ? maxPrice : ""
                 )
         ));
     }

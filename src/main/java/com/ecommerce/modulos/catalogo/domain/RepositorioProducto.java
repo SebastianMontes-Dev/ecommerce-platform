@@ -3,6 +3,7 @@ package com.ecommerce.modulos.catalogo.domain;
 import com.ecommerce.modulos.compartido.infrastructure.RepositorioJpaBase;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
@@ -24,6 +25,7 @@ public interface RepositorioProducto extends RepositorioJpaBase<Producto> {
     @Query("SELECT p FROM Producto p WHERE p.id = :id")
     Optional<Producto> findByIdForUpdate(UUID id);
 
+    @EntityGraph(attributePaths = {"categoria"})
     Page<Producto> findAllByIdTienda(UUID idTienda, Pageable pageable);
 
     Page<Producto> findAllByIdTiendaAndEstado(UUID idTienda, EstadoProducto estado, Pageable pageable);

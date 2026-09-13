@@ -7,6 +7,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.BatchSize;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -76,9 +77,11 @@ public class Producto extends RaizAgregadaInquilino {
     @JoinColumn(name = "category_id", insertable = false, updatable = false)
     private Categoria categoria;
 
+    @BatchSize(size = 20)
     @OneToMany(mappedBy = "producto", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<VarianteProducto> variants = new ArrayList<>();
 
+    @BatchSize(size = 20)
     @OneToMany(mappedBy = "producto", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("sortOrder ASC")
     private List<ImagenProducto> images = new ArrayList<>();
