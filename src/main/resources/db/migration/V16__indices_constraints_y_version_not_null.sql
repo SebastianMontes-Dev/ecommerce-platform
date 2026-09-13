@@ -1,4 +1,16 @@
 -- ============================================================
+-- Esta migración corre sobre el mismo datasource/pool que en producción
+-- tiene statement_timeout=30000/lock_timeout=10000 a nivel de sesión
+-- (application-prod.yml). Los CREATE INDEX (no CONCURRENTLY) y los 21
+-- ALTER TABLE ... ALTER COLUMN version SET NOT NULL de más abajo podrían
+-- exceder esos timeouts contra tablas grandes con tráfico concurrente en
+-- un despliegue real. SET LOCAL solo vive dentro de la transacción de
+-- Flyway para esta migración, no afecta al pool en runtime normal.
+-- ============================================================
+SET LOCAL lock_timeout = 0;
+SET LOCAL statement_timeout = 0;
+
+-- ============================================================
 -- Índices faltantes (confirmados contra las queries reales de
 -- cada RepositorioX; ver el plan de la Fase 10 para el detalle).
 -- ============================================================
@@ -22,6 +34,19 @@ DROP INDEX IF EXISTS idx_cupones_tenant;
 -- idx_cupones_codigo no tiene ningún caller que filtre solo por "codigo" sin
 -- tenant_id (RepositorioCupon siempre filtra por idTienda + codigo juntos).
 DROP INDEX IF EXISTS idx_cupones_codigo;
+-- idx_products_slug es redundante: productos ya tiene UNIQUE(tenant_id,
+-- enlace_corto) (V4), y Postgres crea automáticamente un índice único para
+-- esa restricción.
+DROP INDEX IF EXISTS idx_products_slug;
+-- idx_refresh_tokens_token es redundante: refresh_tokens.token ya es
+-- UNIQUE (V2).
+DROP INDEX IF EXISTS idx_refresh_tokens_token;
+-- idx_orders_number es redundante: ordenes.numero_orden ya es UNIQUE (V5).
+DROP INDEX IF EXISTS idx_orders_number;
+-- idx_reviews_product es redundante: ya es el prefijo izquierdo del índice
+-- único de UNIQUE(product_id, id_cliente, order_id) (V6) — mismo
+-- razonamiento que ya se usó arriba para dropear idx_cupones_tenant.
+DROP INDEX IF EXISTS idx_reviews_product;
 
 -- ============================================================
 -- CHECK constraints — defensa en profundidad contra un UPDATE directo que
