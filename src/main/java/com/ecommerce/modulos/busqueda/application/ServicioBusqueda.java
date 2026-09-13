@@ -59,7 +59,9 @@ public class ServicioBusqueda {
                         .from(page * size)
                         .size(size)
                         .query(q -> q.bool(b -> {
-                            b.must(m -> m.term(t -> t.field("idTienda.keyword").value(idTienda.toString())));
+                            // "idTienda" a secas (sin ".keyword"): el mapping explícito del
+                            // índice (ver ElasticsearchConfig, Fase 10) lo declara keyword puro.
+                            b.must(m -> m.term(t -> t.field("idTienda").value(idTienda.toString())));
 
                             if (query != null && !query.isBlank()) {
                                 b.must(m -> m.multiMatch(mm -> mm

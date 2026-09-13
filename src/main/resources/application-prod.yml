@@ -4,6 +4,21 @@ spring:
   jpa:
     show-sql: false
     open-in-view: false
+  datasource:
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      # Recicla conexiones periódicamente para evitar que un firewall/load balancer
+      # intermedio las corte a mitad de uso sin que el pool se entere.
+      max-lifetime: 1800000        # 30 min
+      # Detecta (loguea) una conexión que un caller no devolvió al pool en ese tiempo —
+      # típicamente una transacción que quedó abierta más de lo esperado.
+      leak-detection-threshold: 60000   # 60 s
+      connection-timeout: 30000    # 30 s (default de Hikari, explícito por claridad)
+      data-source-properties:
+        # Corta a nivel de sesión JDBC una query que se cuelga, para que no consuma
+        # una conexión del pool indefinidamente.
+        options: "-c statement_timeout=30000 -c lock_timeout=10000"
 
 logging:
   # Logs en JSON (Elastic Common Schema), una línea por evento, listos para ELK/Loki.

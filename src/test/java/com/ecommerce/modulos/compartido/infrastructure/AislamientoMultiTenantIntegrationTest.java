@@ -8,6 +8,8 @@ import com.ecommerce.modulos.identidad.domain.RepositorioUsuario;
 import com.ecommerce.modulos.identidad.domain.Usuario;
 import com.ecommerce.modulos.inquilino.domain.Inquilino;
 import com.ecommerce.modulos.inquilino.domain.RepositorioInquilino;
+import com.ecommerce.modulos.inquilino.domain.RepositorioWebhookTenant;
+import com.ecommerce.modulos.inquilino.domain.WebhookTenant;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,6 +58,9 @@ class AislamientoMultiTenantIntegrationTest {
     @Autowired
     private RepositorioUsuario repositorioUsuario;
 
+    @Autowired
+    private RepositorioWebhookTenant repositorioWebhookTenant;
+
     @AfterEach
     void limpiar() {
         ContextoInquilino.clear();
@@ -74,6 +79,27 @@ class AislamientoMultiTenantIntegrationTest {
 
         ContextoInquilino.setIdTienda(idTiendaA);
         List<Producto> visiblesParaA = repositorioProducto.findAll();
+
+        assertEquals(1, visiblesParaA.size());
+        assertEquals(idTiendaA, visiblesParaA.get(0).getIdTienda());
+    }
+
+    @Test
+    void findAllSoloDevuelveWebhooksDelTenantActivoAunqueNoSeFiltrePorIdTiendaExplicitamente() {
+        // webhook_tenants.tenant_id -> inquilinos(id) es FK real (ver V10/V16 migrations),
+        // asi que hacen falta filas de Inquilino reales, igual que en el test de Producto.
+        // WebhookTenant pasa a extends EntidadInquilino en la Task 2 de la Fase 10 -
+        // este test confirma que el @Filter("filtroInquilino") de Hibernate ahora
+        // tambien protege esta tabla (antes usaba JpaRepository directo, sin filtro).
+        UUID idTiendaA = crearInquilinoConPropietario("propietario-webhook-a@test.com", "tienda-webhook-a").getId();
+        UUID idTiendaB = crearInquilinoConPropietario("propietario-webhook-b@test.com", "tienda-webhook-b").getId();
+
+        repositorioWebhookTenant.save(new WebhookTenant(idTiendaA, "https://a.test/webhook", "orden.creada", "secreto-a"));
+        repositorioWebhookTenant.save(new WebhookTenant(idTiendaB, "https://b.test/webhook", "orden.creada", "secreto-b"));
+        repositorioWebhookTenant.flush();
+
+        ContextoInquilino.setIdTienda(idTiendaA);
+        List<WebhookTenant> visiblesParaA = repositorioWebhookTenant.findAll();
 
         assertEquals(1, visiblesParaA.size());
         assertEquals(idTiendaA, visiblesParaA.get(0).getIdTienda());

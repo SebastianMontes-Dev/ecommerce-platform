@@ -155,7 +155,7 @@ class ServicioBusquedaTest {
         Query filtroTienda = boolQuery.must().get(0);
         assertTrue(filtroTienda.isTerm());
         TermQuery termQuery = filtroTienda.term();
-        assertEquals("idTienda.keyword", termQuery.field());
+        assertEquals("idTienda", termQuery.field());
         assertEquals(idTienda.toString(), termQuery.value().stringValue());
 
         Query filtroTexto = boolQuery.must().get(1);
