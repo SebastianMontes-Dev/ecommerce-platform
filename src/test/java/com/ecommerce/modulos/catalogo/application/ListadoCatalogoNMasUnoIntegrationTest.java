@@ -2,6 +2,8 @@ package com.ecommerce.modulos.catalogo.application;
 
 import com.ecommerce.modulos.catalogo.domain.*;
 import com.ecommerce.modulos.compartido.domain.Dinero;
+import com.ecommerce.modulos.identidad.domain.RepositorioUsuario;
+import com.ecommerce.modulos.identidad.domain.Usuario;
 import com.ecommerce.modulos.inquilino.domain.Inquilino;
 import com.ecommerce.modulos.inquilino.domain.RepositorioInquilino;
 import jakarta.persistence.EntityManagerFactory;
@@ -49,13 +51,19 @@ class ListadoCatalogoNMasUnoIntegrationTest {
 
     @Autowired private RepositorioProducto repositorioProducto;
     @Autowired private RepositorioInquilino repositorioInquilino;
+    @Autowired private RepositorioUsuario repositorioUsuario;
     @Autowired private EntityManagerFactory entityManagerFactory;
     @Autowired private PlatformTransactionManager transactionManager;
 
     @Test
     void listarProductosNoDebeEscalarLinealConLaCantidadDeProductos() {
+        // Inquilino.idPropietario tiene FK a usuarios: hay que crear un Usuario real antes
+        // (mismo patrón que OutboxIndexacionIntegrationTest.crearTienda()) — un UUID random
+        // sin fila real detrás viola inquilinos_id_propietario_fkey contra Postgres real.
+        Usuario propietario = repositorioUsuario.save(
+                new Usuario("dueno-nmas1-" + UUID.randomUUID() + "@test.com", "hash", "Test", "Dueno"));
         Inquilino inquilino = repositorioInquilino.save(
-                new Inquilino("Tienda N+1", "tienda-nmas1-" + UUID.randomUUID(), UUID.randomUUID()));
+                new Inquilino("Tienda N+1", "tienda-nmas1-" + UUID.randomUUID(), propietario.getId()));
         UUID idTienda = inquilino.getId();
 
         // Se deja `categoria` en null para no acoplar este test al ciclo de vida de
