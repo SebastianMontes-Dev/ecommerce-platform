@@ -128,6 +128,27 @@ class CasoUsoCrearProductoTest {
     }
 
     @Test
+    void debeDejarAttributesEnMapaVacioCuandoLaVarianteNoLosProveeParaNoViolarElNotNullDeLaColumna() {
+        // product_variants.attributes es NOT NULL DEFAULT '{}' — si el caller no manda
+        // attributes, no debe quedar en null (Hibernate manda el valor explícito del campo
+        // en el INSERT, nunca deja que la DB aplique su default).
+        SolicitudVariante sinAttributes = SolicitudVariante.builder()
+                .nombre("Talla Única")
+                .monto(new BigDecimal("50.00"))
+                .moneda("USD")
+                .build();
+        request.setVariants(List.of(sinAttributes));
+
+        when(repositorioProducto.countByIdTienda(idTienda)).thenReturn(0L);
+        when(repositorioProducto.save(any(Producto.class))).thenAnswer(i -> i.getArguments()[0]);
+
+        casoUsoCrearProducto.execute(request, idTienda);
+
+        verify(repositorioProducto).save(argThat(producto ->
+                producto.getVariants().get(0).getAttributes() != null));
+    }
+
+    @Test
     void debeMapearPrecioComparacionYPrecioCostoCuandoSonProvistos() {
         request.setPrecioComparacion(new BigDecimal("150.00"));
         request.setPrecioCosto(new BigDecimal("60.00"));

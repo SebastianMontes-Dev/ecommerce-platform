@@ -10,6 +10,7 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
 import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
@@ -38,9 +39,13 @@ public class VarianteProducto extends EntidadInquilino {
     @Column(name = "inventario")
     private int inventario = 0;
 
+    // La columna es NOT NULL DEFAULT '{}' (V4__create_catalog.sql), pero Hibernate siempre
+    // manda el valor explícito del campo en el INSERT (nunca deja que la DB aplique su
+    // default) — sin este default en memoria, un caller que no setea attributes viola la
+    // constraint NOT NULL en cualquier entorno con Postgres real.
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "attributes", columnDefinition = "jsonb")
-    private Map<String, String> attributes;
+    private Map<String, String> attributes = new HashMap<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id", insertable = false, updatable = false)

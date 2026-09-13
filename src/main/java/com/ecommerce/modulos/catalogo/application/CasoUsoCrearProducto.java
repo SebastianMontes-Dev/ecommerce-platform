@@ -81,7 +81,9 @@ public class CasoUsoCrearProducto {
                 variante.setMonto(reqVar.getMonto());
                 variante.setMoneda(reqVar.getMoneda());
                 variante.setInventario(reqVar.getInventario());
-                variante.setAttributes(reqVar.getAttributes());
+                if (reqVar.getAttributes() != null) {
+                    variante.setAttributes(reqVar.getAttributes());
+                }
                 variante.setProducto(producto);
                 producto.getVariants().add(variante);
             }
