@@ -44,7 +44,7 @@ public class ServicioBusqueda {
                     .index(INDEX_NAME)
                     .query(q -> q
                         .bool(b -> b
-                            .must(m -> m.term(t -> t.field("idTienda.keyword").value(idTienda.toString())))
+                            .must(m -> m.term(t -> t.field("idTienda").value(idTienda.toString())))
                             .must(m -> m.multiMatch(mm -> mm
                                 .fields("nombre", "descripcion", "nombreCategoria")
                                 .query(query)
