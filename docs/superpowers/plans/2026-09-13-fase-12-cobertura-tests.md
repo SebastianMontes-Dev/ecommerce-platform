@@ -63,13 +63,14 @@ tasks.named('test') {
 }
 
 tasks.named('jacocoTestReport') {
-    dependsOn tasks.named('test')
     reports {
         xml.required = true
         html.required = true
     }
 }
 ```
+
+**Nota post-implementación:** la primera versión de este snippet tenía `dependsOn tasks.named('test')` en el bloque `jacocoTestReport`, lo cual rompía la garantía de `finalizedBy` (el reporte no se generaba si `test` fallaba) — se sacó en el fix round 1 de esta task (commit `b85cf17`). El snippet de arriba ya refleja la versión corregida.
 
 Nota: esto reemplaza el bloque `tasks.named('test') { useJUnitPlatform() }` existente (líneas 99-101) — no dejar dos bloques `tasks.named('test')` separados, fusionarlos en uno solo como está arriba.
 

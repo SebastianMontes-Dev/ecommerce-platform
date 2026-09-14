@@ -103,7 +103,7 @@ jacoco {
 
 tasks.named('test') {
     useJUnitPlatform()
-    finalizedBy jacocoTestReport
+    finalizedBy tasks.named('jacocoTestReport')
 }
 
 tasks.named('jacocoTestReport') {
