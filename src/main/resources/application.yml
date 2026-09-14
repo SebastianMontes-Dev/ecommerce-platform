@@ -130,6 +130,13 @@ app:
     lote: 50                                     # filas por tick
     max-intentos: 10                             # tras esto -> FALLIDO (requiere intervención)
     minutos-colgado: 2                           # PROCESANDO más viejo que esto se re-reclama
+  purga:
+    # Housekeeping de las tablas sin retención (outbox_eventos, refresh_tokens,
+    # processed_events) — ver ServicioPurgaDatos. Corre una vez al día por defecto.
+    cron: ${PURGA_CRON:0 0 3 * * *}
+    outbox-dias: ${PURGA_OUTBOX_DIAS:30}
+    refresh-tokens-dias: ${PURGA_REFRESH_TOKENS_DIAS:7}
+    eventos-procesados-dias: ${PURGA_EVENTOS_PROCESADOS_DIAS:90}
   minio:
     endpoint: ${MINIO_ENDPOINT:http://localhost:9000}
     access-key: ${MINIO_ACCESS_KEY:minioadmin}
