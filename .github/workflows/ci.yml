@@ -40,7 +40,14 @@ jobs:
       with:
         name: test-results
         path: build/reports/tests/test/
-        
+
+    - name: Publish Coverage Report (JaCoCo)
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: jacoco-coverage-report
+        path: build/reports/jacoco/test/
+
     - name: Build Docker Image
       # Solo en push (no en cada PR): validar que la imagen construye sin gastar
       # minutos de runner en cada iteración de revisión.
