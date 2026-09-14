@@ -22,11 +22,11 @@ Medido con JaCoCo sobre la corrida de CI del PR de esta fase ([PR #21](https://g
 | `modulos/carrito/application` | 40.4% | 202 de 339 |
 | `modulos/carrito/domain` | 45.1% | 96 de 175 |
 
-`modulos/ordenes/infrastructure` es el hallazgo más notable: es el paquete con más instrucciones sin cubrir de todo el proyecto (87) y está en **0%**, a pesar de ser un dominio central del negocio (órdenes). `modulos/pagos/infrastructure/pasarelas` (el patrón Strategy de pasarelas de pago, Stripe) también llama la atención por lo bajo (9.8%) dado que maneja dinero real.
+`modulos/ordenes/infrastructure` es el hallazgo más notable: es el paquete con más instrucciones sin cubrir entre los que están en **0%** (87), a pesar de ser un dominio central del negocio (órdenes) — no es, sin embargo, el paquete con más instrucciones sin cubrir de *todo* el proyecto: `catalogo/infrastructure` (291) y `carrito/application` (202) tienen más, aunque con cobertura parcial, no nula. `modulos/pagos/infrastructure/pasarelas` (el patrón Strategy de pasarelas de pago, Stripe) también llama la atención por lo bajo (9.8%) dado que maneja dinero real.
 
 ## Brecha hacia el 85% del ROADMAP
 
-El número global de instrucciones (82%) ya está cerca del 85% pedido por el `ROADMAP.md` — una brecha de solo ~3 puntos porcentuales en total. Pero esa brecha global no está repartida parejo: está concentrada en un puñado de paquetes en 0% o casi 0% (los cinco primeros de la tabla sí explican una porción importante de las 2.068 instrucciones sin cubrir — 87+28+17+8+8 = 148 solo entre esos cinco). La cobertura de ramas (71%) tiene una brecha bastante mayor y más repartida que la de instrucciones, y no está pedida explícitamente por el ROADMAP pero es una señal de calidad real de los tests existentes (¿cubren los casos negativos, no solo el happy path?).
+El número global de instrucciones (82%) ya está cerca del 85% pedido por el `ROADMAP.md` — una brecha de solo ~3 puntos porcentuales en total. Esa brecha global no está repartida parejo: hay cinco paquetes completamente en 0% (87+28+17+8+8 = 148 instrucciones sin cubrir entre los cinco, ~7% de las 2.068 totales) que son un objetivo claro y acotado para cerrar antes que perseguir cobertura repartida en el resto del proyecto. La cobertura de ramas (71%) tiene una brecha bastante mayor y más repartida que la de instrucciones, y no está pedida explícitamente por el ROADMAP pero es una señal de calidad real de los tests existentes (¿cubren los casos negativos, no solo el happy path?).
 
 ## Siguiente paso sugerido
 
