@@ -42,7 +42,7 @@ Todo el código vive bajo `src/main/java/com/ecommerce/`:
 
 Convención de nombres en español (`ServicioX`, `CasoUsoX`, `ControladorX`, `RepositorioX`) — seguirla al agregar código nuevo.
 
-Migraciones Flyway en `src/main/resources/db/migration/V1..V14`, `ddl-auto: validate` (Flyway es la única fuente de verdad del esquema).
+Migraciones Flyway en `src/main/resources/db/migration/V1..V18`, `ddl-auto: validate` (Flyway es la única fuente de verdad del esquema).
 
 ## Redis, eventos y GraphQL — estado real (verificado en código, no en docs)
 
