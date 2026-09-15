@@ -55,6 +55,9 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/v1/catalogo/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/busqueda/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/inquilinos/{enlaceCorto}").permitAll()
+                        // Reseñas de un producto son de cara al comprador, igual que catálogo/búsqueda:
+                        // deben verse antes de loguearse. Crear una reseña sigue autenticado (anyRequest()).
+                        .requestMatchers(HttpMethod.GET, "/api/v1/productos/{idProducto}/resenas").permitAll()
                         .requestMatchers("/actuator/**").hasRole("PLATFORM_ADMIN")
                         .anyRequest().authenticated()
                 )
