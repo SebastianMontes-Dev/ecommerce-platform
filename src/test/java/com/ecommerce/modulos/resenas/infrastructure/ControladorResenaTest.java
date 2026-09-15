@@ -5,7 +5,12 @@ import com.ecommerce.modulos.compartido.infrastructure.FiltroInquilino;
 import com.ecommerce.modulos.compartido.infrastructure.InterceptorLimiteTasa;
 import com.ecommerce.modulos.compartido.infrastructure.RateLimitConfig;
 import com.ecommerce.modulos.compartido.infrastructure.RespuestaPaginada;
-import com.ecommerce.modulos.compartido.infrastructure.security.FiltroAutenticacionJwt;
+import com.ecommerce.modulos.compartido.infrastructure.security.CustomOAuth2UserService;
+import com.ecommerce.modulos.compartido.infrastructure.security.ManejadorExitoAutenticacionOAuth2;
+import com.ecommerce.modulos.compartido.infrastructure.security.ManejadorFalloAutenticacionOAuth2;
+import com.ecommerce.modulos.compartido.infrastructure.security.ProveedorTokenJwt;
+import com.ecommerce.modulos.compartido.infrastructure.security.SecurityConfig;
+import com.ecommerce.modulos.identidad.application.ServicioDetallesUsuarioPersonalizado;
 import com.ecommerce.modulos.identidad.application.DetallesUsuarioPersonalizado;
 import com.ecommerce.modulos.identidad.domain.RolUsuario;
 import com.ecommerce.modulos.identidad.domain.Usuario;
@@ -24,6 +29,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
+import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
@@ -40,38 +46,41 @@ import java.util.UUID;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrlPattern;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.mockito.Mockito.verify;
 
-// @WebMvcTest always scans in Filter/HandlerInterceptor/WebMvcConfigurer beans
-// project-wide regardless of the controllers= narrowing (addFilters=false only skips
-// *applying* Filters to mock requests, it doesn't stop their beans from being created).
-// This slice doesn't exercise auth/tenant/rate-limit infra, so exclude those global
-// components outright rather than mocking their growing dependency chains one by one.
+// A diferencia de otros ControladorXTest de este repo (que excluyen FiltroAutenticacionJwt
+// y solo mockean el resolver de @AuthenticationPrincipal), este test SÍ carga la
+// SecurityConfig real (@Import) porque el propósito explícito de parte de esta clase es
+// verificar reglas permitAll concretas: GET /resenas es público (fix #23), POST sigue
+// autenticado. @WebMvcTest no trae la @Configuration "SecurityConfig" a la slice por
+// defecto (no implementa la interfaz legacy WebSecurityConfigurer, solo expone un @Bean
+// SecurityFilterChain) — sin este @Import, Boot arma su propio SecurityFilterChain por
+// defecto (deniega todo salvo login) y cualquier cambio real en el permitAll de
+// SecurityConfig no se vería reflejado acá. FiltroAutenticacionJwt se deja real (no se
+// excluye) para que el filtro que SecurityConfig registra con addFilterBefore exista de
+// verdad; solo se mockean sus dependencias.
 @WebMvcTest(controllers = ControladorResena.class, excludeFilters = @ComponentScan.Filter(
         type = FilterType.ASSIGNABLE_TYPE,
-        classes = {FiltroInquilino.class, FiltroAutenticacionJwt.class,
-                InterceptorLimiteTasa.class, RateLimitConfig.class}
+        classes = {FiltroInquilino.class, InterceptorLimiteTasa.class, RateLimitConfig.class}
 ))
-// addFilters is left at its default (true): with it false, .with(user(...))'s
-// SecurityContext never gets threaded onto the request by SecurityContextHolderFilter,
-// so @AuthenticationPrincipal always resolves null. The app's own Filters are already
-// kept out of this slice via excludeFilters above, so enabling filter dispatch here only
-// lets Spring Security's own (already-present) filters run, not the app's.
 @AutoConfigureMockMvc
 @ContextConfiguration(classes = com.ecommerce.bootstrap.AplicacionEcommerce.class)
+@Import(SecurityConfig.class)
 class ControladorResenaTest {
 
-    // @EnableWebSecurity (declared on the app's SecurityConfig, not loaded in this slice)
-    // is what normally registers AuthenticationPrincipalArgumentResolver. Spring Boot's
-    // WebMvcAutoConfiguration auto-registers any HandlerMethodArgumentResolver bean it
-    // finds, so declaring one directly here is the minimal, targeted fix.
+    // @EnableWebSecurity ya se carga acá vía @Import(SecurityConfig.class), pero Spring Boot
+    // solo auto-registra un AuthenticationPrincipalArgumentResolver cuando detecta
+    // @EnableWebSecurity en el ApplicationContext completo (no siempre ocurre de forma
+    // fiable dentro de un slice @WebMvcTest) — declararlo a mano es el fix mínimo y ya
+    // probado en el resto de los ControladorXTest de este repo.
     @TestConfiguration
     static class ResolutorAutenticacionTestConfig {
         @Bean
@@ -91,6 +100,22 @@ class ControladorResenaTest {
 
     @MockBean
     private CasoUsoCrearResena casoUsoCrearResena;
+
+    // Dependencias de SecurityConfig/FiltroAutenticacionJwt, que ahora se cargan de verdad.
+    @MockBean
+    private ProveedorTokenJwt proveedorTokenJwt;
+
+    @MockBean
+    private ServicioDetallesUsuarioPersonalizado servicioDetallesUsuarioPersonalizado;
+
+    @MockBean
+    private CustomOAuth2UserService customOAuth2UserService;
+
+    @MockBean
+    private ManejadorExitoAutenticacionOAuth2 manejadorExitoAutenticacionOAuth2;
+
+    @MockBean
+    private ManejadorFalloAutenticacionOAuth2 manejadorFalloAutenticacionOAuth2;
 
     private UUID idProducto;
     private UUID userId;
@@ -124,7 +149,7 @@ class ControladorResenaTest {
     }
 
     @Test
-    void debeListarResenasActivasConParametrosDePaginacionPorDefecto() throws Exception {
+    void debeListarResenasSinAutenticacion() throws Exception {
         RespuestaResena resena = respuestaDe(idProducto, 5, "Muy bueno");
         RespuestaPaginada<RespuestaResena> pagina = RespuestaPaginada.from(
                 new PageImpl<>(List.of(resena), PageRequest.of(0, 10), 1));
@@ -132,8 +157,9 @@ class ControladorResenaTest {
         when(casoUsoConsultarResenas.listarActivasDeProducto(eq(idProducto), eq(PageRequest.of(0, 10))))
                 .thenReturn(pagina);
 
-        mockMvc.perform(get("/api/v1/productos/{idProducto}/resenas", idProducto)
-                        .with(user(userDetails)))
+        // GET es de cara al comprador (igual que catálogo/búsqueda) y no debe requerir login:
+        // sin .with(user(...)), antes del fix #23 esto redirigía (302) a /oauth2/authorization/google.
+        mockMvc.perform(get("/api/v1/productos/{idProducto}/resenas", idProducto))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content[0].titulo").value("Muy bueno"))
                 .andExpect(jsonPath("$.totalElements").value(1));
@@ -150,7 +176,6 @@ class ControladorResenaTest {
                 .thenReturn(pagina);
 
         mockMvc.perform(get("/api/v1/productos/{idProducto}/resenas", idProducto)
-                        .with(user(userDetails))
                         .param("page", "2")
                         .param("size", "5"))
                 .andExpect(status().isOk());
@@ -166,11 +191,22 @@ class ControladorResenaTest {
         when(casoUsoConsultarResenas.listarActivasDeProducto(eq(idProducto), eq(PageRequest.of(0, 10))))
                 .thenReturn(paginaVacia);
 
-        mockMvc.perform(get("/api/v1/productos/{idProducto}/resenas", idProducto)
-                        .with(user(userDetails)))
+        mockMvc.perform(get("/api/v1/productos/{idProducto}/resenas", idProducto))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content").isEmpty())
                 .andExpect(jsonPath("$.totalElements").value(0));
+    }
+
+    @Test
+    void debeRequerirAutenticacionParaCrearResena() throws Exception {
+        mockMvc.perform(post("/api/v1/productos/{idProducto}/resenas", idProducto)
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(solicitudValida)))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrlPattern("**/oauth2/authorization/google"));
+
+        verify(casoUsoCrearResena, never()).ejecutar(any(), any(), any());
     }
 
     @Test
@@ -260,22 +296,5 @@ class ControladorResenaTest {
                         .content(objectMapper.writeValueAsString(solicitudValida)))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.detail").value("Solo se pueden reseñar productos de órdenes entregadas."));
-    }
-
-    @Test
-    void debeRetornarConflictCuandoNoHayUsuarioAutenticado() throws Exception {
-        // Un principal que no es DetallesUsuarioPersonalizado hace que @AuthenticationPrincipal
-        // resuelva null (sin bloquear la request a nivel de Filter, que está excluido en esta slice),
-        // igual que ocurriría con un JWT ausente/expirado en producción.
-        when(casoUsoCrearResena.ejecutar(eq(idProducto), eq(null), any(SolicitudCrearResena.class)))
-                .thenThrow(new ExcepcionOperacionInvalida("Debe estar autenticado para crear una reseña."));
-
-        mockMvc.perform(post("/api/v1/productos/{idProducto}/resenas", idProducto)
-                        .with(user("otro-tipo-de-principal"))
-                        .with(csrf())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(solicitudValida)))
-                .andExpect(status().isConflict())
-                .andExpect(jsonPath("$.detail").value("Debe estar autenticado para crear una reseña."));
     }
 }
