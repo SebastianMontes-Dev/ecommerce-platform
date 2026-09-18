@@ -71,8 +71,8 @@ class CasoUsoAnaliticasIntegrationTest {
 
     @BeforeEach
     void setUp() {
-        idTienda = crearTienda().getId();
         idCliente = crearCliente().getId();
+        idTienda = crearTienda(idCliente).getId();
     }
 
     @Test
@@ -92,7 +92,7 @@ class CasoUsoAnaliticasIntegrationTest {
 
     @Test
     void debeIgnorarOrdenesDeOtraTiendaYDeEstadosNoFacturables() {
-        UUID idOtraTienda = crearTienda().getId();
+        UUID idOtraTienda = crearTienda(idCliente).getId();
         guardarOrden(idOtraTienda, idCliente, EstadoOrden.PAID, "999.00");
         guardarOrden(idTienda, idCliente, EstadoOrden.PENDING, "50.00");
 
@@ -103,8 +103,8 @@ class CasoUsoAnaliticasIntegrationTest {
         assertTrue(resumen.getIngresosUltimos7Dias().isEmpty());
     }
 
-    private Inquilino crearTienda() {
-        Inquilino inquilino = new Inquilino("Tienda IT " + UUID.randomUUID(), "tienda-" + UUID.randomUUID(), UUID.randomUUID());
+    private Inquilino crearTienda(UUID idPropietario) {
+        Inquilino inquilino = new Inquilino("Tienda IT " + UUID.randomUUID(), "tienda-" + UUID.randomUUID(), idPropietario);
         return repositorioInquilino.saveAndFlush(inquilino);
     }
 
