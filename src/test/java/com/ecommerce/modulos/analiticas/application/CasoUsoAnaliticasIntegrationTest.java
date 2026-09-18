@@ -98,8 +98,12 @@ class CasoUsoAnaliticasIntegrationTest {
 
         ResumenDashboard resumen = casoUsoAnaliticas.obtenerResumen(idTienda);
 
+        // COALESCE(SUM(...), 0) en una query de agregacion sin GROUP BY siempre devuelve
+        // una fila (con 0), nunca cero filas — a diferencia de CasoUsoAnaliticasTest, que
+        // mockea rs.next()=false para ejercitar la rama nula del builder con un ResultSet
+        // que Postgres nunca produciria para este SQL exacto.
         assertEquals(0, resumen.getOrdenesTotalesMes());
-        assertNull(resumen.getVentasTotalesMes());
+        assertEquals(0, BigDecimal.ZERO.compareTo(resumen.getVentasTotalesMes()));
         assertTrue(resumen.getIngresosUltimos7Dias().isEmpty());
     }
 
