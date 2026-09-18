@@ -30,7 +30,7 @@ class CasoUsoAnaliticasTest {
 
     private CasoUsoAnaliticas casoUsoAnaliticas;
 
-    private static final String FRAGMENTO_SQL_VENTAS_DIARIAS = "TO_CHAR(creado_en";
+    private static final String FRAGMENTO_SQL_VENTAS_DIARIAS = "TO_CHAR(created_at";
     private static final String FRAGMENTO_SQL_PRODUCTOS_TOP = "order_items";
 
     private UUID idTienda;
