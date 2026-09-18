@@ -2,6 +2,10 @@ package com.ecommerce.modulos.analiticas.application;
 
 import com.ecommerce.modulos.analiticas.application.dto.ResumenDashboard;
 import com.ecommerce.modulos.compartido.domain.Dinero;
+import com.ecommerce.modulos.identidad.domain.RepositorioUsuario;
+import com.ecommerce.modulos.identidad.domain.Usuario;
+import com.ecommerce.modulos.inquilino.domain.Inquilino;
+import com.ecommerce.modulos.inquilino.domain.RepositorioInquilino;
 import com.ecommerce.modulos.ordenes.domain.EstadoOrden;
 import com.ecommerce.modulos.ordenes.domain.Orden;
 import com.ecommerce.modulos.ordenes.domain.RepositorioOrden;
@@ -56,16 +60,24 @@ class CasoUsoAnaliticasIntegrationTest {
     @Autowired
     private RepositorioOrden repositorioOrden;
 
+    @Autowired
+    private RepositorioInquilino repositorioInquilino;
+
+    @Autowired
+    private RepositorioUsuario repositorioUsuario;
+
     private UUID idTienda;
+    private UUID idCliente;
 
     @BeforeEach
     void setUp() {
-        idTienda = UUID.randomUUID();
+        idTienda = crearTienda().getId();
+        idCliente = crearCliente().getId();
     }
 
     @Test
     void debeCalcularResumenContraElEsquemaRealDeLaTablaOrdenes() {
-        guardarOrden(idTienda, EstadoOrden.PAID, "100.00");
+        guardarOrden(idTienda, idCliente, EstadoOrden.PAID, "100.00");
 
         ResumenDashboard resumen = casoUsoAnaliticas.obtenerResumen(idTienda);
 
@@ -80,8 +92,9 @@ class CasoUsoAnaliticasIntegrationTest {
 
     @Test
     void debeIgnorarOrdenesDeOtraTiendaYDeEstadosNoFacturables() {
-        guardarOrden(UUID.randomUUID(), EstadoOrden.PAID, "999.00");
-        guardarOrden(idTienda, EstadoOrden.PENDING, "50.00");
+        UUID idOtraTienda = crearTienda().getId();
+        guardarOrden(idOtraTienda, idCliente, EstadoOrden.PAID, "999.00");
+        guardarOrden(idTienda, idCliente, EstadoOrden.PENDING, "50.00");
 
         ResumenDashboard resumen = casoUsoAnaliticas.obtenerResumen(idTienda);
 
@@ -90,11 +103,21 @@ class CasoUsoAnaliticasIntegrationTest {
         assertTrue(resumen.getIngresosUltimos7Dias().isEmpty());
     }
 
-    private void guardarOrden(UUID idTienda, EstadoOrden estado, String montoTotal) {
+    private Inquilino crearTienda() {
+        Inquilino inquilino = new Inquilino("Tienda IT " + UUID.randomUUID(), "tienda-" + UUID.randomUUID(), UUID.randomUUID());
+        return repositorioInquilino.saveAndFlush(inquilino);
+    }
+
+    private Usuario crearCliente() {
+        Usuario usuario = new Usuario(UUID.randomUUID() + "@test.com", "hash-irrelevante", "Cliente", "IT");
+        return repositorioUsuario.saveAndFlush(usuario);
+    }
+
+    private void guardarOrden(UUID idTienda, UUID idCliente, EstadoOrden estado, String montoTotal) {
         Orden orden = new Orden();
         orden.setIdTienda(idTienda);
         orden.setNumeroOrden("IT-" + UUID.randomUUID());
-        orden.setIdCliente(UUID.randomUUID());
+        orden.setIdCliente(idCliente);
         orden.setCorreoCliente("cliente@test.com");
         orden.setSubtotal(Dinero.of(new BigDecimal(montoTotal), "USD"));
         orden.setMontoImpuesto(Dinero.of(BigDecimal.ZERO, "USD"));
