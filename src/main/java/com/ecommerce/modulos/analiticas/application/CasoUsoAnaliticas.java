@@ -30,19 +30,19 @@ public class CasoUsoAnaliticas {
             FROM ordenes 
             WHERE tenant_id = ? 
             AND estado IN ('PAID', 'PROCESSING', 'SHIPPED', 'DELIVERED')
-            AND date_trunc('month', creado_en) = date_trunc('month', CURRENT_DATE)
+            AND date_trunc('month', created_at) = date_trunc('month', CURRENT_DATE)
         """;
 
         String sqlVentasDiarias = """
-            SELECT 
-                TO_CHAR(creado_en, 'YYYY-MM-DD') as fecha,
+            SELECT
+                TO_CHAR(created_at, 'YYYY-MM-DD') as fecha,
                 COALESCE(SUM(monto_total), 0) as monto,
                 COUNT(id) as ordenes
             FROM ordenes
-            WHERE tenant_id = ? 
+            WHERE tenant_id = ?
             AND estado IN ('PAID', 'PROCESSING', 'SHIPPED', 'DELIVERED')
-            AND creado_en >= CURRENT_DATE - INTERVAL '6 days'
-            GROUP BY TO_CHAR(creado_en, 'YYYY-MM-DD')
+            AND created_at >= CURRENT_DATE - INTERVAL '6 days'
+            GROUP BY TO_CHAR(created_at, 'YYYY-MM-DD')
             ORDER BY fecha ASC
         """;
 
